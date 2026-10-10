@@ -1,0 +1,43 @@
+---
+title: "Sigrid Trägenap"
+subtitle: "Computational Neuroscience"
+about:
+  template: trestles
+  image: assets/profile.jpg
+  image-shape: round
+  links:
+    - icon: github
+      text: GitHub
+      href: https://github.com/SigridTraegenap
+    - icon: mortarboard
+      text: Google Scholar
+      href: https://scholar.google.com/  # TODO: your profile URL
+    - icon: person-badge
+      text: ORCID
+      href: https://orcid.org/  # TODO: your ORCID
+    - icon: envelope
+      text: Email
+      href: mailto:contact@traegenap.org
+---
+
+<!-- TODO: replace the placeholder text below with your own bio. -->
+
+I am a computational neuroscientist at the [Frankfurt Institute for Advanced Studies (FIAS)](https://fias.institute).
+I study how the developing cortex organises itself: how spontaneous activity,
+recurrent connectivity and experience shape the functional maps that emerge
+in early life.
+
+My work combines mathematical models of recurrent networks with analyses of
+experimental data from developing visual cortex.
+
+## Interests
+
+- Cortical development and self-organisation
+- Recurrent network models of the visual cortex
+- Variability and learning in neural circuits
+- Teaching and interactive scientific tools
+
+## Education
+
+- **PhD in Computational Neuroscience**, Goethe University Frankfurt / FIAS — *TODO: year*
+- **MSc / BSc** — *TODO: field, institution, year*

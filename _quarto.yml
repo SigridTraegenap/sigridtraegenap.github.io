@@ -1,0 +1,42 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - CNAME
+
+website:
+  title: "Sigrid Trägenap"
+  site-url: https://traegenap.org
+  description: "Computational neuroscientist working on cortical development."
+  favicon: assets/favicon.png
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: research.qmd
+        text: Research
+      - href: publications.qmd
+        text: Publications
+      - href: teaching.qmd
+        text: Teaching
+      - href: cv.qmd
+        text: CV
+    right:
+      - icon: github
+        href: https://github.com/SigridTraegenap
+        aria-label: GitHub
+      - icon: envelope
+        href: mailto:contact@traegenap.org
+        aria-label: Email
+  page-footer:
+    left: "© 2026 Sigrid Trägenap"
+    right: "Built with [Quarto](https://quarto.org)"
+
+format:
+  html:
+    theme:
+      light: [flatly, styles.scss]
+      dark: [darkly, styles.scss]
+    toc: false
+    code-fold: true
+    link-external-newwindow: true

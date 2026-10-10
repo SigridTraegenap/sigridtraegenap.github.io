@@ -1,0 +1,25 @@
+---
+title: "CV"
+---
+
+<!-- TODO: drop your CV PDF into assets/cv.pdf. The embed below picks it up.
+The short version here is for readers who do not want to open a PDF. -->
+
+[Download CV (PDF)](assets/cv.pdf){.btn .btn-primary}
+
+## Positions
+
+- **Postdoctoral researcher**, FIAS, Frankfurt — *TODO: dates*
+- **PhD researcher**, FIAS / Goethe University Frankfurt — *TODO: dates*
+
+## Education
+
+- *TODO*
+
+## Talks and posters
+
+- *TODO: e.g. Bernstein Conference 2026, poster title*
+
+## Teaching and supervision
+
+- *TODO*

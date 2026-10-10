@@ -1,0 +1,30 @@
+---
+title: "Research"
+---
+
+<!-- TODO: fill in with your actual projects. One section per theme works well;
+each can get its own page later via a listing. -->
+
+## Emergence of functional organisation in developing cortex
+
+How do orientation maps and other functional structures arise before and
+around eye opening? I use recurrent network models to ask which features of
+early cortical circuits are sufficient to produce the structure seen in
+spontaneous and evoked activity.
+
+## Variability and learning in recurrent networks
+
+Trial-to-trial variability is often treated as noise. In developing circuits
+it may instead reflect the state of a network that is still being shaped.
+This line of work asks how variability changes with learning in
+two-dimensional recurrent networks.
+
+## Cross-species comparison
+
+Comparing cortical organisation across species, for example ferret, cat and
+tree shrew, constrains which developmental mechanisms are general and which
+are specific.
+
+## Code
+
+Research code is available on [GitHub](https://github.com/SigridTraegenap).

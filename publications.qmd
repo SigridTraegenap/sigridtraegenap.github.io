@@ -1,0 +1,18 @@
+---
+title: "Publications"
+---
+
+<!-- TODO: replace with your publication list. Quarto can also generate this
+from a .bib file; see README.md for the two options. -->
+
+## Preprints
+
+- **Author list**. *Title*. bioRxiv, year. [DOI](https://doi.org/) · [PDF](#)
+
+## Journal articles
+
+- **Author list**. *Title*. Journal, year. [DOI](https://doi.org/) · [Code](#)
+
+## Thesis
+
+- Sigrid Trägenap. *Title of PhD thesis*. Goethe University Frankfurt, year.
