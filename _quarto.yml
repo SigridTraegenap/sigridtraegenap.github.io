@@ -4,6 +4,7 @@ project:
   render:
     - "*.qmd"
     - "!teaching.qmd"
+    - "!besides-science.qmd"
 
 website:
   title: "Sigrid Trägenap"

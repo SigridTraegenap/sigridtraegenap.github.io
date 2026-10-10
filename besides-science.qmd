@@ -1,0 +1,17 @@
+---
+title: "Besides Science"
+---
+
+<!-- Draft page. Not rendered or in the navbar yet; see the render list in _quarto.yml. -->
+
+## Fun facts
+
+- TODO
+
+## Questions people ask me
+
+- TODO
+
+## How I think about supervising students
+
+TODO
