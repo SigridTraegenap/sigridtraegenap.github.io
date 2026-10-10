@@ -15,7 +15,7 @@ website:
       - href: index.qmd
         text: Home
       - href: research.qmd
-        text: Research
+        text: Research Interests
       - href: publications.qmd
         text: Publications
       - href: cv.qmd

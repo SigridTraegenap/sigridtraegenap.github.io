@@ -22,8 +22,8 @@ I am a computational neuroscientist at the
 and Goethe University Frankfurt, in the group of
 [Matthias Kaschube](https://fias.institute/en/research/life-and-neurosciences/research-groups/matthias-kaschube/).
 
-I study how reliable sensory representations emerge during the development of
-the visual cortex, combining recurrent network models with chronic imaging data
-from ferret visual cortex. I submitted my PhD thesis in January 2026.
+I study how the developing visual cortex arrives at reliable representations of
+the world, combining recurrent network models with chronic imaging data from
+ferret visual cortex. I submitted my PhD thesis in January 2026.
 
-[Research](research.qmd) · [Publications](publications.qmd) · [CV](cv.qmd) · [Outreach](outreach.qmd)
+[Research Interests](research.qmd) · [Publications](publications.qmd) · [CV](cv.qmd) · [Outreach](outreach.qmd)
