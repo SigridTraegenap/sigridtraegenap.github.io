@@ -15,12 +15,15 @@ title: "Publications"
   *Development of coherent cortical responses reflects increased discriminability of
   feedforward inputs and their alignment with recurrent circuits.*
   Neuron 113(22): 3834–3845.e8.
-  [doi:10.1016/j.neuron.2025.08.014](https://doi.org/10.1016/j.neuron.2025.08.014)
+  [doi:10.1016/j.neuron.2025.08.014](https://doi.org/10.1016/j.neuron.2025.08.014) ·
+  [press release](https://fias.institute/en/news/news-publicity/learning-to-see-is-teamwork/)
 
 - **Sigrid Trägenap**, David E. Whitney, David Fitzpatrick, Matthias Kaschube (2025).
   *The developmental emergence of reliable cortical representations.*
   Nature Neuroscience 28: 394–405.
-  [doi:10.1038/s41593-024-01857-3](https://doi.org/10.1038/s41593-024-01857-3)
+  [doi:10.1038/s41593-024-01857-3](https://doi.org/10.1038/s41593-024-01857-3) ·
+  [free-to-read](https://www.nature.com/articles/s41593-024-01857-3.epdf?sharing_token=GwWYQRrz-zub53Fug5n7UdRgN0jAjWel9jnR3ZoTv0M7mcLR7y-jFw14-nj_gtm6ywdvYoPVRIr_VUd7JsYV_8IKHS0hYLlzSCcrssR-rATJZeAwYyx6R5SJjIyj4cSPLALkqJbHibiN74JKVL2qsolm3CfkUvDI4TAUomlN-BQ%3D) ·
+  [press release](https://fias.institute/en/news/news-publicity/learning-to-see-a-mix-of-nature-and-nurture/)
 
 ## Thesis
 

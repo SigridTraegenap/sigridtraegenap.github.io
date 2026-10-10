@@ -11,7 +11,7 @@ about:
       href: https://github.com/SigridTraegenap
     - icon: mortarboard
       text: Google Scholar
-      href: https://scholar.google.com/  # TODO: your profile URL
+      href: https://scholar.google.com/citations?user=7F1A4pEAAAAJ
     - icon: person-badge
       text: ORCID
       href: https://orcid.org/0000-0002-8845-452X

@@ -16,7 +16,8 @@ Combining chronic two-photon imaging with recurrent network models, we found
 that this reliability arises when visual input becomes aligned with the
 endogenous network structure, rather than from a general reduction of noise.
 See *Trägenap et al., Nature Neuroscience 2025*
-([free-to-read version](https://www.nature.com/articles/s41593-024-01857-3.epdf?sharing_token=GwWYQRrz-zub53Fug5n7UdRgN0jAjWel9jnR3ZoTv0M7mcLR7y-jFw14-nj_gtm6ywdvYoPVRIr_VUd7JsYV_8IKHS0hYLlzSCcrssR-rATJZeAwYyx6R5SJjIyj4cSPLALkqJbHibiN74JKVL2qsolm3CfkUvDI4TAUomlN-BQ%3D)).
+([press release](https://fias.institute/en/news/news-publicity/learning-to-see-a-mix-of-nature-and-nurture/) ·
+[free-to-read version](https://www.nature.com/articles/s41593-024-01857-3.epdf?sharing_token=GwWYQRrz-zub53Fug5n7UdRgN0jAjWel9jnR3ZoTv0M7mcLR7y-jFw14-nj_gtm6ywdvYoPVRIr_VUd7JsYV_8IKHS0hYLlzSCcrssR-rATJZeAwYyx6R5SJjIyj4cSPLALkqJbHibiN74JKVL2qsolm3CfkUvDI4TAUomlN-BQ%3D)).
 
 ## Feedforward input and recurrent circuits
 
@@ -25,7 +26,8 @@ development? Together with the Fitzpatrick lab we showed that coherent cortical
 responses develop as feedforward inputs become more discriminable and better
 aligned with the recurrent network.
 See *Lempel, Trägenap et al., Neuron 2025*
-([doi:10.1016/j.neuron.2025.08.014](https://doi.org/10.1016/j.neuron.2025.08.014)).
+([press release](https://fias.institute/en/news/news-publicity/learning-to-see-is-teamwork/) ·
+[doi:10.1016/j.neuron.2025.08.014](https://doi.org/10.1016/j.neuron.2025.08.014)).
 
 ## Millimetre-scale selective amplification
 

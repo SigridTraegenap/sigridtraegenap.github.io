@@ -19,6 +19,12 @@ Most of these are science slams: short, funny talks for a general audience.
 - **How the brain finds the right chords.** First Oberursel Science Slam, November 2025.
   [Press](https://www.taunus-nachrichten.de/oberursel/nachrichten/oberursel/erster-oberurseler-scienceslam-vereins-kunstgriff-id216522.html)
 
+## Panel discussions
+
+- **20 years of FIAS**, anniversary ceremony, December 2024. Panel discussion on the role
+  of FIAS and interdisciplinary research, as PhD student representative.
+  [Report](https://fias.institute/en/news/news-publicity/a-ceremony-for-science-and-innovation/)
+
 ## Scientific talks online
 
 - *Experience drives the development of novel, reliable cortical sensory representations
@@ -27,11 +33,12 @@ Most of these are science slams: short, funny talks for a general audience.
 
 ## Interactive exhibit: EEG Mindball
 
-I built an *EEG Mindball*, an interactive exhibit in which two players move a ball
-by relaxing, measured with a consumer EEG headset. It serves as a hands-on introduction
-to brain signals and has been used at public science exhibitions, including the
-*Hessen schafft Wissen* presence at the Frankfurt Book Fair, the FIAS 20-year
-anniversary exhibition, and the Night of Science.
+I built an *EEG Mindball*, an interactive exhibit in which visitors try to move a ball
+by generating a certain signal in their recorded EEG data. It serves as a hands-on
+introduction to brain signals and has been used at various events, such as the
+*Hessen schafft Wissen* exhibitions (for example at the Frankfurt Book Fair), the FIAS
+20-year anniversary, the Night of Science, and the FIAS booth at
+[Frankfurt hat Hirn 2024](https://fias.institute/en/news/news-publicity/brilliant-knowledge-about-the-brain/).
 
 ## Organising
 
@@ -40,5 +47,7 @@ anniversary exhibition, and the Night of Science.
   the International Brain Bee.
 - **[Night of Science](https://nightofscience.de)**, the annual student-run science
   night at Goethe University's Riedberg campus, co-organiser 2015 – 2018. Responsible
-  for purchasing, and conceived several of the booths.
-- **PhD symposium** at FIAS following the Bernstein Conference 2024, co-organiser.
+  for purchasing, and conceptual development of several booths.
+- **[Bernstein Network PhD Symposium](https://fias.institute/en/news/news-publicity/successful-doctoral-symposium-of-the-bernstein-network-at-fias/)**
+  "Transitions" at FIAS following the Bernstein Conference 2024, co-organiser with
+  Jonas Elpelt and Lisa Haxel.
