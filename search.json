@@ -18,14 +18,14 @@
     "href": "research.html#feedforward-input-and-recurrent-circuits",
     "title": "Research",
     "section": "Feedforward input and recurrent circuits",
-    "text": "Feedforward input and recurrent circuits\nHow do feedforward inputs interact with recurrent cortical circuits during development? Together with the Fitzpatrick lab we showed that coherent cortical responses develop as feedforward inputs become more discriminable and better aligned with the recurrent network. See Lempel, Trägenap et al., Neuron 2025."
+    "text": "Feedforward input and recurrent circuits\nHow do feedforward inputs interact with recurrent cortical circuits during development? Together with the Fitzpatrick lab we showed that coherent cortical responses develop as feedforward inputs become more discriminable and better aligned with the recurrent network. See Lempel, Trägenap et al., Neuron 2025 (doi:10.1016/j.neuron.2025.08.014)."
   },
   {
     "objectID": "research.html#millimetre-scale-selective-amplification",
     "href": "research.html#millimetre-scale-selective-amplification",
     "title": "Research",
     "section": "Millimetre-scale selective amplification",
-    "text": "Millimetre-scale selective amplification\nWith the Smith lab we study how the developing cortex selectively amplifies particular activity patterns across millimetres of cortical surface, and which recurrent subnetworks can account for this. See Mulholland, Trägenap et al., bioRxiv 2026 (co-first authors)."
+    "text": "Millimetre-scale selective amplification\nWith the Smith lab we study how the developing cortex selectively amplifies particular activity patterns across millimetres of cortical surface, and which recurrent subnetworks can account for this. See Mulholland, Trägenap et al., bioRxiv 2026 (co-first authors; doi:10.64898/2026.03.31.715687)."
   },
   {
     "objectID": "research.html#code-and-data",
@@ -56,11 +56,18 @@
     "text": "Scientific talks online\n\nExperience drives the development of novel, reliable cortical sensory representations from endogenous networks. Bernstein Conference 2022, Berlin. Video"
   },
   {
+    "objectID": "outreach.html#interactive-exhibit-eeg-mindball",
+    "href": "outreach.html#interactive-exhibit-eeg-mindball",
+    "title": "Outreach",
+    "section": "Interactive exhibit: EEG Mindball",
+    "text": "Interactive exhibit: EEG Mindball\nI built an EEG Mindball, an interactive exhibit in which two players move a ball by relaxing, measured with a consumer EEG headset. It serves as a hands-on introduction to brain signals and has been used at public science exhibitions, including the Hessen schafft Wissen presence at the Frankfurt Book Fair, the FIAS 20-year anniversary exhibition, and the Night of Science."
+  },
+  {
     "objectID": "outreach.html#organising",
     "href": "outreach.html#organising",
     "title": "Outreach",
     "section": "Organising",
-    "text": "Organising\n\nGerman Neuroscience Olympiad, national final in Frankfurt, since 2019. Outreach and press contact, grading coordination, computational tutorial. The winner goes on to the International Brain Bee.\nPhD symposium at FIAS following the Bernstein Conference 2024, co-organiser."
+    "text": "Organising\n\nGerman Neuroscience Olympiad, national final in Frankfurt, since 2019. Outreach and press contact, grading coordination, computational tutorial. The winner goes on to the International Brain Bee.\nNight of Science, the annual student-run science night at Goethe University’s Riedberg campus, co-organiser 2015 – 2018. Responsible for purchasing, and conceived several of the booths.\nPhD symposium at FIAS following the Bernstein Conference 2024, co-organiser."
   },
   {
     "objectID": "impressum.html",
