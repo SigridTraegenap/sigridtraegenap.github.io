@@ -2,17 +2,27 @@
 title: "Publications"
 ---
 
-<!-- TODO: replace with your publication list. Quarto can also generate this
-from a .bib file; see README.md for the two options. -->
-
 ## Preprints
 
-- **Author list**. *Title*. bioRxiv, year. [DOI](https://doi.org/) · [PDF](#)
+- Haleigh N. Mulholland\*, **Sigrid Trägenap**\*, Matthias Kaschube, Gordon B. Smith (2026).
+  *Millimeter-scale selective amplification in the developing visual cortex.*
+  bioRxiv. [doi:10.64898/2026.03.31.715687](https://doi.org/10.64898/2026.03.31.715687)
+  <br><small>\* co-first authors</small>
 
 ## Journal articles
 
-- **Author list**. *Title*. Journal, year. [DOI](https://doi.org/) · [Code](#)
+- Augusto Lempel, **Sigrid Trägenap**, Clara Tepohl, Matthias Kaschube, David Fitzpatrick (2025).
+  *Development of coherent cortical responses reflects increased discriminability of
+  feedforward inputs and their alignment with recurrent circuits.*
+  Neuron 113(22): 3834–3845.e8.
+  [doi:10.1016/j.neuron.2025.08.014](https://doi.org/10.1016/j.neuron.2025.08.014)
+
+- **Sigrid Trägenap**, David E. Whitney, David Fitzpatrick, Matthias Kaschube (2025).
+  *The developmental emergence of reliable cortical representations.*
+  Nature Neuroscience 28: 394–405.
+  [doi:10.1038/s41593-024-01857-3](https://doi.org/10.1038/s41593-024-01857-3)
 
 ## Thesis
 
-- Sigrid Trägenap. *Title of PhD thesis*. Goethe University Frankfurt, year.
+- Sigrid Trägenap (2026). *Emergence of reliable sensory representations in cortical
+  development.* PhD thesis, Goethe University Frankfurt. Submitted January 2026.

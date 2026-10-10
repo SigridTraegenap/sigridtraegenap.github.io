@@ -17,27 +17,34 @@ about:
       href: https://orcid.org/  # TODO: your ORCID
     - icon: envelope
       text: Email
-      href: mailto:contact@traegenap.org
+      href: mailto:traegenap@fias.uni-frankfurt.de
 ---
 
-<!-- TODO: replace the placeholder text below with your own bio. -->
+I am a computational neuroscientist at the
+[Frankfurt Institute for Advanced Studies (FIAS)](https://fias.institute)
+and Goethe University Frankfurt, working in the group of
+[Matthias Kaschube](https://fias.institute/en/research/neuroscience/kaschube/).
 
-I am a computational neuroscientist at the [Frankfurt Institute for Advanced Studies (FIAS)](https://fias.institute).
-I study how the developing cortex organises itself: how spontaneous activity,
-recurrent connectivity and experience shape the functional maps that emerge
-in early life.
+I study how reliable sensory representations emerge during the development of
+the visual cortex. To do this I combine dynamical recurrent network models of
+cortical circuits with the analysis of chronic two-photon calcium imaging data
+from ferret visual cortex, recorded in long-standing collaborations with the
+labs of David Fitzpatrick (Max Planck Florida Institute for Neuroscience) and
+Gordon Smith (University of Minnesota).
 
-My work combines mathematical models of recurrent networks with analyses of
-experimental data from developing visual cortex.
+I submitted my PhD thesis, *Emergence of reliable sensory representations in
+cortical development*, in January 2026.
 
 ## Interests
 
-- Cortical development and self-organisation
-- Recurrent network models of the visual cortex
-- Variability and learning in neural circuits
-- Teaching and interactive scientific tools
+- Development of the visual cortex and self-organisation of cortical maps
+- Recurrent network models and their interaction with feedforward input
+- Spontaneous activity and its role in shaping sensory representations
+- Teaching computational neuroscience
 
 ## Education
 
-- **PhD in Computational Neuroscience**, Goethe University Frankfurt / FIAS — *TODO: year*
-- **MSc / BSc** — *TODO: field, institution, year*
+- **PhD in Physics (Computational Neuroscience)**, Goethe University Frankfurt and
+  International Max Planck Research School for Neural Circuits, 2018 – 2026
+- **MSc Biophysics**, Goethe University Frankfurt, 2018
+- **BSc Biophysics**, Goethe University Frankfurt, 2016

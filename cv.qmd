@@ -1,25 +1,98 @@
 ---
 title: "CV"
+toc: true
+toc-location: left
 ---
-
-<!-- TODO: drop your CV PDF into assets/cv.pdf. The embed below picks it up.
-The short version here is for readers who do not want to open a PDF. -->
-
-[Download CV (PDF)](assets/cv.pdf){.btn .btn-primary}
-
-## Positions
-
-- **Postdoctoral researcher**, FIAS, Frankfurt — *TODO: dates*
-- **PhD researcher**, FIAS / Goethe University Frankfurt — *TODO: dates*
 
 ## Education
 
-- *TODO*
+| | |
+|---|---|
+| 11/2018 – 2026 | **PhD student**, International Max Planck Research School for Neural Circuits, Frankfurt. Thesis *Emergence of reliable sensory representations in cortical development*, submitted 01/2026. Supervisor: Matthias Kaschube |
+| 06/2020 – 11/2024 | Member, **Center for Multiscale Modelling**, Frankfurt |
+| 10/2016 – 10/2018 | **MSc Biophysics**, Goethe University Frankfurt. Thesis: *The role of network interactions in refining neural response properties in visual cortex*. Supervisor: Matthias Kaschube. Final grade 1.0 |
+| 10/2013 – 11/2016 | **BSc Biophysics**, Goethe University Frankfurt. Thesis: *Development of coding properties in mammalian visual cortex*. Supervisor: Matthias Kaschube. Final grade 1.3 |
+| 2009 – 2013 | **Landesschule Pforta**, Department of Natural Science. Abitur, final grade 1.0 |
 
-## Talks and posters
+: {tbl-colwidths="[22,78]"}
 
-- *TODO: e.g. Bernstein Conference 2026, poster title*
+## Research experience
 
-## Teaching and supervision
+| | |
+|---|---|
+| 01/2019 – 03/2019 | Rotating PhD student with **Pascal Fries**, Ernst Strüngmann Institute, Frankfurt. Analysis of electrophysiological recordings, role of α-band activity |
+| 10/2017 – 10/2018 | Student assistant with **Matthias Kaschube**, Frankfurt Institute for Advanced Studies. Analysis of spontaneous activity in visual cortex |
+| 2016 – 2017 | Student assistant with **Gilles Laurent**, Max Planck Institute for Brain Research, Frankfurt. Sepia project |
+| 2011 – 2012 | Intern, Martin Luther University Halle-Wittenberg, group of Prof. Binder, macromolecular chemistry |
 
-- *TODO*
+: {tbl-colwidths="[22,78]"}
+
+## Teaching
+
+| | |
+|---|---|
+| 2021 – 2024 | **Theoretical Neuroscience I & II**. Teaching assistant: guest lectures, coordination of exercise sheets and grading, content preparation |
+| 2018 – 2026 | **Computational Neuroscience Seminar**. Teaching assistant: paper selection, introduction to scientific writing, feedback on oral and written presentations |
+| 2017 – 2018 | **Machine Learning I**. Teaching assistant |
+| 2015 – 2016 | **Mathematics for Physicists I**, **Mathematics for Scientists II**. Undergraduate teaching assistant: weekly tutorials, grading |
+
+: {tbl-colwidths="[22,78]"}
+
+I have also supervised several Bachelor's and Master's theses on machine
+learning, image processing, data analysis and network simulation.
+
+## Selected talks
+
+- Rhine-Main Neuroscience Meeting, Oberwesel, 2026 (invited)
+- Giersch Conference on Digital Twins, 2023
+- Computational Neuroscience Next Generation Symposium, 2023
+- Vision Sciences Society Meeting, St. Pete Beach, 2023
+- German Neuroscience Meeting, 2023 (symposium)
+- Society for Neuroscience Annual Meeting, San Diego, 2022 (nano-symposium)
+- Ferret Brain Meeting, San Diego, 2022
+- Bernstein Conference, Berlin, 2022
+- Annual Computational Neuroscience Meeting, Barcelona, 2019
+
+## Selected posters
+
+- Bernstein Conference, 2026
+- HWK Workshop "Cortex Structure and Function in Mouse, Monkey and Man", Delmenhorst, 2026
+- 10th European Visual Cortex and Cognition Meeting, Cortona, 2026
+- Cosyne, Lisbon, 2026, 2024 and 2019; Montreal 2023; virtual 2021
+- Bernstein Conference, Frankfurt 2025 and 2024; virtual 2020; Berlin 2018; Göttingen 2017
+- Meeting on Spontaneous Activity in Brain Development: Alicante 2024 and 2022, Leiden 2018
+- 9th European Vision and Cognition Meeting, Il Poggio, 2024
+- Biennial Meeting of the Rhine-Main Neuroscience Network, 2018
+
+## Awards and scholarships
+
+| | |
+|---|---|
+| 2023 | Travel Award, Organization for Computational Neuroscience |
+| 2022 | Travel Award, Bernstein Network |
+| 2022 | **Poster Award (1st prize)**, 2nd Meeting on Spontaneous Activity in Brain Development |
+| 2019 | Travel Award, Organization for Computational Neuroscience |
+| 2019 | Cosyne Presenters Travel Award |
+| 2018 | **Poster Award (3rd prize)**, 5th Biennial Meeting of the Rhine-Main Neuroscience Network |
+| 2017 – 2018 | SMARTSTART training programme in computational neuroscience, Bernstein Network and Volkswagen Foundation |
+| 2014 – 2018 | Scholarship, German National Academic Foundation (Studienstiftung des deutschen Volkes) |
+| 2013 – 2014 | Deutschlandstipendium |
+| 2013 | DPG Abiturientenpreis, German Physical Society |
+| 2013 | Honours of eLeMeNTe e.V., Saxony-Anhalt |
+
+: {tbl-colwidths="[22,78]"}
+
+## Service and outreach
+
+| | |
+|---|---|
+| 2019 – present | Co-organiser of the German Neuroscience Olympiad final in Frankfurt: outreach and press contact, grading coordination, computational tutorial |
+| 2018 – 2022 | Student representative, Frankfurt Institute for Advanced Studies |
+| 2013 – 2018 | Student representative (Fachschaft Physik), Goethe University Frankfurt: faculty council, examination committee, lecture evaluations |
+
+: {tbl-colwidths="[22,78]"}
+
+## Skills
+
+- **Languages**: German (native), English (C2), Latin
+- **Programming**: Python (advanced), MATLAB, LaTeX

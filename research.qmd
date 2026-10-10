@@ -2,29 +2,38 @@
 title: "Research"
 ---
 
-<!-- TODO: fill in with your actual projects. One section per theme works well;
-each can get its own page later via a listing. -->
+How does the developing visual cortex arrive at reliable representations of the
+outside world? Before eye opening, cortical networks already show structured
+spontaneous activity. After eye opening, visual experience reshapes this
+endogenous activity into representations that respond consistently to the same
+stimulus. My research asks which circuit mechanisms carry this transition.
 
-## Emergence of functional organisation in developing cortex
+## Emergence of reliable cortical representations
 
-How do orientation maps and other functional structures arise before and
-around eye opening? I use recurrent network models to ask which features of
-early cortical circuits are sufficient to produce the structure seen in
-spontaneous and evoked activity.
+At eye opening, responses of ferret visual cortex to the same stimulus vary
+strongly from trial to trial. Over the following days they become reliable.
+Combining chronic two-photon imaging with recurrent network models, we found
+that this reliability arises when visual input becomes aligned with the
+endogenous network structure, rather than from a general reduction of noise.
+See *Trägenap et al., Nature Neuroscience 2025*.
 
-## Variability and learning in recurrent networks
+## Feedforward input and recurrent circuits
 
-Trial-to-trial variability is often treated as noise. In developing circuits
-it may instead reflect the state of a network that is still being shaped.
-This line of work asks how variability changes with learning in
-two-dimensional recurrent networks.
+How do feedforward inputs interact with recurrent cortical circuits during
+development? Together with the Fitzpatrick lab we showed that coherent cortical
+responses develop as feedforward inputs become more discriminable and better
+aligned with the recurrent network.
+See *Lempel, Trägenap et al., Neuron 2025*.
 
-## Cross-species comparison
+## Millimetre-scale selective amplification
 
-Comparing cortical organisation across species, for example ferret, cat and
-tree shrew, constrains which developmental mechanisms are general and which
-are specific.
+With the Smith lab we study how the developing cortex selectively amplifies
+particular activity patterns across millimetres of cortical surface, and which
+network properties can account for this.
+See *Mulholland, Trägenap et al., bioRxiv 2026* (co-first authors).
 
-## Code
+## Methods
 
-Research code is available on [GitHub](https://github.com/SigridTraegenap).
+Dynamical recurrent network models, analysis of large-scale calcium imaging
+data, and the comparison of model predictions with chronically recorded neural
+populations. Research code is on [GitHub](https://github.com/SigridTraegenap).
