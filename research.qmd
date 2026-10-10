@@ -62,9 +62,12 @@ learning in artificial neural networks faster or more robust.
 
 I work at the interface of theory and experiment: dynamical recurrent network
 models, analysis of large-scale calcium imaging data, and the comparison of
-model predictions with chronically recorded neural populations. The data come
-from long-standing collaborations with the labs of David Fitzpatrick (Max Planck
-Florida Institute for Neuroscience) and Gordon Smith (University of Minnesota).
+model predictions with chronically recorded neural populations. I enjoy working
+closely with experimental partners and being part of the loop between theory
+and experiment that drives science forward: a model suggests what to measure,
+the measurement reshapes the model. My long-standing collaborators are the labs
+of David Fitzpatrick (Max Planck Florida Institute for Neuroscience) and Gordon
+Smith (University of Minnesota).
 
 ## Recorded talks
 
