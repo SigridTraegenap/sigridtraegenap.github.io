@@ -45,11 +45,11 @@ millimetres and ask which recurrent subnetworks can account for it. See
 ## Looking ahead: across the animal tree
 
 Most of what we know about cortical development comes from a handful of species.
-I would like to understand which developmental principles are general and which
-are specific to a particular brain. Comparing cortical organisation across species
-with different evolutionary histories and visual lifestyles, for example ferrets,
-cats, tree shrews and mice, is a way to find out. Where a species deviates from the
-others, the deviation itself becomes informative about the underlying mechanism.
+Yet brains differ, shaped by different evolutionary histories and different ways
+of seeing the world. By comparing how the cortex is organised in ferrets, cats,
+tree shrews and mice, I hope to tell apart the developmental principles that are
+shared across species from those that are particular to one. Where a species
+departs from the others, the departure itself points to the mechanism at work.
 
 ## Looking ahead: from biology to learning machines
 
