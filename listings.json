@@ -1,0 +1,11 @@
+[
+  {
+    "listing": "/explorables/index.html",
+    "items": [
+      "/explorables/neuron.html",
+      "/explorables/data-analysis.html",
+      "/explorables/recurrent-networks.html",
+      "/explorables/hebbian.html"
+    ]
+  }
+]
