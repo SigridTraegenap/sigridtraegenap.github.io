@@ -6,6 +6,12 @@ project:
 
 website:
   title: "Sigrid Trägenap"
+  announcement:
+    icon: cone-striped
+    dismissable: false
+    content: "This site is currently under construction."
+    type: warning
+    position: below-navbar
   site-url: https://traegenap.org
   description: "Computational neuroscientist working on cortical development."
   favicon: assets/favicon.png
