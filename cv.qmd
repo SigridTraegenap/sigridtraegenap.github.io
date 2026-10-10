@@ -4,9 +4,7 @@ toc: true
 toc-location: left
 ---
 
-<!-- PDF download button, re-enable once assets/cv.pdf exists:
 [Download as PDF](assets/cv.pdf){.btn .btn-primary .btn-sm}
--->
 
 ## Education
 
