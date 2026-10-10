@@ -9,6 +9,19 @@ Explorables from courses and tutorials. Everything here runs in your browser;
 nothing to install. Change a slider while a simulation is running and it reacts
 immediately.
 
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
 ## A leaky integrate-and-fire neuron
 
 The neuron's membrane potential $V$ integrates its input current $I$ and leaks
@@ -43,7 +56,6 @@ lifState = {
   const n = Math.round(win / dt);
   const V = new Float32Array(n).fill(Vrest), Iarr = new Float32Array(n);
   let v = Vrest, refrLeft = 0, t = 0;
-  // f-I bookkeeping: one measurement per (input, noisy?) setting
   const fi = new Map();
   let key = null, sinceChange = 0, spikesSince = 0, lastSig = 0;
   const gauss = () => { let u = 0; while (u === 0) u = Math.random();
@@ -53,12 +65,10 @@ lifState = {
           tau = viewof lifTau.value, thr = viewof lifThr.value;
     if (!viewof lifPause.value) {
       const k = `${I0}|${sig > 0}`;
-      if (sig > 0 && sig !== lastSig) {               // new noise level: forget old orange points
-        for (const [kk, p] of fi) if (p.noisy) fi.delete(kk);
-      }
+      if (sig > 0 && sig !== lastSig) { for (const [kk, p] of fi) if (p.noisy) fi.delete(kk); }
       if (sig > 0) lastSig = sig;
       if (k !== key) { key = k; sinceChange = 0; spikesSince = 0; }
-      for (let s = 0; s < 20; s++) {                    // 2 ms of simulated time per frame
+      for (let s = 0; s < 20; s++) {
         const I = I0 + sig * gauss() / Math.sqrt(dt);
         if (refrLeft > 0) { refrLeft -= dt; v = Vreset; }
         else {
@@ -72,68 +82,61 @@ lifState = {
       }
       if (sinceChange >= 500) fi.set(key, {I: I0, noisy: sig > 0, rate: 1000 * spikesSince / sinceChange});
     }
-    yield {V, Iarr, t, win, fi, key, thr, tau, sig, I0, R, Vrest, refr,
+    yield {V, Iarr, t, win, fi, thr, tau, sig, I0, R, Vrest, refr,
            rate: sinceChange > 0 ? 1000 * spikesSince / sinceChange : 0};
   }
 }
+lifCanvas = mkCanvas(760, 360)
 ```
 
 ```{ojs}
 //| echo: false
 {
-  const {V, Iarr, win, fi, key, thr, tau, sig, I0, R, Vrest, refr, rate} = lifState;
-  const blue = "#1f77b4", orange = "#ff7f0e";
-  const W = 680, H = 300, mL = 50, n = V.length;
-  const c = DOM.context2d(W, H);
-  const fg = getComputedStyle(document.body).color;
-  c.clearRect(0, 0, W, H);
-  // ---- left: traces ----
-  const trW = 400;
-  const top = {y0: 10, h: 70, lo: -10, hi: 35};
-  const bot = {y0: 100, h: 170, lo: -80, hi: 30};
-  const sx = i => mL + (trW - mL) * i / (n - 1);
+  const {V, Iarr, win, fi, thr, tau, sig, I0, R, Vrest, refr, rate} = lifState;
+  const blue = "#1f77b4", orange = "#ff7f0e", c = lifCanvas, fg = exFg();
+  const W = 760, H = 360, n = V.length;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  // traces, left
+  const mL = 80, trR = 470;
+  const top = {y0: 12, h: 80, lo: -10, hi: 35};
+  const bot = {y0: 112, h: 200, lo: -80, hi: 30};
+  const sx = i => mL + (trR - mL) * i / (n - 1);
   const sy = (p, v) => p.y0 + p.h * (1 - (v - p.lo) / (p.hi - p.lo));
-  c.strokeStyle = "#999"; c.lineWidth = 1;
-  for (const p of [top, bot]) c.strokeRect(mL, p.y0, trW - mL, p.h);
-  c.fillStyle = fg; c.font = "11px sans-serif"; c.textAlign = "right";
-  c.fillText("I (nA)", mL - 6, top.y0 + top.h / 2 + 4);
-  c.fillText("V (mV)", mL - 6, bot.y0 + bot.h / 2 + 4);
-  c.fillText(thr, mL - 6, sy(bot, thr) + 4); c.fillText("-65", mL - 6, sy(bot, -65) + 4);
-  c.textAlign = "center"; c.fillText(`last ${win} ms`, (mL + trW) / 2, H - 6);
-  c.textAlign = "right"; c.fillText(`${rate.toFixed(0)} spikes / s`, trW - 6, bot.y0 + 14);
-  c.setLineDash([4, 4]); c.strokeStyle = "orangered"; c.beginPath();
-  c.moveTo(mL, sy(bot, thr)); c.lineTo(trW, sy(bot, thr)); c.stroke(); c.setLineDash([]);
-  c.strokeStyle = "#888"; c.beginPath();
+  for (const p of [top, bot]) axisBox(c, mL, p.y0, trR - mL, p.h);
+  c.fillStyle = fg; c.textAlign = "right";
+  c.fillText("I (nA)", mL - 8, top.y0 + top.h / 2 + 5);
+  c.fillText("V (mV)", mL - 8, bot.y0 + bot.h / 2 + 5);
+  c.fillText(thr, mL - 8, sy(bot, thr) + 5); c.fillText("-65", mL - 8, sy(bot, -65) + 5);
+  c.textAlign = "center"; c.fillText(`last ${win} ms`, (mL + trR) / 2, H - 14);
+  c.textAlign = "right"; c.fillText(`${rate.toFixed(0)} spikes / s`, trR - 8, bot.y0 + 20);
+  c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(mL, sy(bot, thr)); c.lineTo(trR, sy(bot, thr)); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = "#888"; c.lineWidth = 1; c.beginPath();
   for (let i = 0; i < n; i++) { const y = sy(top, Math.max(top.lo, Math.min(top.hi, Iarr[i]))); i ? c.lineTo(sx(i), y) : c.moveTo(sx(0), y); }
   c.stroke();
   c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 1.5; c.beginPath();
   for (let i = 0; i < n; i++) i ? c.lineTo(sx(i), sy(bot, V[i])) : c.moveTo(sx(0), sy(bot, V[0]));
   c.stroke();
-  // ---- right: f-I curve ----
-  const fP = {x0: trW + 60, y0: 20, w: W - trW - 70, h: 230};
+  // f-I curve, right
+  const fP = {x0: 560, y0: 12, w: 180, h: 300};
   const Imax = 25, fmax = Math.max(100, ...Array.from(fi.values()).map(p => p.rate)) * 1.1;
   const fx = I => fP.x0 + fP.w * I / Imax, fy = f => fP.y0 + fP.h * (1 - f / fmax);
-  c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(fP.x0, fP.y0, fP.w, fP.h);
+  axisBox(c, fP.x0, fP.y0, fP.w, fP.h);
   c.fillStyle = fg; c.textAlign = "center";
-  c.fillText("input current (nA)", fP.x0 + fP.w / 2, fP.y0 + fP.h + 16);
-  c.save(); c.translate(fP.x0 - 36, fP.y0 + fP.h / 2); c.rotate(-Math.PI / 2); c.fillText("spikes / s", 0, 0); c.restore();
-  c.textAlign = "right"; c.fillText("0", fP.x0 - 4, fy(0) + 4); c.fillText(fmax.toFixed(0), fP.x0 - 4, fy(fmax) + 4);
-  c.textAlign = "center"; c.fillText("0", fx(0), fP.y0 + fP.h + 12); c.fillText(Imax, fx(Imax), fP.y0 + fP.h + 12);
-  // theory for the noise-free neuron
+  c.fillText("input (nA)", fP.x0 + fP.w / 2, H - 14);
+  c.fillText("0", fx(0), fP.y0 + fP.h + 20); c.fillText(Imax, fx(Imax), fP.y0 + fP.h + 20);
+  c.save(); c.translate(fP.x0 - 44, fP.y0 + fP.h / 2); c.rotate(-Math.PI / 2); c.fillText("spikes / s", 0, 0); c.restore();
+  c.textAlign = "right"; c.fillText("0", fP.x0 - 6, fy(0) + 5); c.fillText(fmax.toFixed(0), fP.x0 - 6, fy(fmax) + 5);
   c.setLineDash([3, 3]); c.strokeStyle = blue; c.lineWidth = 1; c.beginPath(); let started = false;
   for (let I = 0; I <= Imax; I += 0.1) {
-    const d = R * I - (thr - Vrest); if (d <= 0) { continue; }
-    const f = 1000 / (refr + tau * Math.log(R * I / d));
-    started ? c.lineTo(fx(I), fy(Math.min(f, fmax))) : c.moveTo(fx(I), fy(Math.min(f, fmax))); started = true;
+    const d = R * I - (thr - Vrest); if (d <= 0) continue;
+    const f = Math.min(fmax, 1000 / (refr + tau * Math.log(R * I / d)));
+    started ? c.lineTo(fx(I), fy(f)) : c.moveTo(fx(I), fy(f)); started = true;
   }
   c.stroke(); c.setLineDash([]);
-  for (const [k, p] of fi) {
-    c.fillStyle = p.noisy ? orange : blue; c.beginPath(); c.arc(fx(p.I), fy(p.rate), 4, 0, 2 * Math.PI); c.fill();
-  }
-  // current setting: open ring
-  c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 2; c.beginPath(); c.arc(fx(I0), fy(Math.min(rate, fmax)), 7, 0, 2 * Math.PI); c.stroke();
-  c.fillStyle = blue; c.textAlign = "left"; c.fillText("noise-free", fP.x0 + 6, fP.y0 + 14);
-  c.fillStyle = orange; c.fillText(sig > 0 ? `noise ${sig}` : "noise (off)", fP.x0 + 6, fP.y0 + 28);
+  for (const [k, p] of fi) { c.fillStyle = p.noisy ? orange : blue; c.beginPath(); c.arc(fx(p.I), fy(p.rate), 5, 0, 2 * Math.PI); c.fill(); }
+  c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 2; c.beginPath(); c.arc(fx(I0), fy(Math.min(rate, fmax)), 8, 0, 2 * Math.PI); c.stroke();
+  c.textAlign = "left"; c.fillStyle = blue; c.fillText("noise-free", fP.x0 + 8, fP.y0 + 22);
+  c.fillStyle = orange; c.fillText(sig > 0 ? `noise ${sig}` : "noise (off)", fP.x0 + 8, fP.y0 + 44);
   return c.canvas;
 }
 ```
@@ -158,6 +161,285 @@ sub-threshold current. From the webinar for the German Neuroscience Olympiad 202
 [Notebook on GitHub](https://github.com/SigridTraegenap/DNO_webinar_2020) ·
 [Open in Google Colab](https://colab.research.google.com/github/SigridTraegenap/DNO_webinar_2020/blob/master/Leaky%20Integrate%20and%20Fire%20neuron%20model.ipynb)
 
+## Principal component analysis
+
+Fisher's iris data: 150 flowers, four measurements each. PCA finds the
+directions of largest variance, the eigenvectors of the covariance matrix.
+
+$$C = \frac{1}{n} X^{\mathsf T} X, \qquad C\, e_k = \lambda_k e_k$$
+
+- $X$: the data matrix, 150 rows (flowers) and 4 columns (sepal length, sepal
+  width, petal length, petal width, in cm), with the column means removed.
+  With standardisation on, each column is also divided by its standard deviation.
+- $C$: the $4 \times 4$ covariance matrix.
+- $e_k$: the $k$-th principal component, a direction in the four-dimensional
+  measurement space; $\lambda_k$ its eigenvalue, the variance of the data along it.
+- Explained variance: $\lambda_k / \sum_j \lambda_j$.
+
+```{ojs}
+//| echo: false
+irisRaw = FileAttachment("assets/iris.json").json()
+viewof pcStd = Inputs.toggle({label: "Standardise each variable (z-score)", value: true})
+pcAxisOpts = new Map([["PC 1", "pc0"], ["PC 2", "pc1"], ["PC 3", "pc2"], ["PC 4", "pc3"],
+  ...irisRaw.features.map((f, i) => [f, "v" + i])])
+viewof pcX = Inputs.select(pcAxisOpts, {value: "pc0", label: "Horizontal axis"})
+viewof pcY = Inputs.select(pcAxisOpts, {value: "pc1", label: "Vertical axis"})
+viewof pcColour = Inputs.toggle({label: "Colour by species", value: true})
+```
+
+```{ojs}
+//| echo: false
+symEig = A => {           // Jacobi eigenvalue iteration for a small symmetric matrix
+  const n = A.length, a = A.map(r => r.slice()), v = Array.from({length: n}, (_, i) => Array.from({length: n}, (_, j) => +(i === j)));
+  for (let sweep = 0; sweep < 60; sweep++) {
+    let off = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) off += a[i][j] ** 2;
+    if (off < 1e-18) break;
+    for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) {
+      if (Math.abs(a[p][q]) < 1e-15) continue;
+      const th = (a[q][q] - a[p][p]) / (2 * a[p][q]), t = Math.sign(th || 1) / (Math.abs(th) + Math.sqrt(th * th + 1));
+      const cs = 1 / Math.sqrt(t * t + 1), sn = t * cs;
+      for (let k = 0; k < n; k++) { const akp = a[k][p], akq = a[k][q]; a[k][p] = cs * akp - sn * akq; a[k][q] = sn * akp + cs * akq; }
+      for (let k = 0; k < n; k++) { const apk = a[p][k], aqk = a[q][k]; a[p][k] = cs * apk - sn * aqk; a[q][k] = sn * apk + cs * aqk; }
+      for (let k = 0; k < n; k++) { const vkp = v[k][p], vkq = v[k][q]; v[k][p] = cs * vkp - sn * vkq; v[k][q] = sn * vkp + cs * vkq; }
+    }
+  }
+  const order = [...Array(n).keys()].sort((i, j) => a[j][j] - a[i][i]);
+  return {values: order.map(i => a[i][i]), vectors: order.map(i => { const col = v.map(r => r[i]); const big = col.reduce((b, x) => Math.abs(x) > Math.abs(b) ? x : b, 0); return big < 0 ? col.map(x => -x) : col; })};
+}
+pca = {
+  const rows = irisRaw.rows, d = 4, n = rows.length;
+  const mean = Array.from({length: d}, (_, j) => rows.reduce((s, r) => s + r[j], 0) / n);
+  const sd = Array.from({length: d}, (_, j) => Math.sqrt(rows.reduce((s, r) => s + (r[j] - mean[j]) ** 2, 0) / n));
+  const X = rows.map(r => Array.from({length: d}, (_, j) => (r[j] - mean[j]) / (pcStd ? sd[j] : 1)));
+  const C = Array.from({length: d}, (_, i) => Array.from({length: d}, (_, j) => X.reduce((s, x) => s + x[i] * x[j], 0) / n));
+  const {values, vectors} = symEig(C);
+  const scores = X.map(x => vectors.map(e => e.reduce((s, ei, j) => s + ei * x[j], 0)));
+  const total = values.reduce((s, l) => s + l, 0);
+  return {X, C, values, vectors, scores, total, species: rows.map(r => r[4]), mean, sd};
+}
+pcCanvas = mkCanvas(760, 580)
+```
+
+```{ojs}
+//| echo: false
+{
+  const c = pcCanvas, fg = exFg(), W = 760, H = 580, cols = ["#1f77b4", "#ff7f0e", "#2ca02c"];
+  const {X, values, vectors, scores, total, species} = pca, feats = irisRaw.features;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  const get = (key, i) => key.startsWith("pc") ? scores[i][+key[2]] : X[i][+key[1]];
+  const label = key => key.startsWith("pc") ? `PC ${+key[2] + 1}` : feats[+key[1]] + (pcStd ? " (z-scored)" : " (cm, centred)");
+  const xs = X.map((_, i) => get(pcX, i)), ys = X.map((_, i) => get(pcY, i));
+  const lim = Math.max(...xs.map(Math.abs), ...ys.map(Math.abs)) * 1.1;
+  const sP = {x0: 90, y0: 12, s: 360};
+  const px = v => sP.x0 + sP.s * (v + lim) / (2 * lim), py = v => sP.y0 + sP.s * (1 - (v + lim) / (2 * lim));
+  axisBox(c, sP.x0, sP.y0, sP.s, sP.s);
+  c.strokeStyle = "#ccc"; c.lineWidth = 1; c.beginPath(); c.moveTo(px(0), sP.y0); c.lineTo(px(0), sP.y0 + sP.s); c.moveTo(sP.x0, py(0)); c.lineTo(sP.x0 + sP.s, py(0)); c.stroke();
+  // principal axes drawn in the plane of two raw variables
+  if (!pcX.startsWith("pc") && !pcY.startsWith("pc")) {
+    const i = +pcX[1], j = +pcY[1];
+    for (const [k, col] of [[0, "#d62728"], [1, "#9467bd"]]) {
+      const e = vectors[k], L = 2 * Math.sqrt(values[k]);
+      c.strokeStyle = col; c.lineWidth = 3; c.beginPath(); c.moveTo(px(-L * e[i]), py(-L * e[j])); c.lineTo(px(L * e[i]), py(L * e[j])); c.stroke();
+      c.fillStyle = col; c.textAlign = "left"; c.fillText(`PC ${k + 1}`, px(L * e[i]) + 6, py(L * e[j]) + 5);
+    }
+  }
+  X.forEach((_, i) => { c.fillStyle = pcColour ? cols[species[i]] : "#555"; c.globalAlpha = 0.6; c.beginPath(); c.arc(px(xs[i]), py(ys[i]), 4.5, 0, 2 * Math.PI); c.fill(); });
+  c.globalAlpha = 1; c.fillStyle = fg; c.textAlign = "center";
+  c.fillText(label(pcX), sP.x0 + sP.s / 2, sP.y0 + sP.s + 24);
+  c.fillText((-lim).toFixed(1), sP.x0, sP.y0 + sP.s + 44); c.fillText(lim.toFixed(1), sP.x0 + sP.s, sP.y0 + sP.s + 44);
+  c.save(); c.translate(sP.x0 - 60, sP.y0 + sP.s / 2); c.rotate(-Math.PI / 2); c.fillText(label(pcY), 0, 0); c.restore();
+  c.textAlign = "right"; c.fillText(lim.toFixed(1), sP.x0 - 8, sP.y0 + 6); c.fillText((-lim).toFixed(1), sP.x0 - 8, sP.y0 + sP.s + 2);
+  if (pcColour) irisRaw.species.forEach((s, k) => { c.fillStyle = cols[k]; c.textAlign = "left"; c.fillText(s, sP.x0 + 10, sP.y0 + 22 + 22 * k); });
+  // explained variance bars, right
+  const bP = {x0: 520, y0: 12, w: 220, h: 150};
+  axisBox(c, bP.x0, bP.y0, bP.w, bP.h);
+  values.forEach((l, k) => {
+    const frac = l / total, bw = bP.w / 4 * 0.7, bx = bP.x0 + bP.w * (k + 0.15) / 4;
+    c.fillStyle = "#1f77b4"; c.fillRect(bx, bP.y0 + bP.h * (1 - frac), bw, bP.h * frac);
+    c.fillStyle = fg; c.textAlign = "center"; c.fillText(`${(100 * frac).toFixed(0)}%`, bx + bw / 2, bP.y0 + bP.h * (1 - frac) - 6);
+    c.fillText(`PC ${k + 1}`, bx + bw / 2, bP.y0 + bP.h + 22);
+  });
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText("explained variance", bP.x0 + bP.w / 2, bP.y0 + bP.h + 44);
+  // loadings table, full width below the scatter
+  const tY = 470, colX = j => 250 + 125 * j;
+  c.fillStyle = fg; c.textAlign = "left"; c.fillText("loadings: components of each eₖ", 90, tY);
+  c.font = "14px " + getComputedStyle(document.body).fontFamily;
+  feats.forEach((f, j) => { c.textAlign = "center"; c.fillText(f, colX(j), tY + 24); });
+  values.forEach((_, k) => {
+    c.textAlign = "left"; c.fillText(`PC ${k + 1}`, 90, tY + 46 + 20 * k);
+    vectors[k].forEach((e, j) => { c.textAlign = "center"; c.fillText(e.toFixed(2), colX(j), tY + 46 + 20 * k); });
+  });
+  return c.canvas;
+}
+```
+
+**What you see.** Left: each flower as a dot in the chosen coordinates. With
+species colouring on, blue is *setosa*, orange *versicolor*, green *virginica*;
+off, every dot is grey, which is what PCA itself sees, since it never uses the
+labels. When both axes are raw measurements, the first two principal components
+are drawn as lines through the origin, PC 1 in red and PC 2 in purple, each
+scaled to two standard deviations of the data along it. Right, top: the share of
+the total variance carried by each component, as blue bars. Right, bottom: the
+loadings, how much of each measurement goes into each component.
+
+Try: switch standardisation off and PC 1 is dominated by petal length, simply
+because it has the largest spread in centimetres. Look at the raw-variable
+planes to see where PC 1 points. From the dimensionality-reduction exercise in
+*Theoretical Neuroscience*.
+
+## Sampling and the discrete Fourier transform
+
+A signal made of two sine waves is sampled at $N$ points spaced $\Delta x$
+apart over an interval of length $T$. The discrete Fourier transform (DFT)
+decomposes the samples into frequencies $f_m = m / T$:
+
+$$y(x) = a_1 \sin(2\pi f_1 x) + a_2 \sin(2\pi f_2 x), \qquad
+Y_m = \sum_{n=0}^{N-1} y_n\, e^{-2\pi i\, m n / N}$$
+
+- $f_1, f_2$: frequencies of the two components in cycles per unit length; $a_1, a_2$ their amplitudes.
+- $\Delta x$: sampling interval. $T$: interval length, so $N = T / \Delta x$.
+- $|Y_m| \cdot 2/N$: the amplitude the DFT assigns to frequency $f_m = m/T$.
+- Nyquist frequency $f_{\text{Ny}} = 1 / (2 \Delta x)$: the highest frequency the
+  samples can represent. Anything above it is *aliased* to a lower frequency.
+- $K$: how many of the strongest DFT components are used to rebuild the signal.
+
+```{ojs}
+//| echo: false
+viewof ftF1 = Inputs.range([0, 12], {value: 1, step: 0.1, label: "f₁ (cycles / unit)"})
+viewof ftA1 = Inputs.range([0, 2], {value: 1, step: 0.1, label: "a₁"})
+viewof ftF2 = Inputs.range([0, 12], {value: 3.5, step: 0.1, label: "f₂ (cycles / unit)"})
+viewof ftA2 = Inputs.range([0, 2], {value: 0.5, step: 0.1, label: "a₂"})
+viewof ftDx = Inputs.range([0.02, 0.5], {value: 0.1, step: 0.01, label: "Sampling interval Δx"})
+viewof ftT = Inputs.range([1, 8], {value: 4, step: 0.5, label: "Interval length T"})
+viewof ftK = Inputs.range([0, 10], {value: 2, step: 1, label: "K components kept for reconstruction"})
+```
+
+```{ojs}
+//| echo: false
+ft = {
+  const T = ftT, dx = ftDx, N = Math.max(4, Math.floor(T / dx)), x0 = -T / 2;
+  const sig = x => ftA1 * Math.sin(2 * Math.PI * ftF1 * x) + ftA2 * Math.sin(2 * Math.PI * ftF2 * x);
+  const xs = Array.from({length: N}, (_, n) => x0 + n * dx), ys = xs.map(sig);
+  const M = Math.floor(N / 2), re = new Float64Array(M + 1), im = new Float64Array(M + 1);
+  for (let m = 0; m <= M; m++) for (let n = 0; n < N; n++) { const a = -2 * Math.PI * m * n / N; re[m] += ys[n] * Math.cos(a); im[m] += ys[n] * Math.sin(a); }
+  const amp = Array.from({length: M + 1}, (_, m) => ({m, f: m / T, A: (m === 0 ? 1 : 2) * Math.hypot(re[m], im[m]) / N, ph: Math.atan2(im[m], re[m])}));
+  const kept = amp.slice(1).sort((a, b) => b.A - a.A).slice(0, ftK);
+  const rec = x => amp[0].A * Math.cos(amp[0].ph) + kept.reduce((s, c) => s + c.A * Math.cos(2 * Math.PI * c.f * (x - x0) + c.ph), 0);
+  const fine = Array.from({length: 600}, (_, i) => x0 + T * i / 599);
+  const fNy = 1 / (2 * dx);
+  const alias = f => { const fs = 2 * fNy; let g = Math.abs(f - Math.round(f / fs) * fs); return g; };
+  return {T, dx, N, x0, xs, ys, fine, sig, rec, amp, kept, fNy, alias};
+}
+ftCanvas = mkCanvas(760, 450)
+```
+
+```{ojs}
+//| echo: false
+{
+  const c = ftCanvas, fg = exFg(), W = 760, H = 450, blue = "#1f77b4", orange = "#ff7f0e";
+  const {T, N, x0, xs, ys, fine, sig, rec, amp, kept, fNy, alias} = ft;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  // signal panel
+  const sP = {x0: 80, y0: 12, w: W - 100, h: 170};
+  const ymax = Math.max(0.5, ftA1 + ftA2) * 1.15;
+  const sx = x => sP.x0 + sP.w * (x - x0) / T, sy = y => sP.y0 + sP.h * (1 - (y + ymax) / (2 * ymax));
+  axisBox(c, sP.x0, sP.y0, sP.w, sP.h);
+  c.strokeStyle = "#888"; c.lineWidth = 1; c.beginPath(); c.moveTo(sP.x0, sy(0)); c.lineTo(sP.x0 + sP.w, sy(0)); c.stroke();
+  c.strokeStyle = "#aaa"; c.lineWidth = 1.5; c.beginPath(); fine.forEach((x, i) => i ? c.lineTo(sx(x), sy(sig(x))) : c.moveTo(sx(x), sy(sig(x)))); c.stroke();
+  c.strokeStyle = orange; c.lineWidth = 2; c.beginPath(); fine.forEach((x, i) => i ? c.lineTo(sx(x), sy(rec(x))) : c.moveTo(sx(x), sy(rec(x)))); c.stroke();
+  c.fillStyle = blue; xs.forEach((x, n) => { c.beginPath(); c.arc(sx(x), sy(ys[n]), 3.5, 0, 2 * Math.PI); c.fill(); });
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText(`x  ·  N = ${N} samples`, sP.x0 + sP.w / 2, sP.y0 + sP.h + 22);
+  c.textAlign = "right"; c.fillText("y", sP.x0 - 10, sP.y0 + sP.h / 2 + 5);
+  c.fillText(ymax.toFixed(1), sP.x0 - 8, sP.y0 + 6); c.fillText((-ymax).toFixed(1), sP.x0 - 8, sP.y0 + sP.h + 2);
+  // spectrum panel
+  const pP = {x0: 80, y0: 240, w: W - 100, h: 140};
+  const fmax = Math.max(fNy * 1.05, 0.5), Amax = Math.max(0.5, ...amp.slice(1).map(a => a.A)) * 1.15;
+  const fx = f => pP.x0 + pP.w * f / fmax, fy = A => pP.y0 + pP.h * (1 - A / Amax);
+  axisBox(c, pP.x0, pP.y0, pP.w, pP.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(fx(fNy), pP.y0); c.lineTo(fx(fNy), pP.y0 + pP.h); c.stroke();
+  c.strokeStyle = "#2ca02c";
+  for (const [f, a] of [[ftF1, ftA1], [ftF2, ftA2]]) if (a > 0) { const g = alias(f); c.beginPath(); c.moveTo(fx(g), pP.y0); c.lineTo(fx(g), pP.y0 + pP.h); c.stroke(); }
+  c.setLineDash([]);
+  for (const a of amp.slice(1)) {
+    const isKept = kept.includes(a);
+    c.strokeStyle = isKept ? orange : blue; c.lineWidth = isKept ? 3 : 1.5;
+    c.beginPath(); c.moveTo(fx(a.f), fy(0)); c.lineTo(fx(a.f), fy(a.A)); c.stroke();
+    c.fillStyle = isKept ? orange : blue; c.beginPath(); c.arc(fx(a.f), fy(a.A), 3, 0, 2 * Math.PI); c.fill();
+  }
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText(`frequency (cycles / unit)  ·  Nyquist ${fNy.toFixed(2)}`, pP.x0 + pP.w / 2, pP.y0 + pP.h + 22);
+  c.fillText("0", fx(0), pP.y0 + pP.h + 42); c.fillText(fmax.toFixed(1), fx(fmax), pP.y0 + pP.h + 42);
+  c.textAlign = "right"; c.fillText("|Y|·2/N", pP.x0 - 10, pP.y0 + pP.h / 2 + 5);
+  c.fillText(Amax.toFixed(1), pP.x0 - 8, pP.y0 + 6); c.fillText("0", pP.x0 - 8, pP.y0 + pP.h + 2);
+  return c.canvas;
+}
+```
+
+**What you see.** Top: the true continuous signal in grey, its samples as blue
+dots, and in orange the signal rebuilt from the $K$ strongest DFT components.
+Bottom: the amplitude spectrum, one stem per DFT frequency $f_m = m/T$, up to
+the Nyquist frequency marked by the red dashed line. Stems used in the
+reconstruction are orange, the rest blue. The green dashed lines mark where the
+two true frequencies $f_1$ and $f_2$ land in the spectrum; when a frequency
+lies above Nyquist, its green line sits at the aliased frequency instead.
+
+Try: set $f_2$ above the Nyquist frequency and watch its energy appear at the
+wrong place. Make $T$ a non-integer multiple of the period and the peak smears
+over neighbouring frequencies (leakage). With $K = 2$ and well-resolved peaks,
+the orange reconstruction sits exactly on the grey signal. From the Fourier
+exercises in *Theoretical Neuroscience*.
+
+## Difference of Gaussians and its spectrum
+
+A local-excitation, lateral-inhibition kernel is the difference of two
+Gaussians. Its Fourier transform tells you which spatial frequency a recurrent
+network with this kernel will amplify most; the next explorable shows that
+network in action.
+
+```{ojs}
+//| echo: false
+viewof sigE = Inputs.range([0.1, 10], {value: 1, step: 0.1, label: "Excitation width σₑ"})
+viewof ampE = Inputs.range([0, 10], {value: 1, step: 0.1, label: "Excitation strength"})
+viewof sigI = Inputs.range([0.1, 10], {value: 2, step: 0.1, label: "Inhibition width σᵢ"})
+viewof ampI = Inputs.range([0, 2], {value: 1, step: 0.05, label: "Inhibition strength"})
+
+gauss = (x, s) => Math.exp(-0.5 * x * x / (s * s)) / (Math.sqrt(2 * Math.PI) * s)
+ghat = (f, s) => Math.exp(-2 * Math.PI * Math.PI * s * s * f * f)
+xmax = 5 * Math.max(sigE, sigI)
+space = Array.from({length: 401}, (_, i) => {
+  const x = -xmax + 2 * xmax * i / 400;
+  const e = ampE * gauss(x, sigE), inh = -ampI * gauss(x, sigI);
+  return {x, Excitation: e, Inhibition: inh, "Difference of Gaussians": e + inh};
+})
+spectrum = Array.from({length: 401}, (_, i) => { const f = 2 * i / 400; return {f, k: Math.abs(ampE * ghat(f, sigE) - ampI * ghat(f, sigI))}; })
+peak = spectrum.reduce((a, b) => (b.k > a.k ? b : a))
+
+html`<div style="display:flex;flex-wrap:wrap;gap:1rem">
+${Plot.plot({
+  width: 370, height: 280, marginLeft: 40, style: {fontSize: "15px"},
+  x: {label: "space"}, y: {label: null, ticks: 0},
+  color: {legend: true, domain: ["Excitation", "Inhibition", "Difference of Gaussians"], range: ["#ff7f0e", "#1f77b4", "black"]},
+  marks: [Plot.ruleY([0], {stroke: "#999"}),
+    ...["Excitation", "Inhibition", "Difference of Gaussians"].map(k => Plot.line(space, {x: "x", y: k, stroke: () => k, strokeWidth: 2}))]
+})}
+${Plot.plot({
+  width: 370, height: 280, marginLeft: 50, style: {fontSize: "15px"},
+  x: {label: "spatial frequency (cycles / unit length)"},
+  y: {label: "|kernel spectrum|", domain: [0, Math.max(0.05, ampE, ampI)]},
+  marks: [Plot.line(spectrum, {x: "f", y: "k", stroke: "gray", strokeWidth: 2}),
+    Plot.ruleX([peak.f], {stroke: "#ff7f0e", strokeDasharray: "4 4"}),
+    Plot.text([peak], {x: "f", y: "k", text: d => `peak at f = ${d.f.toFixed(2)}`, dx: 8, dy: -8, textAnchor: "start"})]
+})}
+</div>`
+```
+
+**What you see.** Left: the excitatory Gaussian in orange, the inhibitory one
+in blue (drawn negative), and their difference in black, as functions of
+distance. $\sigma_e$ and $\sigma_i$ are the widths; the strength sliders scale
+the two curves. Right: the magnitude of the kernel's Fourier transform in grey;
+the orange dashed line marks the spatial frequency with the largest value, the
+one a recurrent network with this kernel amplifies most.
+
 ## Pattern formation in a recurrent network
 
 A ring of neurons, each exciting its close neighbours and inhibiting those a
@@ -166,7 +448,7 @@ other, so even random input turns into a regular pattern.
 
 $$\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+$$
 
-- $r$: the firing rates of the 200 neurons on the ring.
+- $r$: the firing rates of the 256 neurons on the ring.
 - $W$: the connection matrix. Neuron $i$ receives from neuron $j$ a weight that
   depends only on their distance: a narrow positive Gaussian (excitation) minus a
   wider negative one (inhibition). The two width sliders set those Gaussians.
@@ -179,8 +461,8 @@ $$\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+$$
 
 ```{ojs}
 //| echo: false
-viewof rnSigE = Inputs.range([1, 20], {value: 4, step: 0.5, label: "Excitation width"})
-viewof rnSigI = Inputs.range([1, 40], {value: 10, step: 0.5, label: "Inhibition width"})
+viewof rnSigE = Inputs.range([1, 25], {value: 5, step: 0.5, label: "Excitation width"})
+viewof rnSigI = Inputs.range([1, 50], {value: 12, step: 0.5, label: "Inhibition width"})
 viewof rnGain = Inputs.range([0.2, 1.6], {value: 1.2, step: 0.02, label: "Gain (largest eigenvalue of W)"})
 viewof rnNoise = Inputs.range([0, 1], {value: 0.1, step: 0.02, label: "Input noise"})
 viewof rnPause = Inputs.toggle({label: "Pause"})
@@ -189,22 +471,21 @@ viewof rnReset = Inputs.button("Reset")
 
 ```{ojs}
 //| echo: false
+rnN = 256
 rnKernel = {
-  const N = 200, sE = rnSigE, sI = rnSigI;
+  const N = rnN, sE = rnSigE, sI = rnSigI;
   const g = (d, s) => Math.exp(-0.5 * d * d / (s * s)) / s;
   const k = new Float64Array(N);
   for (let d = 0; d < N; d++) { const dd = Math.min(d, N - d); k[d] = g(dd, sE) - g(dd, sI); }
-  // eigenvalues of the circulant W are the DFT of the kernel (real, since k is symmetric)
   const ev = new Float64Array(N / 2 + 1);
   for (let m = 0; m <= N / 2; m++) { let s = 0; for (let d = 0; d < N; d++) s += k[d] * Math.cos(2 * Math.PI * m * d / N); ev[m] = s; }
   let lmax = -Infinity, mmax = 0; for (let m = 0; m <= N / 2; m++) if (ev[m] > lmax) { lmax = ev[m]; mmax = m; }
   const scale = rnGain / lmax;
   return {N, k: k.map(x => x * scale), ev: ev.map(x => x * scale), mmax};
 }
-
 rnState = {
   rnReset;
-  const N = 200, dt = 0.1, tau = 1;
+  const N = rnN, dt = 0.1, tau = 1;
   const h = Float64Array.from({length: N}, () => 0.5 + 0.5 * Math.random());
   let r = new Float64Array(N).fill(0.5), t = 0;
   while (true) {
@@ -215,8 +496,7 @@ rnState = {
         for (let i = 0; i < N; i++) {
           let s = 0;
           for (let j = 0; j < N; j++) { const d = (i - j + N) % N; s += k[d] * r[j]; }
-          const inp = s + h[i] + noise * (Math.random() - 0.5) * 2;
-          rn[i] = r[i] + dt / tau * (-r[i] + Math.max(0, inp));
+          rn[i] = r[i] + dt / tau * (-r[i] + Math.max(0, s + h[i] + noise * (Math.random() - 0.5) * 2));
         }
         r = rn; t += dt;
       }
@@ -224,41 +504,31 @@ rnState = {
     yield {r, t};
   }
 }
+rnCanvas = mkCanvas(760, 400)
 ```
 
 ```{ojs}
 //| echo: false
 {
-  const {r, t} = rnState, {ev, mmax, N} = rnKernel;
-  const W = 640, H = 320, c = DOM.context2d(W, H);
-  const fg = getComputedStyle(document.body).color;
-  c.clearRect(0, 0, W, H);
-  // activity panel
-  const aP = {x0: 50, y0: 10, w: W - 60, h: 150};
+  const {r, t} = rnState, {ev, mmax, N} = rnKernel, c = rnCanvas, fg = exFg();
+  const W = 760, H = 400; c.clearRect(0, 0, W, H); c.font = exFont;
+  const aP = {x0: 90, y0: 12, w: W - 110, h: 170};
   const rmax = Math.max(1e-6, ...r);
-  c.strokeStyle = "#999"; c.strokeRect(aP.x0, aP.y0, aP.w, aP.h);
-  c.fillStyle = "steelblue";
-  for (let i = 0; i < N; i++) {
-    const bh = aP.h * r[i] / rmax;
-    c.fillRect(aP.x0 + aP.w * i / N, aP.y0 + aP.h - bh, aP.w / N, bh);
-  }
-  c.fillStyle = fg; c.font = "11px sans-serif"; c.textAlign = "right";
-  c.fillText("activity", aP.x0 - 6, aP.y0 + aP.h / 2 + 4);
-  c.textAlign = "center"; c.fillText(`position on the ring · t = ${t.toFixed(0)} τ`, W / 2, aP.y0 + aP.h + 14);
-  // eigenvalue spectrum panel
-  const sP = {x0: 50, y0: 200, w: W - 60, h: 95};
+  axisBox(c, aP.x0, aP.y0, aP.w, aP.h);
+  c.fillStyle = "#1f77b4";
+  for (let i = 0; i < N; i++) { const bh = aP.h * r[i] / rmax; c.fillRect(aP.x0 + aP.w * i / N, aP.y0 + aP.h - bh, aP.w / N, bh); }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("activity", aP.x0 - 8, aP.y0 + aP.h / 2 + 5);
+  c.textAlign = "center"; c.fillText(`position on the ring · t = ${t.toFixed(0)} τ`, aP.x0 + aP.w / 2, aP.y0 + aP.h + 22);
+  const sP = {x0: 90, y0: 240, w: W - 110, h: 110};
   const M = 40, emax = Math.max(1.6, ...ev), emin = Math.min(-0.5, ...ev);
   const sy = v => sP.y0 + sP.h * (1 - (v - emin) / (emax - emin));
-  c.strokeStyle = "#999"; c.strokeRect(sP.x0, sP.y0, sP.w, sP.h);
-  c.setLineDash([4, 4]); c.strokeStyle = "orangered"; c.beginPath(); c.moveTo(sP.x0, sy(1)); c.lineTo(sP.x0 + sP.w, sy(1)); c.stroke(); c.setLineDash([]);
+  axisBox(c, sP.x0, sP.y0, sP.w, sP.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(sP.x0, sy(1)); c.lineTo(sP.x0 + sP.w, sy(1)); c.stroke(); c.setLineDash([]);
   c.strokeStyle = "#888"; c.beginPath(); c.moveTo(sP.x0, sy(0)); c.lineTo(sP.x0 + sP.w, sy(0)); c.stroke();
-  for (let m = 0; m <= M; m++) {
-    c.fillStyle = m === mmax ? "orangered" : "gray";
-    c.beginPath(); c.arc(sP.x0 + sP.w * m / M, sy(ev[m]), 3, 0, 2 * Math.PI); c.fill();
-  }
-  c.fillStyle = fg; c.textAlign = "right"; c.fillText("eigenvalue", sP.x0 - 6, sP.y0 + sP.h / 2 + 4);
-  c.fillText("1", sP.x0 - 6, sy(1) + 4);
-  c.textAlign = "center"; c.fillText(`spatial frequency (waves around the ring) · amplified most: ${mmax}`, W / 2, sP.y0 + sP.h + 16);
+  for (let m = 0; m <= M; m++) { c.fillStyle = m === mmax ? "#ff7f0e" : "gray"; c.beginPath(); c.arc(sP.x0 + sP.w * m / M, sy(ev[m]), 4, 0, 2 * Math.PI); c.fill(); }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("eigenvalue", sP.x0 - 8, sP.y0 + sP.h / 2 + 5); c.fillText("1", sP.x0 - 8, sy(1) + 5); c.fillText("0", sP.x0 - 8, sy(0) + 5);
+  c.textAlign = "center"; c.fillText(`spatial frequency (waves around the ring) · amplified most: ${mmax}`, sP.x0 + sP.w / 2, sP.y0 + sP.h + 22);
+  c.fillText("0", sP.x0, sP.y0 + sP.h + 42); c.fillText(M, sP.x0 + sP.w, sP.y0 + sP.h + 42);
   return c.canvas;
 }
 ```
@@ -304,8 +574,27 @@ viewof hbReplay = Inputs.button("Replay")
 
 ```{ojs}
 //| echo: false
-mutable hbStart = ({w1: 0.01, w2: 0.05})
 hbCol = ({C0: "#1f77b4", C1: "#ff7f0e", C2: "#2ca02c", K: "#444", T1: "#9467bd", T2: "#17becf"})
+hbLay = ({W: 760, H: 400, S: 340, m: 80, top: 16})   // plane occupies x in [m, m+S], y in [top, top+S]
+mutable hbClick = null
+hbCanvas = {
+  const c = mkCanvas(hbLay.W, hbLay.H);
+  c.canvas.style.cursor = "crosshair";
+  c.canvas.addEventListener("click", ev => {
+    const r = c.canvas.getBoundingClientRect();
+    const x = (ev.clientX - r.left) * hbLay.W / r.width, y = (ev.clientY - r.top) * hbLay.H / r.height;
+    const {m, S, top} = hbLay;
+    if (x < m || x > m + S || y < top || y > top + S) return;
+    mutable hbClick = {fx: (x - m) / S, fy: 1 - (y - top) / S};
+  });
+  return c;
+}
+hbLimits = ({hebb: [-2, 2], bounded: [-0.1, 1.1], oja: [-1.2, 1.2]})
+hbStart = {
+  const [lo, hi] = hbLimits[hbRule];
+  if (!hbClick) return [0.01, 0.05];
+  return [lo + (hi - lo) * hbClick.fx, lo + (hi - lo) * hbClick.fy];
+}
 hbStep = (w, rule, q, alpha, dt = 0.1) => {
   const Qw = [w[0] + q * w[1], q * w[0] + w[1]];
   let n;
@@ -321,7 +610,6 @@ hbEndColour = (w, rule) => {
   if (rule === "oja") { const r = Math.SQRT1_2; if (near(r, r, 0.02)) return hbCol.C0; if (near(-r, r, 0.02)) return hbCol.C1; if (near(r, -r, 0.02)) return hbCol.C2; }
   return hbCol.K;
 }
-hbLimits = ({hebb: [-2, 2], bounded: [-0.1, 1.1], oja: [-1.2, 1.2]})
 hbField = {
   const N = 20, steps = 100, trajs = [];
   for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
@@ -333,7 +621,7 @@ hbField = {
 }
 hbTraj = {
   hbReplay;
-  const steps = 100; let w = [hbStart.w1, hbStart.w2]; const pts = [w]; let k = 0;
+  const steps = 100; let w = hbStart; const pts = [w]; let k = 0;
   while (true) {
     if (!viewof hbPause.value && k < steps) { w = hbStep(w, hbRule, hbQ, hbAlpha); pts.push(w); k++; }
     yield {pts, done: k >= steps, col: k >= steps ? hbEndColour(w, hbRule) : hbCol.K};
@@ -343,18 +631,16 @@ hbTraj = {
 
 ```{ojs}
 //| echo: false
-hbPlane = {
-  const S = 320, m = 36, W = 2 * S + 60, H = S + m + 10;
-  const c = DOM.context2d(W, H), fg = getComputedStyle(document.body).color;
+{
+  const c = hbCanvas, fg = exFg(), {W, H, S, m, top} = hbLay;
   const [lo, hi] = hbLimits[hbRule];
-  const px = w => m + (S - m) * (w - lo) / (hi - lo), py = w => (S - 10) * (1 - (w - lo) / (hi - lo)) + 10;
-  c.clearRect(0, 0, W, H);
-  // phase plane
-  c.strokeStyle = "#999"; c.strokeRect(m, 10, S - m, S - 10);
-  c.fillStyle = fg; c.font = "11px sans-serif"; c.textAlign = "center";
-  c.fillText("w₁", (m + S) / 2, S + 14); c.fillText(lo, px(lo), S + 14); c.fillText(hi, px(hi), S + 14);
-  c.textAlign = "right"; c.fillText("w₂", m - 8, S / 2); c.fillText(lo, m - 4, py(lo) + 4); c.fillText(hi, m - 4, py(hi) + 4);
-  c.save(); c.beginPath(); c.rect(m, 10, S - m, S - 10); c.clip();
+  const px = w => m + S * (w - lo) / (hi - lo), py = w => top + S * (1 - (w - lo) / (hi - lo));
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  axisBox(c, m, top, S, S);
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText("w₁", m + S / 2, top + S + 24); c.fillText(lo, px(lo), top + S + 24); c.fillText(hi, px(hi), top + S + 24);
+  c.textAlign = "right"; c.fillText("w₂", m - 10, top + S / 2 + 5); c.fillText(lo, m - 8, py(lo) + 5); c.fillText(hi, m - 8, py(hi) + 5);
+  c.save(); c.beginPath(); c.rect(m, top, S, S); c.clip();
   c.lineWidth = 1;
   for (const {pts, col} of hbField) {
     c.strokeStyle = col; c.globalAlpha = 0.25; c.beginPath();
@@ -363,33 +649,24 @@ hbPlane = {
   c.globalAlpha = 1; c.lineWidth = 2.5; c.strokeStyle = hbTraj.col; c.beginPath();
   hbTraj.pts.forEach((p, i) => i ? c.lineTo(px(p[0]), py(p[1])) : c.moveTo(px(p[0]), py(p[1]))); c.stroke();
   const last = hbTraj.pts[hbTraj.pts.length - 1], first = hbTraj.pts[0];
-  c.fillStyle = hbTraj.col; c.beginPath(); c.arc(px(last[0]), py(last[1]), 5, 0, 2 * Math.PI); c.fill();
-  c.strokeStyle = fg; c.lineWidth = 1.5; c.beginPath(); c.arc(px(first[0]), py(first[1]), 5, 0, 2 * Math.PI); c.stroke();
+  c.fillStyle = hbTraj.col; c.beginPath(); c.arc(px(last[0]), py(last[1]), 6, 0, 2 * Math.PI); c.fill();
+  c.strokeStyle = fg; c.lineWidth = 1.5; c.beginPath(); c.arc(px(first[0]), py(first[1]), 6, 0, 2 * Math.PI); c.stroke();
   c.restore();
-  c.fillStyle = fg; c.textAlign = "left"; c.fillText(`start: (${first[0].toFixed(2)}, ${first[1].toFixed(2)})  ·  click to move`, m + 6, 24);
-  // time course
-  const x0 = S + 60, tW = W - x0 - 10;
+  c.fillStyle = fg; c.textAlign = "left"; c.fillText(`start (${first[0].toFixed(2)}, ${first[1].toFixed(2)}) · click to move`, m + 8, top + 22);
+  // time course, right
+  const x0 = m + S + 70, tW = W - x0 - 16;
   const tx = i => x0 + tW * i / 100, ty = w => py(w);
-  c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x0, 10, tW, S - 10);
-  c.fillStyle = fg; c.textAlign = "center"; c.fillText("time steps", x0 + tW / 2, S + 14);
-  c.fillText("0", tx(0), S + 14); c.fillText("100", tx(100), S + 14);
-  c.textAlign = "right"; c.fillText(lo, x0 - 4, py(lo) + 4); c.fillText(hi, x0 - 4, py(hi) + 4);
-  c.save(); c.beginPath(); c.rect(x0, 10, tW, S - 10); c.clip();
+  axisBox(c, x0, top, tW, S);
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText("time steps", x0 + tW / 2, top + S + 24);
+  c.fillText("0", tx(0), top + S + 24); c.fillText("100", tx(100), top + S + 24);
+  c.textAlign = "right"; c.fillText(lo, x0 - 8, py(lo) + 5); c.fillText(hi, x0 - 8, py(hi) + 5);
+  c.save(); c.beginPath(); c.rect(x0, top, tW, S); c.clip();
   for (const [j, col] of [[0, hbCol.T1], [1, hbCol.T2]]) {
     c.strokeStyle = col; c.lineWidth = 2; c.beginPath();
     hbTraj.pts.forEach((p, i) => i ? c.lineTo(tx(i), ty(p[j])) : c.moveTo(tx(i), ty(p[j]))); c.stroke();
   }
   c.restore();
-  c.textAlign = "left"; c.fillStyle = hbCol.T1; c.fillText("w₁", x0 + 6, 24); c.fillStyle = hbCol.T2; c.fillText("w₂", x0 + 30, 24);
-  // click in the phase plane sets the initial condition
-  c.canvas.style.cursor = "crosshair";
-  c.canvas.addEventListener("click", ev => {
-    const r = c.canvas.getBoundingClientRect(), sc = W / r.width;
-    const x = (ev.clientX - r.left) * sc, y = (ev.clientY - r.top) * sc;
-    if (x < m || x > S || y < 10 || y > S) return;
-    const w1 = lo + (hi - lo) * (x - m) / (S - m), w2 = lo + (hi - lo) * (1 - (y - 10) / (S - 10));
-    mutable hbStart = {w1: +w1.toFixed(3), w2: +w2.toFixed(3)};
-  });
+  c.textAlign = "left"; c.fillStyle = hbCol.T1; c.fillText("w₁", x0 + 8, top + 22); c.fillStyle = hbCol.T2; c.fillText("w₂", x0 + 44, top + 22);
   return c.canvas;
 }
 ```
@@ -409,78 +686,3 @@ whichever way you start. With bounds the plane splits into basins of
 attraction. Oja's rule keeps $|w|$ finite and converges to a normalised
 eigenvector of $Q$. Change $q$ to see the basins move.
 From the Hebbian learning exercise in *Theoretical Neuroscience*.
-
-## Difference of Gaussians and its spectrum
-
-The same kernel, seen on its own: two Gaussians and their difference, next to
-the kernel's Fourier transform. The peak of the spectrum is the frequency the
-network above amplifies most.
-
-```{ojs}
-//| echo: false
-viewof sigE = Inputs.range([0.1, 10], {value: 1, step: 0.1, label: "Excitation width σₑ"})
-viewof ampE = Inputs.range([0, 10], {value: 1, step: 0.1, label: "Excitation strength"})
-viewof sigI = Inputs.range([0.1, 10], {value: 2, step: 0.1, label: "Inhibition width σᵢ"})
-viewof ampI = Inputs.range([0, 2], {value: 1, step: 0.05, label: "Inhibition strength"})
-
-gauss = (x, s) => Math.exp(-0.5 * x * x / (s * s)) / (Math.sqrt(2 * Math.PI) * s)
-ghat = (f, s) => Math.exp(-2 * Math.PI * Math.PI * s * s * f * f)
-
-xmax = 5 * Math.max(sigE, sigI)
-space = Array.from({length: 401}, (_, i) => {
-  const x = -xmax + 2 * xmax * i / 400;
-  const e = ampE * gauss(x, sigE), inh = -ampI * gauss(x, sigI);
-  return {x, Excitation: e, Inhibition: inh, "Difference of Gaussians": e + inh};
-})
-spectrum = Array.from({length: 401}, (_, i) => {
-  const f = 2 * i / 400;
-  return {f, k: Math.abs(ampE * ghat(f, sigE) - ampI * ghat(f, sigI))};
-})
-peak = spectrum.reduce((a, b) => (b.k > a.k ? b : a))
-
-html`<div style="display:flex;flex-wrap:wrap;gap:1rem">
-${Plot.plot({
-  width: 420, height: 260, marginLeft: 40,
-  x: {label: "space"}, y: {label: null, ticks: 0},
-  color: {legend: true, domain: ["Excitation", "Inhibition", "Difference of Gaussians"],
-          range: ["orangered", "steelblue", "black"]},
-  marks: [
-    Plot.ruleY([0], {stroke: "#999"}),
-    ...["Excitation", "Inhibition", "Difference of Gaussians"].map(k =>
-      Plot.line(space, {x: "x", y: k, stroke: () => k, strokeWidth: 2}))
-  ]
-})}
-${Plot.plot({
-  width: 420, height: 260, marginLeft: 50,
-  x: {label: "spatial frequency (cycles / unit length)"},
-  y: {label: "|kernel spectrum|", domain: [0, Math.max(0.05, ampE, ampI)]},
-  marks: [
-    Plot.line(spectrum, {x: "f", y: "k", stroke: "gray", strokeWidth: 2}),
-    Plot.ruleX([peak.f], {stroke: "orangered", strokeDasharray: "4 4"}),
-    Plot.text([peak], {x: "f", y: "k", text: d => `peak at f = ${d.f.toFixed(2)}`, dx: 8, dy: -8, textAnchor: "start"})
-  ]
-})}
-</div>`
-```
-
-**What you see.** Left: the excitatory Gaussian in orange, the inhibitory one
-in blue (drawn negative), and their difference in black, as functions of
-distance. $\sigma_e$ and $\sigma_i$ are the widths; the strength sliders scale
-the two curves. Right: the magnitude of the kernel's Fourier transform in grey;
-the orange dashed line marks the spatial frequency with the largest value, the
-one a recurrent network with this kernel amplifies most.
-
-## Figures from the notebooks
-
-Not everything needs to be live. The figures below are pulled directly from
-the exercise notebooks, cell by cell, so they stay in sync with the code.
-
-### Integrate-and-fire neuron, from the webinar notebook
-
-The same neuron as in the explorable above, driven by increasingly strong input:
-
-{{< embed notebooks/lif_dno2020.ipynb#lif-inputs >}}
-
-Five repetitions with noisy input, each a different random perturbation:
-
-{{< embed notebooks/lif_dno2020.ipynb#lif-noise >}}
