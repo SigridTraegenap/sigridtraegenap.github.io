@@ -1,18 +1,10 @@
 project:
   type: website
   output-dir: _site
-  resources:
-    - CNAME
 
 website:
   title: "Sigrid Trägenap"
-  announcement:
-    icon: cone-striped
-    dismissable: false
-    content: "This site is currently under construction."
-    type: warning
-    position: below-navbar
-  site-url: https://traegenap.org
+  site-url: https://sigridtraegenap.github.io
   description: "Computational neuroscientist working on cortical development."
   favicon: assets/favicon.png
   navbar:
@@ -35,8 +27,12 @@ website:
         href: mailto:contact@traegenap.org
         aria-label: Email
   page-footer:
-    left: "© 2026 Sigrid Trägenap"
-    right: "Built with [Quarto](https://quarto.org)"
+    center: |
+      This site is currently under construction.<br>
+      © 2026 Sigrid Trägenap · The design of this website is based on the
+      [Quarto](https://quarto.org) about-page templates by [Posit](https://posit.co)
+      and the [Bootswatch](https://bootswatch.com) Flatly and Darkly themes,
+      and was built with the help of Claude Fable 5.1.
 
 format:
   html:
