@@ -32,3 +32,6 @@ Diese Website setzt keine eigenen Cookies und nutzt keine Tracking-Dienste.
 [Quarto](https://quarto.org) ([Posit](https://posit.co)) und den
 [Bootswatch](https://bootswatch.com)-Themes Flatly und Darkly. Die Seite wurde mit
 Unterstützung von Claude Fable 5.1 erstellt.
+
+**Bildnachweis.** Website-Icon: [Color circle (RGB)](https://commons.wikimedia.org/wiki/File:Color_circle_(RGB).svg)
+von Crossover1370, Wikimedia Commons, Lizenz [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
