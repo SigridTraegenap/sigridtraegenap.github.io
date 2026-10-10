@@ -26,16 +26,14 @@ website:
       - icon: github
         href: https://github.com/SigridTraegenap
         aria-label: GitHub
-      - icon: envelope
-        href: mailto:traegenap@fias.uni-frankfurt.de
-        aria-label: Email
   page-footer:
     center: |
       This site is currently under construction.<br>
       © 2026 Sigrid Trägenap · The design of this website is based on the
       [Quarto](https://quarto.org) about-page templates by [Posit](https://posit.co)
       and the [Bootswatch](https://bootswatch.com) Flatly and Darkly themes,
-      and was built with the help of Claude Fable 5.1.
+      and was built with the help of Claude Fable 5.1.<br>
+      [Impressum](impressum.qmd)
 
 format:
   html:

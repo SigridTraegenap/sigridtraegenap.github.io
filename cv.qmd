@@ -1,8 +1,25 @@
 ---
 title: "CV"
-toc: true
-toc-location: left
+subtitle: "Sigrid Trägenap"
+format:
+  html:
+    toc: true
+    toc-location: left
+  typst:
+    papersize: a4
+    margin: {x: 2cm, y: 2cm}
+    mainfont: Helvetica
+    fontsize: 10pt
 ---
+
+::: {.content-visible when-format="html"}
+[Download as PDF](cv.pdf){.btn .btn-primary .btn-sm}
+:::
+
+::: {.content-visible when-format="typst"}
+Computational neuroscientist, Frankfurt Institute for Advanced Studies and Goethe University Frankfurt.
+Web: sigridtraegenap.github.io · E-Mail: traegenap AT fias.uni-frankfurt.de · ORCID: 0000-0002-8845-452X
+:::
 
 ## Education
 

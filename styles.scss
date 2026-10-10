@@ -11,7 +11,10 @@ $navbar-padding-y: 0.6rem;
 }
 
 .about-entity .about-image {
-  max-width: 220px;
+  width: 220px;
+  height: 220px;
+  max-width: 100%;
+  object-fit: cover;
 }
 
 h2 {

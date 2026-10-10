@@ -1,0 +1,29 @@
+---
+title: "Impressum"
+---
+
+Angaben gemäß § 5 DDG
+
+**Sigrid Trägenap**<br>
+c/o Frankfurt Institute for Advanced Studies<br>
+Ruth-Moufang-Straße 1<br>
+60438 Frankfurt am Main<br>
+Germany
+
+**Kontakt**<br>
+E-Mail: traegenap AT fias.uni-frankfurt.de
+
+**Verantwortlich für den Inhalt** nach § 18 Abs. 2 MStV: Sigrid Trägenap, Anschrift wie oben.
+
+**Haftung für Inhalte.** Die Inhalte dieser Seiten wurden mit größter Sorgfalt erstellt.
+Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr
+übernommen werden.
+
+**Haftung für Links.** Diese Seite enthält Links zu externen Webseiten Dritter, auf deren
+Inhalte kein Einfluss besteht. Für die Inhalte der verlinkten Seiten ist stets der
+jeweilige Anbieter oder Betreiber verantwortlich.
+
+**Datenschutz.** Diese Website wird über GitHub Pages gehostet. Beim Aufruf werden
+technisch notwendige Daten (z. B. IP-Adresse) durch GitHub verarbeitet; siehe die
+[Datenschutzerklärung von GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement).
+Diese Website setzt keine eigenen Cookies und nutzt keine Tracking-Dienste.
