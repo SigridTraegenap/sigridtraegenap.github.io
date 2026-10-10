@@ -35,6 +35,20 @@
     "text": "Selective amplification across the cortical sheet\nWhich activity patterns does the developing cortex amplify, and which does it suppress? With the Smith lab we study selective amplification on the scale of millimetres and ask which recurrent subnetworks can account for it. See Mulholland, Trägenap et al., bioRxiv 2026 (co-first authors; doi:10.64898/2026.03.31.715687)."
   },
   {
+    "objectID": "research.html#looking-ahead-across-the-animal-tree",
+    "href": "research.html#looking-ahead-across-the-animal-tree",
+    "title": "Research Interests",
+    "section": "Looking ahead: across the animal tree",
+    "text": "Looking ahead: across the animal tree\nMost of what we know about cortical development comes from a handful of species. I would like to understand which developmental principles are general and which are specific to a particular brain. Comparing cortical organisation across species with different evolutionary histories and visual lifestyles, for example ferrets, cats, tree shrews and mice, is a way to find out. Where a species deviates from the others, the deviation itself becomes informative about the underlying mechanism."
+  },
+  {
+    "objectID": "research.html#looking-ahead-from-biology-to-learning-machines",
+    "href": "research.html#looking-ahead-from-biology-to-learning-machines",
+    "title": "Research Interests",
+    "section": "Looking ahead: from biology to learning machines",
+    "text": "Looking ahead: from biology to learning machines\nThe developing cortex solves a problem that artificial systems also face: how to learn quickly from limited experience. I am curious whether the strategy we see in the brain, starting from a structured prior and aligning input to it, could make learning in artificial neural networks faster or more robust."
+  },
+  {
     "objectID": "research.html#approach",
     "href": "research.html#approach",
     "title": "Research Interests",
