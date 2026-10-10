@@ -11,7 +11,7 @@
     "href": "research.html#emergence-of-reliable-cortical-representations",
     "title": "Research",
     "section": "Emergence of reliable cortical representations",
-    "text": "Emergence of reliable cortical representations\nAt eye opening, responses of ferret visual cortex to the same stimulus vary strongly from trial to trial. Over the following days they become reliable. Combining chronic two-photon imaging with recurrent network models, we found that this reliability arises when visual input becomes aligned with the endogenous network structure, rather than from a general reduction of noise. See Trägenap et al., Nature Neuroscience 2025."
+    "text": "Emergence of reliable cortical representations\nAt eye opening, responses of ferret visual cortex to the same stimulus vary strongly from trial to trial. Over the following days they become reliable. Combining chronic two-photon imaging with recurrent network models, we found that this reliability arises when visual input becomes aligned with the endogenous network structure, rather than from a general reduction of noise. See Trägenap et al., Nature Neuroscience 2025 (free-to-read version)."
   },
   {
     "objectID": "research.html#feedforward-input-and-recurrent-circuits",
@@ -25,35 +25,42 @@
     "href": "research.html#millimetre-scale-selective-amplification",
     "title": "Research",
     "section": "Millimetre-scale selective amplification",
-    "text": "Millimetre-scale selective amplification\nWith the Smith lab we study how the developing cortex selectively amplifies particular activity patterns across millimetres of cortical surface, and which network properties can account for this. See Mulholland, Trägenap et al., bioRxiv 2026 (co-first authors)."
+    "text": "Millimetre-scale selective amplification\nWith the Smith lab we study how the developing cortex selectively amplifies particular activity patterns across millimetres of cortical surface, and which recurrent subnetworks can account for this. See Mulholland, Trägenap et al., bioRxiv 2026 (co-first authors)."
   },
   {
-    "objectID": "research.html#methods",
-    "href": "research.html#methods",
+    "objectID": "research.html#code-and-data",
+    "href": "research.html#code-and-data",
     "title": "Research",
-    "section": "Methods",
-    "text": "Methods\nDynamical recurrent network models, analysis of large-scale calcium imaging data, and the comparison of model predictions with chronically recorded neural populations. Research code is on GitHub."
+    "section": "Code and data",
+    "text": "Code and data\n\nFeedforward-recurrent alignment models (2025): Zenodo 13922106 · Zenodo 14781993\nExample dataset of chronic imaging in ferret visual cortex (2024): Zenodo 13928397\nParameter exploration in linear recurrent networks (2024), an interactive Colab notebook: z.umn.edu/crcns_colab\nMore on GitHub."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Sigrid Trägenap",
+    "objectID": "outreach.html",
+    "href": "outreach.html",
+    "title": "Outreach",
     "section": "",
-    "text": "I am a computational neuroscientist at the Frankfurt Institute for Advanced Studies (FIAS) and Goethe University Frankfurt, working in the group of Matthias Kaschube.\nI study how reliable sensory representations emerge during the development of the visual cortex. To do this I combine dynamical recurrent network models of cortical circuits with the analysis of chronic two-photon calcium imaging data from ferret visual cortex, recorded in long-standing collaborations with the labs of David Fitzpatrick (Max Planck Florida Institute for Neuroscience) and Gordon Smith (University of Minnesota).\nI submitted my PhD thesis, Emergence of reliable sensory representations in cortical development, in January 2026."
+    "text": "I enjoy explaining how the brain learns to see to audiences outside the lab. Most of these are science slams: short, funny talks for a general audience."
   },
   {
-    "objectID": "index.html#interests",
-    "href": "index.html#interests",
-    "title": "Sigrid Trägenap",
-    "section": "Interests",
-    "text": "Interests\n\nDevelopment of the visual cortex and self-organisation of cortical maps\nRecurrent network models and their interaction with feedforward input\nSpontaneous activity and its role in shaping sensory representations\nTeaching computational neuroscience"
+    "objectID": "outreach.html#science-slams-and-public-talks",
+    "href": "outreach.html#science-slams-and-public-talks",
+    "title": "Outreach",
+    "section": "Science slams and public talks",
+    "text": "Science slams and public talks\n\n“Welchen Fernsehsender empfängt das Babyhirn?” Geistesblitze Science Slam of the German Neurological Society (DGN), Volksbühne Berlin, March 2026. Video · Event report\nHow the brain learns to see. Flash talk at Frankfurt hat Hirn, a public neuroscience evening organised by the Hertie Foundation, March 2026. Report\nFerrets in a cinema: early visual cortex development. Science Slam at Haus am Dom, Frankfurt, February 2026.\nHow the brain finds the right chords. First Oberursel Science Slam, November 2025. Press"
   },
   {
-    "objectID": "index.html#education",
-    "href": "index.html#education",
-    "title": "Sigrid Trägenap",
-    "section": "Education",
-    "text": "Education\n\nPhD in Physics (Computational Neuroscience), Goethe University Frankfurt and International Max Planck Research School for Neural Circuits, 2018 – 2026\nMSc Biophysics, Goethe University Frankfurt, 2018\nBSc Biophysics, Goethe University Frankfurt, 2016"
+    "objectID": "outreach.html#scientific-talks-online",
+    "href": "outreach.html#scientific-talks-online",
+    "title": "Outreach",
+    "section": "Scientific talks online",
+    "text": "Scientific talks online\n\nExperience drives the development of novel, reliable cortical sensory representations from endogenous networks. Bernstein Conference 2022, Berlin. Video"
+  },
+  {
+    "objectID": "outreach.html#organising",
+    "href": "outreach.html#organising",
+    "title": "Outreach",
+    "section": "Organising",
+    "text": "Organising\n\nGerman Neuroscience Olympiad, national final in Frankfurt, since 2019. Outreach and press contact, grading coordination, computational tutorial. The winner goes on to the International Brain Bee.\nPhD symposium at FIAS following the Bernstein Conference 2024, co-organiser."
   },
   {
     "objectID": "cv.html",
@@ -88,14 +95,21 @@
     "href": "cv.html#selected-talks",
     "title": "CV",
     "section": "Selected talks",
-    "text": "Selected talks\n\nRhine-Main Neuroscience Meeting, Oberwesel, 2026 (invited)\nGiersch Conference on Digital Twins, 2023\nComputational Neuroscience Next Generation Symposium, 2023\nVision Sciences Society Meeting, St. Pete Beach, 2023\nGerman Neuroscience Meeting, 2023 (symposium)\nSociety for Neuroscience Annual Meeting, San Diego, 2022 (nano-symposium)\nFerret Brain Meeting, San Diego, 2022\nBernstein Conference, Berlin, 2022\nAnnual Computational Neuroscience Meeting, Barcelona, 2019"
+    "text": "Selected talks\n\n10th European Visual Cortex and Cognition Meeting, Cortona, 2026 (poster selected for short talk)\nRhine-Main Neuroscience Meeting, Oberwesel, 2026 (invited)\nGiersch Conference on Digital Twins, 2023\nComputational Neuroscience Next Generation Symposium, 2023\nVision Sciences Society Meeting, St. Pete Beach, 2023\nGerman Neuroscience Society Meeting, Göttingen, 2023 (Young Investigator Talk)\nSociety for Neuroscience Annual Meeting, San Diego, 2022 (nano-symposium)\nFerret Brain Meeting, San Diego, 2022\nBernstein Conference, Berlin, 2022\nAnnual Computational Neuroscience Meeting, Barcelona, 2019"
   },
   {
     "objectID": "cv.html#selected-posters",
     "href": "cv.html#selected-posters",
     "title": "CV",
     "section": "Selected posters",
-    "text": "Selected posters\n\nBernstein Conference, 2026\nHWK Workshop “Cortex Structure and Function in Mouse, Monkey and Man”, Delmenhorst, 2026\n10th European Visual Cortex and Cognition Meeting, Cortona, 2026\nCosyne, Lisbon, 2026, 2024 and 2019; Montreal 2023; virtual 2021\nBernstein Conference, Frankfurt 2025 and 2024; virtual 2020; Berlin 2018; Göttingen 2017\nMeeting on Spontaneous Activity in Brain Development: Alicante 2024 and 2022, Leiden 2018\n9th European Vision and Cognition Meeting, Il Poggio, 2024\nBiennial Meeting of the Rhine-Main Neuroscience Network, 2018"
+    "text": "Selected posters\n\nBernstein Conference, 2026\nHWK Workshop “Cortex Structure and Function in Mouse, Monkey and Man”, Delmenhorst, 2026\nCosyne, Lisbon, 2026, 2024 and 2019; Montreal 2023; virtual 2021\nBernstein Conference, Frankfurt 2025 and 2024; virtual 2020; Berlin 2018; Göttingen 2017\nMeeting on Spontaneous Activity in Brain Development: Alicante 2024 and 2022, Leiden 2018\n9th European Vision and Cognition Meeting, Il Poggio, 2024\nBiennial Meeting of the Rhine-Main Neuroscience Network, 2018"
+  },
+  {
+    "objectID": "cv.html#summer-schools",
+    "href": "cv.html#summer-schools",
+    "title": "CV",
+    "section": "Summer schools",
+    "text": "Summer schools\n\nOkinawa Computational Neuroscience Course (OCNC), 2022"
   },
   {
     "objectID": "cv.html#awards-and-scholarships",
@@ -109,7 +123,7 @@
     "href": "cv.html#service-and-outreach",
     "title": "CV",
     "section": "Service and outreach",
-    "text": "Service and outreach\n\n\n\n\n\n\n\n2019 – present\nCo-organiser of the German Neuroscience Olympiad final in Frankfurt: outreach and press contact, grading coordination, computational tutorial\n\n\n2018 – 2022\nStudent representative, Frankfurt Institute for Advanced Studies\n\n\n2013 – 2018\nStudent representative (Fachschaft Physik), Goethe University Frankfurt: faculty council, examination committee, lecture evaluations"
+    "text": "Service and outreach\n\n\n\n\n\n\n\n2024\nCo-organiser, PhD symposium at FIAS following the Bernstein Conference\n\n\n2019 – present\nCo-organiser of the German Neuroscience Olympiad final in Frankfurt: outreach and press contact, grading coordination, computational tutorial\n\n\n2018 – 2022\nStudent representative, Frankfurt Institute for Advanced Studies\n\n\n2013 – 2018\nStudent representative (Fachschaft Physik), Goethe University Frankfurt: faculty council, examination committee, lecture evaluations"
   },
   {
     "objectID": "cv.html#skills",
@@ -117,6 +131,27 @@
     "title": "CV",
     "section": "Skills",
     "text": "Skills\n\nLanguages: German (native), English (C2), Latin\nProgramming: Python (advanced), MATLAB, LaTeX"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Sigrid Trägenap",
+    "section": "",
+    "text": "I am a computational neuroscientist at the Frankfurt Institute for Advanced Studies (FIAS) and Goethe University Frankfurt, working in the group of Matthias Kaschube.\nI study how reliable sensory representations emerge during the development of the visual cortex. To do this I combine dynamical recurrent network models of cortical circuits with the analysis of chronic two-photon calcium imaging data from ferret visual cortex, recorded in long-standing collaborations with the labs of David Fitzpatrick (Max Planck Florida Institute for Neuroscience) and Gordon Smith (University of Minnesota).\nI submitted my PhD thesis, Emergence of reliable sensory representations in cortical development, in January 2026."
+  },
+  {
+    "objectID": "index.html#interests",
+    "href": "index.html#interests",
+    "title": "Sigrid Trägenap",
+    "section": "Interests",
+    "text": "Interests\n\nDevelopment of the visual cortex and self-organisation of cortical maps\nRecurrent network models and their interaction with feedforward input\nSpontaneous activity and its role in shaping sensory representations\nTeaching computational neuroscience"
+  },
+  {
+    "objectID": "index.html#education",
+    "href": "index.html#education",
+    "title": "Sigrid Trägenap",
+    "section": "Education",
+    "text": "Education\n\nPhD in Physics (Computational Neuroscience), Goethe University Frankfurt and International Max Planck Research School for Neural Circuits, 2018 – 2026\nMSc Biophysics, Goethe University Frankfurt, 2018\nBSc Biophysics, Goethe University Frankfurt, 2016"
   },
   {
     "objectID": "publications.html",
