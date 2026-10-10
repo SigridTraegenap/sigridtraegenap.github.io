@@ -12,50 +12,68 @@ immediately.
 ## A leaky integrate-and-fire neuron
 
 The neuron's membrane potential $V$ integrates its input current $I$ and leaks
-back towards rest. Whenever $V$ reaches the threshold, a spike is emitted and
-$V$ is reset.
+back towards rest. Whenever $V$ reaches the threshold $V_{\text{th}}$, a spike
+is emitted and $V$ is reset.
 
 $$\tau_m \frac{dV}{dt} = (V_{\text{rest}} - V) + R\,I(t)$$
+
+- $V$: membrane potential in mV. $V_{\text{rest}} = -65$ mV is the resting
+  potential it leaks back to; after a spike it is reset to $V_{\text{reset}} = -70$ mV
+  and held there for a refractory period of 2 ms.
+- $I(t)$: input current in nA. With noise switched on, a random Gaussian
+  fluctuation is added at every time step; the slider sets its strength.
+- $\tau_m$: membrane time constant in ms, how quickly $V$ follows a change in input.
+- $R = 2$ MΩ: input resistance, fixed. $V_{\text{th}}$: the threshold slider.
 
 ```{ojs}
 //| echo: false
 viewof lifI = Inputs.range([0, 25], {value: 8, step: 0.5, label: "Input current (nA)"})
-viewof lifNoise = Inputs.range([0, 10], {value: 0, step: 0.5, label: "Input noise"})
+viewof lifNoise = Inputs.range([0, 10], {value: 0, step: 0.5, label: "Input noise (0 = off)"})
 viewof lifTau = Inputs.range([2, 50], {value: 10, step: 1, label: "Membrane time constant τ (ms)"})
 viewof lifThr = Inputs.range([-60, -35], {value: -50, step: 1, label: "Threshold (mV)"})
 viewof lifPause = Inputs.toggle({label: "Pause"})
-viewof lifReset = Inputs.button("Reset")
+viewof lifReset = Inputs.button("Reset (also clears the f-I points)")
 ```
 
 ```{ojs}
 //| echo: false
 lifState = {
-  lifReset;                       // re-run when Reset is pressed
-  const dt = 0.1, window = 300, R = 2, Vrest = -65, Vreset = -70, refr = 2;
-  const n = Math.round(window / dt);
+  lifReset;
+  const dt = 0.1, win = 300, R = 2, Vrest = -65, Vreset = -70, refr = 2;
+  const n = Math.round(win / dt);
   const V = new Float32Array(n).fill(Vrest), Iarr = new Float32Array(n);
-  let v = Vrest, refrLeft = 0, spikes = [], t = 0;
-  const gauss = () => { let u = 0, w = 0; while (u === 0) u = Math.random(); w = Math.random();
-                        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * w); };
+  let v = Vrest, refrLeft = 0, t = 0;
+  // f-I bookkeeping: one measurement per (input, noisy?) setting
+  const fi = new Map();
+  let key = null, sinceChange = 0, spikesSince = 0, lastSig = 0;
+  const gauss = () => { let u = 0; while (u === 0) u = Math.random();
+                        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); };
   while (true) {
+    const I0 = viewof lifI.value, sig = viewof lifNoise.value,
+          tau = viewof lifTau.value, thr = viewof lifThr.value;
     if (!viewof lifPause.value) {
-      const I0 = viewof lifI.value, sig = viewof lifNoise.value,
-            tau = viewof lifTau.value, thr = viewof lifThr.value;
-      for (let k = 0; k < 20; k++) {          // 2 ms of simulated time per frame
+      const k = `${I0}|${sig > 0}`;
+      if (sig > 0 && sig !== lastSig) {               // new noise level: forget old orange points
+        for (const [kk, p] of fi) if (p.noisy) fi.delete(kk);
+      }
+      if (sig > 0) lastSig = sig;
+      if (k !== key) { key = k; sinceChange = 0; spikesSince = 0; }
+      for (let s = 0; s < 20; s++) {                    // 2 ms of simulated time per frame
         const I = I0 + sig * gauss() / Math.sqrt(dt);
         if (refrLeft > 0) { refrLeft -= dt; v = Vreset; }
         else {
           v += dt / tau * ((Vrest - v) + R * I);
-          if (v >= thr) { v = 20; spikes.push(t); refrLeft = refr; }
+          if (v >= thr) { v = 20; spikesSince++; refrLeft = refr; }
         }
         V.copyWithin(0, 1); V[n - 1] = v;
         Iarr.copyWithin(0, 1); Iarr[n - 1] = I;
         if (v === 20) v = Vreset;
-        t += dt;
+        t += dt; sinceChange += dt;
       }
-      spikes = spikes.filter(s => t - s < 1000);
+      if (sinceChange >= 500) fi.set(key, {I: I0, noisy: sig > 0, rate: 1000 * spikesSince / sinceChange});
     }
-    yield {V, Iarr, t, window, rate: spikes.filter(s => t - s < 1000).length, thr: viewof lifThr.value};
+    yield {V, Iarr, t, win, fi, key, thr, tau, sig, I0, R, Vrest, refr,
+           rate: sinceChange > 0 ? 1000 * spikesSince / sinceChange : 0};
   }
 }
 ```
@@ -63,35 +81,77 @@ lifState = {
 ```{ojs}
 //| echo: false
 {
-  const {V, Iarr, t, window, rate, thr} = lifState;
-  const W = 640, H = 300, mL = 50, mB = 30;
-  const c = DOM.context2d(W, H), n = V.length;
+  const {V, Iarr, win, fi, key, thr, tau, sig, I0, R, Vrest, refr, rate} = lifState;
+  const blue = "#1f77b4", orange = "#ff7f0e";
+  const W = 680, H = 300, mL = 50, n = V.length;
+  const c = DOM.context2d(W, H);
   const fg = getComputedStyle(document.body).color;
   c.clearRect(0, 0, W, H);
-  // top panel: input current
+  // ---- left: traces ----
+  const trW = 400;
   const top = {y0: 10, h: 70, lo: -10, hi: 35};
   const bot = {y0: 100, h: 170, lo: -80, hi: 30};
-  const sx = i => mL + (W - mL - 10) * i / (n - 1);
+  const sx = i => mL + (trW - mL) * i / (n - 1);
   const sy = (p, v) => p.y0 + p.h * (1 - (v - p.lo) / (p.hi - p.lo));
   c.strokeStyle = "#999"; c.lineWidth = 1;
-  for (const p of [top, bot]) { c.strokeRect(mL, p.y0, W - mL - 10, p.h); }
+  for (const p of [top, bot]) c.strokeRect(mL, p.y0, trW - mL, p.h);
   c.fillStyle = fg; c.font = "11px sans-serif"; c.textAlign = "right";
   c.fillText("I (nA)", mL - 6, top.y0 + top.h / 2 + 4);
   c.fillText("V (mV)", mL - 6, bot.y0 + bot.h / 2 + 4);
   c.fillText(thr, mL - 6, sy(bot, thr) + 4); c.fillText("-65", mL - 6, sy(bot, -65) + 4);
-  c.textAlign = "center"; c.fillText(`last ${window} ms`, W / 2, H - 6);
-  c.fillText(`${rate} spikes / s`, W - 70, bot.y0 + 14);
+  c.textAlign = "center"; c.fillText(`last ${win} ms`, (mL + trW) / 2, H - 6);
+  c.textAlign = "right"; c.fillText(`${rate.toFixed(0)} spikes / s`, trW - 6, bot.y0 + 14);
   c.setLineDash([4, 4]); c.strokeStyle = "orangered"; c.beginPath();
-  c.moveTo(mL, sy(bot, thr)); c.lineTo(W - 10, sy(bot, thr)); c.stroke(); c.setLineDash([]);
+  c.moveTo(mL, sy(bot, thr)); c.lineTo(trW, sy(bot, thr)); c.stroke(); c.setLineDash([]);
   c.strokeStyle = "#888"; c.beginPath();
-  for (let i = 0; i < n; i++) i ? c.lineTo(sx(i), sy(top, Math.max(top.lo, Math.min(top.hi, Iarr[i])))) : c.moveTo(sx(0), sy(top, Iarr[0]));
+  for (let i = 0; i < n; i++) { const y = sy(top, Math.max(top.lo, Math.min(top.hi, Iarr[i]))); i ? c.lineTo(sx(i), y) : c.moveTo(sx(0), y); }
   c.stroke();
-  c.strokeStyle = "steelblue"; c.lineWidth = 1.5; c.beginPath();
+  c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 1.5; c.beginPath();
   for (let i = 0; i < n; i++) i ? c.lineTo(sx(i), sy(bot, V[i])) : c.moveTo(sx(0), sy(bot, V[0]));
   c.stroke();
+  // ---- right: f-I curve ----
+  const fP = {x0: trW + 60, y0: 20, w: W - trW - 70, h: 230};
+  const Imax = 25, fmax = Math.max(100, ...Array.from(fi.values()).map(p => p.rate)) * 1.1;
+  const fx = I => fP.x0 + fP.w * I / Imax, fy = f => fP.y0 + fP.h * (1 - f / fmax);
+  c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(fP.x0, fP.y0, fP.w, fP.h);
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText("input current (nA)", fP.x0 + fP.w / 2, fP.y0 + fP.h + 16);
+  c.save(); c.translate(fP.x0 - 36, fP.y0 + fP.h / 2); c.rotate(-Math.PI / 2); c.fillText("spikes / s", 0, 0); c.restore();
+  c.textAlign = "right"; c.fillText("0", fP.x0 - 4, fy(0) + 4); c.fillText(fmax.toFixed(0), fP.x0 - 4, fy(fmax) + 4);
+  c.textAlign = "center"; c.fillText("0", fx(0), fP.y0 + fP.h + 12); c.fillText(Imax, fx(Imax), fP.y0 + fP.h + 12);
+  // theory for the noise-free neuron
+  c.setLineDash([3, 3]); c.strokeStyle = blue; c.lineWidth = 1; c.beginPath(); let started = false;
+  for (let I = 0; I <= Imax; I += 0.1) {
+    const d = R * I - (thr - Vrest); if (d <= 0) { continue; }
+    const f = 1000 / (refr + tau * Math.log(R * I / d));
+    started ? c.lineTo(fx(I), fy(Math.min(f, fmax))) : c.moveTo(fx(I), fy(Math.min(f, fmax))); started = true;
+  }
+  c.stroke(); c.setLineDash([]);
+  for (const [k, p] of fi) {
+    c.fillStyle = p.noisy ? orange : blue; c.beginPath(); c.arc(fx(p.I), fy(p.rate), 4, 0, 2 * Math.PI); c.fill();
+  }
+  // current setting: open ring
+  c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 2; c.beginPath(); c.arc(fx(I0), fy(Math.min(rate, fmax)), 7, 0, 2 * Math.PI); c.stroke();
+  c.fillStyle = blue; c.textAlign = "left"; c.fillText("noise-free", fP.x0 + 6, fP.y0 + 14);
+  c.fillStyle = orange; c.fillText(sig > 0 ? `noise ${sig}` : "noise (off)", fP.x0 + 6, fP.y0 + 28);
   return c.canvas;
 }
 ```
+
+**What you see.** Left, top: the input current $I$ in grey, over the last 300 ms.
+Left, bottom: the membrane potential $V$, blue when the input is noise-free,
+orange when noise is on. The red dashed line is the threshold; the spikes are
+drawn as vertical strokes up to +20 mV. The number in the corner is the current
+firing rate.
+
+Right: the **f-I curve**, firing rate against input current. Every input
+strength you try adds a dot once the neuron has run for half a second at that
+setting; blue dots are noise-free measurements, orange dots are measurements at
+the current noise level (changing the noise level clears them). The open ring
+marks the setting you are looking at now. The blue dashed line is the exact rate
+of the noise-free neuron, $f = 1 / \left(t_{\text{ref}} + \tau_m \ln \frac{RI}{RI - (V_{\text{th}} - V_{\text{rest}})}\right)$,
+which is zero below $I = (V_{\text{th}} - V_{\text{rest}})/R$. Noise lets the
+neuron fire below that point and rounds off the curve.
 
 Try: increase the current until the neuron starts to fire, then add noise at a
 sub-threshold current. From the webinar for the German Neuroscience Olympiad 2020.
@@ -105,6 +165,17 @@ bit further away. Such a kernel amplifies one spatial frequency more than any
 other, so even random input turns into a regular pattern.
 
 $$\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+$$
+
+- $r$: the firing rates of the 200 neurons on the ring.
+- $W$: the connection matrix. Neuron $i$ receives from neuron $j$ a weight that
+  depends only on their distance: a narrow positive Gaussian (excitation) minus a
+  wider negative one (inhibition). The two width sliders set those Gaussians.
+- $h$: a fixed random external input, one value per neuron, plus optional noise
+  that is redrawn at every time step (the noise slider).
+- $[\cdot]_+$: rectification, negative values are set to zero.
+- $\tau$: the time constant; the clock in the figure counts in units of $\tau$.
+- Gain: $W$ is scaled so that its largest eigenvalue equals the gain slider.
+  Above 1 the corresponding pattern grows; below 1 it decays.
 
 ```{ojs}
 //| echo: false
@@ -192,10 +263,152 @@ rnState = {
 }
 ```
 
+**What you see.** Top: the activity $r$ of each neuron as a blue bar, by
+position on the ring. Bottom: the eigenvalues of $W$ for each spatial
+frequency, counted in waves around the ring, as grey dots. The orange dot is the
+largest eigenvalue, the frequency the network amplifies most. The red dashed
+line marks eigenvalue 1, the boundary between decay and growth.
+
 Try: with the gain below 1 the pattern fades and only the random input remains.
 Above 1, the frequency marked in orange takes over. Make the inhibition wider
 and the stripes get broader. From the pattern-formation exercise in
 *Theoretical Neuroscience*.
+
+## Hebbian learning in the weight plane
+
+One neuron receives two inputs with activities $u_1, u_2$ through weights
+$w = (w_1, w_2)$. Averaged over many input patterns, learning is driven by the
+input correlation matrix $Q = \langle u u^{\mathsf T} \rangle$, here
+$Q = \begin{pmatrix} 1 & q \\ q & 1 \end{pmatrix}$, where $q$ is the
+correlation between the two inputs (the slider). $\tau$ sets the learning
+speed and $\alpha$ is the strength of the normalising term in Oja's rule.
+Three rules:
+
+$$\text{Hebbian:}\quad \tau \frac{dw}{dt} = Q\,w$$
+
+$$\text{with bounds:}\quad \tau \frac{dw}{dt} = Q\,w, \qquad 0 \le w_i \le 1$$
+
+$$\text{Oja:}\quad \tau \frac{dw}{dt} = Q\,w - \alpha\,(w^{\mathsf T} Q\, w)\,w$$
+
+Pick a rule, then click anywhere in the weight plane to choose an initial
+condition.
+
+```{ojs}
+//| echo: false
+viewof hbRule = Inputs.radio(new Map([["Hebbian", "hebb"], ["Hebbian with bounds [0, 1]", "bounded"], ["Oja's rule", "oja"]]), {value: "hebb", label: "Rule"})
+viewof hbQ = Inputs.range([-1, 1], {value: -0.4, step: 0.05, label: "Input correlation q"})
+viewof hbAlpha = Inputs.range([0.2, 3], {value: 1, step: 0.1, label: "Oja α (Oja's rule only)"})
+viewof hbPause = Inputs.toggle({label: "Pause"})
+viewof hbReplay = Inputs.button("Replay")
+```
+
+```{ojs}
+//| echo: false
+mutable hbStart = ({w1: 0.01, w2: 0.05})
+hbCol = ({C0: "#1f77b4", C1: "#ff7f0e", C2: "#2ca02c", K: "#444", T1: "#9467bd", T2: "#17becf"})
+hbStep = (w, rule, q, alpha, dt = 0.1) => {
+  const Qw = [w[0] + q * w[1], q * w[0] + w[1]];
+  let n;
+  if (rule === "oja") { const wQw = w[0] * Qw[0] + w[1] * Qw[1];
+    n = [w[0] + dt * (Qw[0] - alpha * wQw * w[0]), w[1] + dt * (Qw[1] - alpha * wQw * w[1])]; }
+  else n = [w[0] + dt * Qw[0], w[1] + dt * Qw[1]];
+  if (rule === "bounded") n = [Math.min(1, Math.max(0, n[0])), Math.min(1, Math.max(0, n[1]))];
+  return n;
+}
+hbEndColour = (w, rule) => {
+  const near = (a, b, tol) => Math.abs(w[0] - a) < tol && Math.abs(w[1] - b) < tol;
+  if (rule === "bounded") { if (near(1, 1, 1e-3)) return hbCol.C0; if (near(0, 1, 1e-3)) return hbCol.C1; if (near(1, 0, 1e-3)) return hbCol.C2; }
+  if (rule === "oja") { const r = Math.SQRT1_2; if (near(r, r, 0.02)) return hbCol.C0; if (near(-r, r, 0.02)) return hbCol.C1; if (near(r, -r, 0.02)) return hbCol.C2; }
+  return hbCol.K;
+}
+hbLimits = ({hebb: [-2, 2], bounded: [-0.1, 1.1], oja: [-1.2, 1.2]})
+hbField = {
+  const N = 20, steps = 100, trajs = [];
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    let w = [i / (N - 1), j / (N - 1)]; const pts = [w];
+    for (let s = 0; s < steps; s++) { w = hbStep(w, hbRule, hbQ, hbAlpha); pts.push(w); }
+    trajs.push({pts, col: hbEndColour(w, hbRule)});
+  }
+  return trajs;
+}
+hbTraj = {
+  hbReplay;
+  const steps = 100; let w = [hbStart.w1, hbStart.w2]; const pts = [w]; let k = 0;
+  while (true) {
+    if (!viewof hbPause.value && k < steps) { w = hbStep(w, hbRule, hbQ, hbAlpha); pts.push(w); k++; }
+    yield {pts, done: k >= steps, col: k >= steps ? hbEndColour(w, hbRule) : hbCol.K};
+  }
+}
+```
+
+```{ojs}
+//| echo: false
+hbPlane = {
+  const S = 320, m = 36, W = 2 * S + 60, H = S + m + 10;
+  const c = DOM.context2d(W, H), fg = getComputedStyle(document.body).color;
+  const [lo, hi] = hbLimits[hbRule];
+  const px = w => m + (S - m) * (w - lo) / (hi - lo), py = w => (S - 10) * (1 - (w - lo) / (hi - lo)) + 10;
+  c.clearRect(0, 0, W, H);
+  // phase plane
+  c.strokeStyle = "#999"; c.strokeRect(m, 10, S - m, S - 10);
+  c.fillStyle = fg; c.font = "11px sans-serif"; c.textAlign = "center";
+  c.fillText("w₁", (m + S) / 2, S + 14); c.fillText(lo, px(lo), S + 14); c.fillText(hi, px(hi), S + 14);
+  c.textAlign = "right"; c.fillText("w₂", m - 8, S / 2); c.fillText(lo, m - 4, py(lo) + 4); c.fillText(hi, m - 4, py(hi) + 4);
+  c.save(); c.beginPath(); c.rect(m, 10, S - m, S - 10); c.clip();
+  c.lineWidth = 1;
+  for (const {pts, col} of hbField) {
+    c.strokeStyle = col; c.globalAlpha = 0.25; c.beginPath();
+    pts.forEach((p, i) => i ? c.lineTo(px(p[0]), py(p[1])) : c.moveTo(px(p[0]), py(p[1]))); c.stroke();
+  }
+  c.globalAlpha = 1; c.lineWidth = 2.5; c.strokeStyle = hbTraj.col; c.beginPath();
+  hbTraj.pts.forEach((p, i) => i ? c.lineTo(px(p[0]), py(p[1])) : c.moveTo(px(p[0]), py(p[1]))); c.stroke();
+  const last = hbTraj.pts[hbTraj.pts.length - 1], first = hbTraj.pts[0];
+  c.fillStyle = hbTraj.col; c.beginPath(); c.arc(px(last[0]), py(last[1]), 5, 0, 2 * Math.PI); c.fill();
+  c.strokeStyle = fg; c.lineWidth = 1.5; c.beginPath(); c.arc(px(first[0]), py(first[1]), 5, 0, 2 * Math.PI); c.stroke();
+  c.restore();
+  c.fillStyle = fg; c.textAlign = "left"; c.fillText(`start: (${first[0].toFixed(2)}, ${first[1].toFixed(2)})  ·  click to move`, m + 6, 24);
+  // time course
+  const x0 = S + 60, tW = W - x0 - 10;
+  const tx = i => x0 + tW * i / 100, ty = w => py(w);
+  c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x0, 10, tW, S - 10);
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText("time steps", x0 + tW / 2, S + 14);
+  c.fillText("0", tx(0), S + 14); c.fillText("100", tx(100), S + 14);
+  c.textAlign = "right"; c.fillText(lo, x0 - 4, py(lo) + 4); c.fillText(hi, x0 - 4, py(hi) + 4);
+  c.save(); c.beginPath(); c.rect(x0, 10, tW, S - 10); c.clip();
+  for (const [j, col] of [[0, hbCol.T1], [1, hbCol.T2]]) {
+    c.strokeStyle = col; c.lineWidth = 2; c.beginPath();
+    hbTraj.pts.forEach((p, i) => i ? c.lineTo(tx(i), ty(p[j])) : c.moveTo(tx(i), ty(p[j]))); c.stroke();
+  }
+  c.restore();
+  c.textAlign = "left"; c.fillStyle = hbCol.T1; c.fillText("w₁", x0 + 6, 24); c.fillStyle = hbCol.T2; c.fillText("w₂", x0 + 30, 24);
+  // click in the phase plane sets the initial condition
+  c.canvas.style.cursor = "crosshair";
+  c.canvas.addEventListener("click", ev => {
+    const r = c.canvas.getBoundingClientRect(), sc = W / r.width;
+    const x = (ev.clientX - r.left) * sc, y = (ev.clientY - r.top) * sc;
+    if (x < m || x > S || y < 10 || y > S) return;
+    const w1 = lo + (hi - lo) * (x - m) / (S - m), w2 = lo + (hi - lo) * (1 - (y - 10) / (S - 10));
+    mutable hbStart = {w1: +w1.toFixed(3), w2: +w2.toFixed(3)};
+  });
+  return c.canvas;
+}
+```
+
+**What you see.** Left: the weight plane, $w_1$ against $w_2$. The faint lines
+are trajectories from a grid of starting points, coloured by where they end
+after 100 steps. With bounds: blue ends at $(1,1)$, orange at $(0,1)$, green at
+$(1,0)$. With Oja's rule: blue ends at $(1,1)/\sqrt2$, orange at $(-1,1)/\sqrt2$,
+green at $(1,-1)/\sqrt2$. Grey means none of these, which for plain Hebbian
+learning is every trajectory, since they all run off to infinity. The thick
+line is your trajectory, starting at the open circle and ending at the filled
+dot, which takes the colour of its end state once it has arrived. Right: the
+same trajectory as $w_1$ (purple) and $w_2$ (teal) against time.
+
+Try: plain Hebbian learning runs away along the leading eigenvector of $Q$,
+whichever way you start. With bounds the plane splits into basins of
+attraction. Oja's rule keeps $|w|$ finite and converges to a normalised
+eigenvector of $Q$. Change $q$ to see the basins move.
+From the Hebbian learning exercise in *Theoretical Neuroscience*.
 
 ## Difference of Gaussians and its spectrum
 
@@ -250,25 +463,17 @@ ${Plot.plot({
 </div>`
 ```
 
+**What you see.** Left: the excitatory Gaussian in orange, the inhibitory one
+in blue (drawn negative), and their difference in black, as functions of
+distance. $\sigma_e$ and $\sigma_i$ are the widths; the strength sliders scale
+the two curves. Right: the magnitude of the kernel's Fourier transform in grey;
+the orange dashed line marks the spatial frequency with the largest value, the
+one a recurrent network with this kernel amplifies most.
+
 ## Figures from the notebooks
 
 Not everything needs to be live. The figures below are pulled directly from
 the exercise notebooks, cell by cell, so they stay in sync with the code.
-
-### Hebbian learning
-
-Weights under plain Hebbian learning grow without bound along the leading
-eigenvector of the input correlation matrix:
-
-{{< embed notebooks/hebbian.ipynb#hebb-trajectory >}}
-
-With saturation bounds, the end state depends on where you start:
-
-{{< embed notebooks/hebbian.ipynb#hebb-samplespace >}}
-
-Oja's rule normalises the weight vector instead:
-
-{{< embed notebooks/hebbian.ipynb#hebb-oja >}}
 
 ### Integrate-and-fire neuron, from the webinar notebook
 
