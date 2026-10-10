@@ -1,0 +1,142 @@
+[
+  {
+    "objectID": "research.html",
+    "href": "research.html",
+    "title": "Research",
+    "section": "",
+    "text": "How do orientation maps and other functional structures arise before and around eye opening? I use recurrent network models to ask which features of early cortical circuits are sufficient to produce the structure seen in spontaneous and evoked activity."
+  },
+  {
+    "objectID": "research.html#emergence-of-functional-organisation-in-developing-cortex",
+    "href": "research.html#emergence-of-functional-organisation-in-developing-cortex",
+    "title": "Research",
+    "section": "",
+    "text": "How do orientation maps and other functional structures arise before and around eye opening? I use recurrent network models to ask which features of early cortical circuits are sufficient to produce the structure seen in spontaneous and evoked activity."
+  },
+  {
+    "objectID": "research.html#variability-and-learning-in-recurrent-networks",
+    "href": "research.html#variability-and-learning-in-recurrent-networks",
+    "title": "Research",
+    "section": "Variability and learning in recurrent networks",
+    "text": "Variability and learning in recurrent networks\nTrial-to-trial variability is often treated as noise. In developing circuits it may instead reflect the state of a network that is still being shaped. This line of work asks how variability changes with learning in two-dimensional recurrent networks."
+  },
+  {
+    "objectID": "research.html#cross-species-comparison",
+    "href": "research.html#cross-species-comparison",
+    "title": "Research",
+    "section": "Cross-species comparison",
+    "text": "Cross-species comparison\nComparing cortical organisation across species, for example ferret, cat and tree shrew, constrains which developmental mechanisms are general and which are specific."
+  },
+  {
+    "objectID": "research.html#code",
+    "href": "research.html#code",
+    "title": "Research",
+    "section": "Code",
+    "text": "Code\nResearch code is available on GitHub."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Sigrid Trägenap",
+    "section": "",
+    "text": "I am a computational neuroscientist at the Frankfurt Institute for Advanced Studies (FIAS). I study how the developing cortex organises itself: how spontaneous activity, recurrent connectivity and experience shape the functional maps that emerge in early life.\nMy work combines mathematical models of recurrent networks with analyses of experimental data from developing visual cortex."
+  },
+  {
+    "objectID": "index.html#interests",
+    "href": "index.html#interests",
+    "title": "Sigrid Trägenap",
+    "section": "Interests",
+    "text": "Interests\n\nCortical development and self-organisation\nRecurrent network models of the visual cortex\nVariability and learning in neural circuits\nTeaching and interactive scientific tools"
+  },
+  {
+    "objectID": "index.html#education",
+    "href": "index.html#education",
+    "title": "Sigrid Trägenap",
+    "section": "Education",
+    "text": "Education\n\nPhD in Computational Neuroscience, Goethe University Frankfurt / FIAS — TODO: year\nMSc / BSc — TODO: field, institution, year"
+  },
+  {
+    "objectID": "teaching.html",
+    "href": "teaching.html",
+    "title": "Teaching",
+    "section": "",
+    "text": "Interactive material from courses and tutorials. Everything on this page runs in the browser; no installation needed."
+  },
+  {
+    "objectID": "teaching.html#demo-a-rate-neuron-with-a-tunable-nonlinearity",
+    "href": "teaching.html#demo-a-rate-neuron-with-a-tunable-nonlinearity",
+    "title": "Teaching",
+    "section": "Demo: a rate neuron with a tunable nonlinearity",
+    "text": "Demo: a rate neuron with a tunable nonlinearity\nDrag the sliders to see how gain and threshold change the firing-rate response of a single rate neuron, \\(r = g \\cdot \\max(0,\\, I - \\theta)\\).\n\n\nCode\nviewof gain = Inputs.range([0.1, 3], {value: 1, step: 0.1, label: \"Gain g\"})\nviewof theta = Inputs.range([-2, 2], {value: 0, step: 0.1, label: \"Threshold θ\"})\n\ndata = Array.from({length: 201}, (_, i) =&gt; {\n  const I = -4 + i * 0.04;\n  return {I, r: gain * Math.max(0, I - theta)};\n})\n\nPlot.plot({\n  width: 640, height: 320,\n  x: {label: \"Input current I\"},\n  y: {label: \"Firing rate r\", domain: [0, 12]},\n  marks: [\n    Plot.ruleY([0]),\n    Plot.ruleX([theta], {stroke: \"gray\", strokeDasharray: \"4 4\"}),\n    Plot.line(data, {x: \"I\", y: \"r\", stroke: \"steelblue\", strokeWidth: 2})\n  ]\n})"
+  },
+  {
+    "objectID": "teaching.html#courses",
+    "href": "teaching.html#courses",
+    "title": "Teaching",
+    "section": "Courses",
+    "text": "Courses\n\nTODO: course title, semester, institution. Materials"
+  },
+  {
+    "objectID": "cv.html",
+    "href": "cv.html",
+    "title": "CV",
+    "section": "",
+    "text": "Download CV (PDF)"
+  },
+  {
+    "objectID": "cv.html#positions",
+    "href": "cv.html#positions",
+    "title": "CV",
+    "section": "Positions",
+    "text": "Positions\n\nPostdoctoral researcher, FIAS, Frankfurt — TODO: dates\nPhD researcher, FIAS / Goethe University Frankfurt — TODO: dates"
+  },
+  {
+    "objectID": "cv.html#education",
+    "href": "cv.html#education",
+    "title": "CV",
+    "section": "Education",
+    "text": "Education\n\nTODO"
+  },
+  {
+    "objectID": "cv.html#talks-and-posters",
+    "href": "cv.html#talks-and-posters",
+    "title": "CV",
+    "section": "Talks and posters",
+    "text": "Talks and posters\n\nTODO: e.g. Bernstein Conference 2026, poster title"
+  },
+  {
+    "objectID": "cv.html#teaching-and-supervision",
+    "href": "cv.html#teaching-and-supervision",
+    "title": "CV",
+    "section": "Teaching and supervision",
+    "text": "Teaching and supervision\n\nTODO"
+  },
+  {
+    "objectID": "publications.html",
+    "href": "publications.html",
+    "title": "Publications",
+    "section": "",
+    "text": "Author list. Title. bioRxiv, year. DOI · PDF"
+  },
+  {
+    "objectID": "publications.html#preprints",
+    "href": "publications.html#preprints",
+    "title": "Publications",
+    "section": "",
+    "text": "Author list. Title. bioRxiv, year. DOI · PDF"
+  },
+  {
+    "objectID": "publications.html#journal-articles",
+    "href": "publications.html#journal-articles",
+    "title": "Publications",
+    "section": "Journal articles",
+    "text": "Journal articles\n\nAuthor list. Title. Journal, year. DOI · Code"
+  },
+  {
+    "objectID": "publications.html#thesis",
+    "href": "publications.html#thesis",
+    "title": "Publications",
+    "section": "Thesis",
+    "text": "Thesis\n\nSigrid Trägenap. Title of PhD thesis. Goethe University Frankfurt, year."
+  }
+]
