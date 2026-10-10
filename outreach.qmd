@@ -38,15 +38,9 @@ Science, and the FIAS booth at
   role of FIAS and of interdisciplinary research, from a PhD student's perspective.
   [Report](https://fias.institute/en/news/news-publicity/a-ceremony-for-science-and-innovation/)
 
-## Recorded scientific talks
-
-- *Experience drives the development of novel, reliable cortical sensory representations
-  from endogenous networks.* Bernstein Conference 2022, Berlin.
-  [Video](https://vimeo.com/showcase/9828727/video/749854704)
-
 ## Organising
 
-- **German Neuroscience Olympiad**, national final in Frankfurt, since 2019. Outreach
+- **[German Neuroscience Olympiad](https://neurowissenschaften-olympiade.de/team/#frankfurt)**, national final in Frankfurt, since 2019. Outreach
   and press contact, grading coordination, computational tutorial. The winner goes on
   to the International Brain Bee.
 - **[Night of Science](https://nightofscience.de)**, the annual student-run science

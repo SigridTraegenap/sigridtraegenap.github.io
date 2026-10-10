@@ -66,6 +66,12 @@ model predictions with chronically recorded neural populations. The data come
 from long-standing collaborations with the labs of David Fitzpatrick (Max Planck
 Florida Institute for Neuroscience) and Gordon Smith (University of Minnesota).
 
+## Recorded talks
+
+- *Experience drives the development of novel, reliable cortical sensory representations
+  from endogenous networks.* Bernstein Conference 2022, Berlin.
+  [Video](https://vimeo.com/showcase/9828727/video/749854704)
+
 ## Code and data
 
 - **Feedforward-recurrent alignment models** (2025):
