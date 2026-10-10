@@ -15,7 +15,8 @@ strongly from trial to trial. Over the following days they become reliable.
 Combining chronic two-photon imaging with recurrent network models, we found
 that this reliability arises when visual input becomes aligned with the
 endogenous network structure, rather than from a general reduction of noise.
-See *Trägenap et al., Nature Neuroscience 2025*.
+See *Trägenap et al., Nature Neuroscience 2025*
+([free-to-read version](https://www.nature.com/articles/s41593-024-01857-3.epdf?sharing_token=GwWYQRrz-zub53Fug5n7UdRgN0jAjWel9jnR3ZoTv0M7mcLR7y-jFw14-nj_gtm6ywdvYoPVRIr_VUd7JsYV_8IKHS0hYLlzSCcrssR-rATJZeAwYyx6R5SJjIyj4cSPLALkqJbHibiN74JKVL2qsolm3CfkUvDI4TAUomlN-BQ%3D)).
 
 ## Feedforward input and recurrent circuits
 
@@ -29,11 +30,16 @@ See *Lempel, Trägenap et al., Neuron 2025*.
 
 With the Smith lab we study how the developing cortex selectively amplifies
 particular activity patterns across millimetres of cortical surface, and which
-network properties can account for this.
+recurrent subnetworks can account for this.
 See *Mulholland, Trägenap et al., bioRxiv 2026* (co-first authors).
 
-## Methods
+## Code and data
 
-Dynamical recurrent network models, analysis of large-scale calcium imaging
-data, and the comparison of model predictions with chronically recorded neural
-populations. Research code is on [GitHub](https://github.com/SigridTraegenap).
+- **Feedforward-recurrent alignment models** (2025):
+  [Zenodo 13922106](https://zenodo.org/records/13922106) ·
+  [Zenodo 14781993](https://zenodo.org/records/14781993)
+- **Example dataset of chronic imaging in ferret visual cortex** (2024):
+  [Zenodo 13928397](https://zenodo.org/records/13928397)
+- **Parameter exploration in linear recurrent networks** (2024), an interactive
+  Colab notebook: [z.umn.edu/crcns_colab](https://z.umn.edu/crcns_colab)
+- More on [GitHub](https://github.com/SigridTraegenap).

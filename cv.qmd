@@ -43,11 +43,12 @@ learning, image processing, data analysis and network simulation.
 
 ## Selected talks
 
+- 10th European Visual Cortex and Cognition Meeting, Cortona, 2026 (poster selected for short talk)
 - Rhine-Main Neuroscience Meeting, Oberwesel, 2026 (invited)
 - Giersch Conference on Digital Twins, 2023
 - Computational Neuroscience Next Generation Symposium, 2023
 - Vision Sciences Society Meeting, St. Pete Beach, 2023
-- German Neuroscience Meeting, 2023 (symposium)
+- German Neuroscience Society Meeting, Göttingen, 2023 (Young Investigator Talk)
 - Society for Neuroscience Annual Meeting, San Diego, 2022 (nano-symposium)
 - Ferret Brain Meeting, San Diego, 2022
 - Bernstein Conference, Berlin, 2022
@@ -57,12 +58,15 @@ learning, image processing, data analysis and network simulation.
 
 - Bernstein Conference, 2026
 - HWK Workshop "Cortex Structure and Function in Mouse, Monkey and Man", Delmenhorst, 2026
-- 10th European Visual Cortex and Cognition Meeting, Cortona, 2026
 - Cosyne, Lisbon, 2026, 2024 and 2019; Montreal 2023; virtual 2021
 - Bernstein Conference, Frankfurt 2025 and 2024; virtual 2020; Berlin 2018; Göttingen 2017
 - Meeting on Spontaneous Activity in Brain Development: Alicante 2024 and 2022, Leiden 2018
 - 9th European Vision and Cognition Meeting, Il Poggio, 2024
 - Biennial Meeting of the Rhine-Main Neuroscience Network, 2018
+
+## Summer schools
+
+- Okinawa Computational Neuroscience Course (OCNC), 2022
 
 ## Awards and scholarships
 
@@ -86,6 +90,7 @@ learning, image processing, data analysis and network simulation.
 
 | | |
 |---|---|
+| 2024 | Co-organiser, PhD symposium at FIAS following the Bernstein Conference |
 | 2019 – present | Co-organiser of the German Neuroscience Olympiad final in Frankfurt: outreach and press contact, grading coordination, computational tutorial |
 | 2018 – 2022 | Student representative, Frankfurt Institute for Advanced Studies |
 | 2013 – 2018 | Student representative (Fachschaft Physik), Goethe University Frankfurt: faculty council, examination committee, lecture evaluations |
