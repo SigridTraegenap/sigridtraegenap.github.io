@@ -4,139 +4,146 @@
     "href": "research.html",
     "title": "Research",
     "section": "",
-    "text": "How do orientation maps and other functional structures arise before and around eye opening? I use recurrent network models to ask which features of early cortical circuits are sufficient to produce the structure seen in spontaneous and evoked activity."
+    "text": "How does the developing visual cortex arrive at reliable representations of the outside world? Before eye opening, cortical networks already show structured spontaneous activity. After eye opening, visual experience reshapes this endogenous activity into representations that respond consistently to the same stimulus. My research asks which circuit mechanisms carry this transition."
   },
   {
-    "objectID": "research.html#emergence-of-functional-organisation-in-developing-cortex",
-    "href": "research.html#emergence-of-functional-organisation-in-developing-cortex",
+    "objectID": "research.html#emergence-of-reliable-cortical-representations",
+    "href": "research.html#emergence-of-reliable-cortical-representations",
     "title": "Research",
-    "section": "",
-    "text": "How do orientation maps and other functional structures arise before and around eye opening? I use recurrent network models to ask which features of early cortical circuits are sufficient to produce the structure seen in spontaneous and evoked activity."
+    "section": "Emergence of reliable cortical representations",
+    "text": "Emergence of reliable cortical representations\nAt eye opening, responses of ferret visual cortex to the same stimulus vary strongly from trial to trial. Over the following days they become reliable. Combining chronic two-photon imaging with recurrent network models, we found that this reliability arises when visual input becomes aligned with the endogenous network structure, rather than from a general reduction of noise. See Trägenap et al., Nature Neuroscience 2025."
   },
   {
-    "objectID": "research.html#variability-and-learning-in-recurrent-networks",
-    "href": "research.html#variability-and-learning-in-recurrent-networks",
+    "objectID": "research.html#feedforward-input-and-recurrent-circuits",
+    "href": "research.html#feedforward-input-and-recurrent-circuits",
     "title": "Research",
-    "section": "Variability and learning in recurrent networks",
-    "text": "Variability and learning in recurrent networks\nTrial-to-trial variability is often treated as noise. In developing circuits it may instead reflect the state of a network that is still being shaped. This line of work asks how variability changes with learning in two-dimensional recurrent networks."
+    "section": "Feedforward input and recurrent circuits",
+    "text": "Feedforward input and recurrent circuits\nHow do feedforward inputs interact with recurrent cortical circuits during development? Together with the Fitzpatrick lab we showed that coherent cortical responses develop as feedforward inputs become more discriminable and better aligned with the recurrent network. See Lempel, Trägenap et al., Neuron 2025."
   },
   {
-    "objectID": "research.html#cross-species-comparison",
-    "href": "research.html#cross-species-comparison",
+    "objectID": "research.html#millimetre-scale-selective-amplification",
+    "href": "research.html#millimetre-scale-selective-amplification",
     "title": "Research",
-    "section": "Cross-species comparison",
-    "text": "Cross-species comparison\nComparing cortical organisation across species, for example ferret, cat and tree shrew, constrains which developmental mechanisms are general and which are specific."
+    "section": "Millimetre-scale selective amplification",
+    "text": "Millimetre-scale selective amplification\nWith the Smith lab we study how the developing cortex selectively amplifies particular activity patterns across millimetres of cortical surface, and which network properties can account for this. See Mulholland, Trägenap et al., bioRxiv 2026 (co-first authors)."
   },
   {
-    "objectID": "research.html#code",
-    "href": "research.html#code",
+    "objectID": "research.html#methods",
+    "href": "research.html#methods",
     "title": "Research",
-    "section": "Code",
-    "text": "Code\nResearch code is available on GitHub."
+    "section": "Methods",
+    "text": "Methods\nDynamical recurrent network models, analysis of large-scale calcium imaging data, and the comparison of model predictions with chronically recorded neural populations. Research code is on GitHub."
   },
   {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Sigrid Trägenap",
     "section": "",
-    "text": "I am a computational neuroscientist at the Frankfurt Institute for Advanced Studies (FIAS). I study how the developing cortex organises itself: how spontaneous activity, recurrent connectivity and experience shape the functional maps that emerge in early life.\nMy work combines mathematical models of recurrent networks with analyses of experimental data from developing visual cortex."
+    "text": "I am a computational neuroscientist at the Frankfurt Institute for Advanced Studies (FIAS) and Goethe University Frankfurt, working in the group of Matthias Kaschube.\nI study how reliable sensory representations emerge during the development of the visual cortex. To do this I combine dynamical recurrent network models of cortical circuits with the analysis of chronic two-photon calcium imaging data from ferret visual cortex, recorded in long-standing collaborations with the labs of David Fitzpatrick (Max Planck Florida Institute for Neuroscience) and Gordon Smith (University of Minnesota).\nI submitted my PhD thesis, Emergence of reliable sensory representations in cortical development, in January 2026."
   },
   {
     "objectID": "index.html#interests",
     "href": "index.html#interests",
     "title": "Sigrid Trägenap",
     "section": "Interests",
-    "text": "Interests\n\nCortical development and self-organisation\nRecurrent network models of the visual cortex\nVariability and learning in neural circuits\nTeaching and interactive scientific tools"
+    "text": "Interests\n\nDevelopment of the visual cortex and self-organisation of cortical maps\nRecurrent network models and their interaction with feedforward input\nSpontaneous activity and its role in shaping sensory representations\nTeaching computational neuroscience"
   },
   {
     "objectID": "index.html#education",
     "href": "index.html#education",
     "title": "Sigrid Trägenap",
     "section": "Education",
-    "text": "Education\n\nPhD in Computational Neuroscience, Goethe University Frankfurt / FIAS — TODO: year\nMSc / BSc — TODO: field, institution, year"
-  },
-  {
-    "objectID": "teaching.html",
-    "href": "teaching.html",
-    "title": "Teaching",
-    "section": "",
-    "text": "Interactive material from courses and tutorials. Everything on this page runs in the browser; no installation needed."
-  },
-  {
-    "objectID": "teaching.html#demo-a-rate-neuron-with-a-tunable-nonlinearity",
-    "href": "teaching.html#demo-a-rate-neuron-with-a-tunable-nonlinearity",
-    "title": "Teaching",
-    "section": "Demo: a rate neuron with a tunable nonlinearity",
-    "text": "Demo: a rate neuron with a tunable nonlinearity\nDrag the sliders to see how gain and threshold change the firing-rate response of a single rate neuron, \\(r = g \\cdot \\max(0,\\, I - \\theta)\\).\n\n\nCode\nviewof gain = Inputs.range([0.1, 3], {value: 1, step: 0.1, label: \"Gain g\"})\nviewof theta = Inputs.range([-2, 2], {value: 0, step: 0.1, label: \"Threshold θ\"})\n\ndata = Array.from({length: 201}, (_, i) =&gt; {\n  const I = -4 + i * 0.04;\n  return {I, r: gain * Math.max(0, I - theta)};\n})\n\nPlot.plot({\n  width: 640, height: 320,\n  x: {label: \"Input current I\"},\n  y: {label: \"Firing rate r\", domain: [0, 12]},\n  marks: [\n    Plot.ruleY([0]),\n    Plot.ruleX([theta], {stroke: \"gray\", strokeDasharray: \"4 4\"}),\n    Plot.line(data, {x: \"I\", y: \"r\", stroke: \"steelblue\", strokeWidth: 2})\n  ]\n})"
-  },
-  {
-    "objectID": "teaching.html#courses",
-    "href": "teaching.html#courses",
-    "title": "Teaching",
-    "section": "Courses",
-    "text": "Courses\n\nTODO: course title, semester, institution. Materials"
+    "text": "Education\n\nPhD in Physics (Computational Neuroscience), Goethe University Frankfurt and International Max Planck Research School for Neural Circuits, 2018 – 2026\nMSc Biophysics, Goethe University Frankfurt, 2018\nBSc Biophysics, Goethe University Frankfurt, 2016"
   },
   {
     "objectID": "cv.html",
     "href": "cv.html",
     "title": "CV",
     "section": "",
-    "text": "Download CV (PDF)"
-  },
-  {
-    "objectID": "cv.html#positions",
-    "href": "cv.html#positions",
-    "title": "CV",
-    "section": "Positions",
-    "text": "Positions\n\nPostdoctoral researcher, FIAS, Frankfurt — TODO: dates\nPhD researcher, FIAS / Goethe University Frankfurt — TODO: dates"
+    "text": "11/2018 – 2026\nPhD student, International Max Planck Research School for Neural Circuits, Frankfurt. Thesis Emergence of reliable sensory representations in cortical development, submitted 01/2026. Supervisor: Matthias Kaschube\n\n\n06/2020 – 11/2024\nMember, Center for Multiscale Modelling, Frankfurt\n\n\n10/2016 – 10/2018\nMSc Biophysics, Goethe University Frankfurt. Thesis: The role of network interactions in refining neural response properties in visual cortex. Supervisor: Matthias Kaschube. Final grade 1.0\n\n\n10/2013 – 11/2016\nBSc Biophysics, Goethe University Frankfurt. Thesis: Development of coding properties in mammalian visual cortex. Supervisor: Matthias Kaschube. Final grade 1.3\n\n\n2009 – 2013\nLandesschule Pforta, Department of Natural Science. Abitur, final grade 1.0"
   },
   {
     "objectID": "cv.html#education",
     "href": "cv.html#education",
     "title": "CV",
-    "section": "Education",
-    "text": "Education\n\nTODO"
+    "section": "",
+    "text": "11/2018 – 2026\nPhD student, International Max Planck Research School for Neural Circuits, Frankfurt. Thesis Emergence of reliable sensory representations in cortical development, submitted 01/2026. Supervisor: Matthias Kaschube\n\n\n06/2020 – 11/2024\nMember, Center for Multiscale Modelling, Frankfurt\n\n\n10/2016 – 10/2018\nMSc Biophysics, Goethe University Frankfurt. Thesis: The role of network interactions in refining neural response properties in visual cortex. Supervisor: Matthias Kaschube. Final grade 1.0\n\n\n10/2013 – 11/2016\nBSc Biophysics, Goethe University Frankfurt. Thesis: Development of coding properties in mammalian visual cortex. Supervisor: Matthias Kaschube. Final grade 1.3\n\n\n2009 – 2013\nLandesschule Pforta, Department of Natural Science. Abitur, final grade 1.0"
   },
   {
-    "objectID": "cv.html#talks-and-posters",
-    "href": "cv.html#talks-and-posters",
+    "objectID": "cv.html#research-experience",
+    "href": "cv.html#research-experience",
     "title": "CV",
-    "section": "Talks and posters",
-    "text": "Talks and posters\n\nTODO: e.g. Bernstein Conference 2026, poster title"
+    "section": "Research experience",
+    "text": "Research experience\n\n\n\n\n\n\n\n01/2019 – 03/2019\nRotating PhD student with Pascal Fries, Ernst Strüngmann Institute, Frankfurt. Analysis of electrophysiological recordings, role of α-band activity\n\n\n10/2017 – 10/2018\nStudent assistant with Matthias Kaschube, Frankfurt Institute for Advanced Studies. Analysis of spontaneous activity in visual cortex\n\n\n2016 – 2017\nStudent assistant with Gilles Laurent, Max Planck Institute for Brain Research, Frankfurt. Sepia project\n\n\n2011 – 2012\nIntern, Martin Luther University Halle-Wittenberg, group of Prof. Binder, macromolecular chemistry"
   },
   {
-    "objectID": "cv.html#teaching-and-supervision",
-    "href": "cv.html#teaching-and-supervision",
+    "objectID": "cv.html#teaching",
+    "href": "cv.html#teaching",
     "title": "CV",
-    "section": "Teaching and supervision",
-    "text": "Teaching and supervision\n\nTODO"
+    "section": "Teaching",
+    "text": "Teaching\n\n\n\n\n\n\n\n2021 – 2024\nTheoretical Neuroscience I & II. Teaching assistant: guest lectures, coordination of exercise sheets and grading, content preparation\n\n\n2018 – 2026\nComputational Neuroscience Seminar. Teaching assistant: paper selection, introduction to scientific writing, feedback on oral and written presentations\n\n\n2017 – 2018\nMachine Learning I. Teaching assistant\n\n\n2015 – 2016\nMathematics for Physicists I, Mathematics for Scientists II. Undergraduate teaching assistant: weekly tutorials, grading\n\n\n\nI have also supervised several Bachelor’s and Master’s theses on machine learning, image processing, data analysis and network simulation."
+  },
+  {
+    "objectID": "cv.html#selected-talks",
+    "href": "cv.html#selected-talks",
+    "title": "CV",
+    "section": "Selected talks",
+    "text": "Selected talks\n\nRhine-Main Neuroscience Meeting, Oberwesel, 2026 (invited)\nGiersch Conference on Digital Twins, 2023\nComputational Neuroscience Next Generation Symposium, 2023\nVision Sciences Society Meeting, St. Pete Beach, 2023\nGerman Neuroscience Meeting, 2023 (symposium)\nSociety for Neuroscience Annual Meeting, San Diego, 2022 (nano-symposium)\nFerret Brain Meeting, San Diego, 2022\nBernstein Conference, Berlin, 2022\nAnnual Computational Neuroscience Meeting, Barcelona, 2019"
+  },
+  {
+    "objectID": "cv.html#selected-posters",
+    "href": "cv.html#selected-posters",
+    "title": "CV",
+    "section": "Selected posters",
+    "text": "Selected posters\n\nBernstein Conference, 2026\nHWK Workshop “Cortex Structure and Function in Mouse, Monkey and Man”, Delmenhorst, 2026\n10th European Visual Cortex and Cognition Meeting, Cortona, 2026\nCosyne, Lisbon, 2026, 2024 and 2019; Montreal 2023; virtual 2021\nBernstein Conference, Frankfurt 2025 and 2024; virtual 2020; Berlin 2018; Göttingen 2017\nMeeting on Spontaneous Activity in Brain Development: Alicante 2024 and 2022, Leiden 2018\n9th European Vision and Cognition Meeting, Il Poggio, 2024\nBiennial Meeting of the Rhine-Main Neuroscience Network, 2018"
+  },
+  {
+    "objectID": "cv.html#awards-and-scholarships",
+    "href": "cv.html#awards-and-scholarships",
+    "title": "CV",
+    "section": "Awards and scholarships",
+    "text": "Awards and scholarships\n\n\n\n\n\n\n\n2023\nTravel Award, Organization for Computational Neuroscience\n\n\n2022\nTravel Award, Bernstein Network\n\n\n2022\nPoster Award (1st prize), 2nd Meeting on Spontaneous Activity in Brain Development\n\n\n2019\nTravel Award, Organization for Computational Neuroscience\n\n\n2019\nCosyne Presenters Travel Award\n\n\n2018\nPoster Award (3rd prize), 5th Biennial Meeting of the Rhine-Main Neuroscience Network\n\n\n2017 – 2018\nSMARTSTART training programme in computational neuroscience, Bernstein Network and Volkswagen Foundation\n\n\n2014 – 2018\nScholarship, German National Academic Foundation (Studienstiftung des deutschen Volkes)\n\n\n2013 – 2014\nDeutschlandstipendium\n\n\n2013\nDPG Abiturientenpreis, German Physical Society\n\n\n2013\nHonours of eLeMeNTe e.V., Saxony-Anhalt"
+  },
+  {
+    "objectID": "cv.html#service-and-outreach",
+    "href": "cv.html#service-and-outreach",
+    "title": "CV",
+    "section": "Service and outreach",
+    "text": "Service and outreach\n\n\n\n\n\n\n\n2019 – present\nCo-organiser of the German Neuroscience Olympiad final in Frankfurt: outreach and press contact, grading coordination, computational tutorial\n\n\n2018 – 2022\nStudent representative, Frankfurt Institute for Advanced Studies\n\n\n2013 – 2018\nStudent representative (Fachschaft Physik), Goethe University Frankfurt: faculty council, examination committee, lecture evaluations"
+  },
+  {
+    "objectID": "cv.html#skills",
+    "href": "cv.html#skills",
+    "title": "CV",
+    "section": "Skills",
+    "text": "Skills\n\nLanguages: German (native), English (C2), Latin\nProgramming: Python (advanced), MATLAB, LaTeX"
   },
   {
     "objectID": "publications.html",
     "href": "publications.html",
     "title": "Publications",
     "section": "",
-    "text": "Author list. Title. bioRxiv, year. DOI · PDF"
+    "text": "Haleigh N. Mulholland*, Sigrid Trägenap*, Matthias Kaschube, Gordon B. Smith (2026). Millimeter-scale selective amplification in the developing visual cortex. bioRxiv. doi:10.64898/2026.03.31.715687 * co-first authors"
   },
   {
     "objectID": "publications.html#preprints",
     "href": "publications.html#preprints",
     "title": "Publications",
     "section": "",
-    "text": "Author list. Title. bioRxiv, year. DOI · PDF"
+    "text": "Haleigh N. Mulholland*, Sigrid Trägenap*, Matthias Kaschube, Gordon B. Smith (2026). Millimeter-scale selective amplification in the developing visual cortex. bioRxiv. doi:10.64898/2026.03.31.715687 * co-first authors"
   },
   {
     "objectID": "publications.html#journal-articles",
     "href": "publications.html#journal-articles",
     "title": "Publications",
     "section": "Journal articles",
-    "text": "Journal articles\n\nAuthor list. Title. Journal, year. DOI · Code"
+    "text": "Journal articles\n\nAugusto Lempel, Sigrid Trägenap, Clara Tepohl, Matthias Kaschube, David Fitzpatrick (2025). Development of coherent cortical responses reflects increased discriminability of feedforward inputs and their alignment with recurrent circuits. Neuron 113(22): 3834–3845.e8. doi:10.1016/j.neuron.2025.08.014\nSigrid Trägenap, David E. Whitney, David Fitzpatrick, Matthias Kaschube (2025). The developmental emergence of reliable cortical representations. Nature Neuroscience 28: 394–405. doi:10.1038/s41593-024-01857-3"
   },
   {
     "objectID": "publications.html#thesis",
     "href": "publications.html#thesis",
     "title": "Publications",
     "section": "Thesis",
-    "text": "Thesis\n\nSigrid Trägenap. Title of PhD thesis. Goethe University Frankfurt, year."
+    "text": "Thesis\n\nSigrid Trägenap (2026). Emergence of reliable sensory representations in cortical development. PhD thesis, Goethe University Frankfurt. Submitted January 2026."
   }
 ]
