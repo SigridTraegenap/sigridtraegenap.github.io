@@ -26,4 +26,4 @@ I study how the developing visual cortex arrives at reliable representations of
 the world, combining recurrent network models with chronic imaging data from
 ferret visual cortex. I submitted my PhD thesis in January 2026.
 
-[Research Interests](research.qmd) · [Publications](publications.qmd) · [CV](cv.qmd) · [Outreach](outreach.qmd)
+[Research Interests](research.qmd) · [Publications](publications.qmd) · [CV](cv.qmd) · [Outreach](outreach.qmd) · [Explorables](explorables/index.qmd)
