@@ -1,0 +1,165 @@
+---
+title: "Hebbian learning in the weight plane"
+description: "Plain Hebbian learning, saturation bounds and Oja's rule, animated as trajectories in the space of two synaptic weights."
+toc: true
+execute:
+  enabled: false
+---
+
+Three learning rules for a neuron with two inputs, watched in the plane of its two weights.
+Everything on this page runs in your browser; nothing to install. Change a slider while a simulation is running and it reacts immediately.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+
+One neuron receives two inputs with activities $u_1, u_2$ through weights
+$w = (w_1, w_2)$. Averaged over many input patterns, learning is driven by the
+input correlation matrix $Q = \langle u u^{\mathsf T} \rangle$, here
+$Q = \begin{pmatrix} 1 & q \\ q & 1 \end{pmatrix}$, where $q$ is the
+correlation between the two inputs (the slider). $\tau$ sets the learning
+speed and $\alpha$ is the strength of the normalising term in Oja's rule.
+Three rules:
+
+$$\text{Hebbian:}\quad \tau \frac{dw}{dt} = Q\,w$$
+
+$$\text{with bounds:}\quad \tau \frac{dw}{dt} = Q\,w, \qquad 0 \le w_i \le 1$$
+
+$$\text{Oja:}\quad \tau \frac{dw}{dt} = Q\,w - \alpha\,(w^{\mathsf T} Q\, w)\,w$$
+
+Pick a rule, then click anywhere in the weight plane to choose an initial
+condition.
+
+```{ojs}
+//| echo: false
+viewof hbRule = Inputs.radio(new Map([["Hebbian", "hebb"], ["Hebbian with bounds [0, 1]", "bounded"], ["Oja's rule", "oja"]]), {value: "hebb", label: "Rule"})
+viewof hbQ = Inputs.range([-1, 1], {value: -0.4, step: 0.05, label: "Input correlation q"})
+viewof hbAlpha = Inputs.range([0.2, 3], {value: 1, step: 0.1, label: "Oja α (Oja's rule only)"})
+viewof hbPause = Inputs.toggle({label: "Pause"})
+viewof hbReplay = Inputs.button("Replay")
+```
+
+```{ojs}
+//| echo: false
+hbCol = ({C0: "#1f77b4", C1: "#ff7f0e", C2: "#2ca02c", K: "#444", T1: "#9467bd", T2: "#17becf"})
+hbLay = ({W: 760, H: 400, S: 340, m: 80, top: 16})   // plane occupies x in [m, m+S], y in [top, top+S]
+mutable hbClick = null
+hbCanvas = {
+  const c = mkCanvas(hbLay.W, hbLay.H);
+  c.canvas.style.cursor = "crosshair";
+  c.canvas.addEventListener("click", ev => {
+    const r = c.canvas.getBoundingClientRect();
+    const x = (ev.clientX - r.left) * hbLay.W / r.width, y = (ev.clientY - r.top) * hbLay.H / r.height;
+    const {m, S, top} = hbLay;
+    if (x < m || x > m + S || y < top || y > top + S) return;
+    mutable hbClick = {fx: (x - m) / S, fy: 1 - (y - top) / S};
+  });
+  return c;
+}
+hbLimits = ({hebb: [-2, 2], bounded: [-0.1, 1.1], oja: [-1.2, 1.2]})
+hbStart = {
+  const [lo, hi] = hbLimits[hbRule];
+  if (!hbClick) return [0.01, 0.05];
+  return [lo + (hi - lo) * hbClick.fx, lo + (hi - lo) * hbClick.fy];
+}
+hbStep = (w, rule, q, alpha, dt = 0.1) => {
+  const Qw = [w[0] + q * w[1], q * w[0] + w[1]];
+  let n;
+  if (rule === "oja") { const wQw = w[0] * Qw[0] + w[1] * Qw[1];
+    n = [w[0] + dt * (Qw[0] - alpha * wQw * w[0]), w[1] + dt * (Qw[1] - alpha * wQw * w[1])]; }
+  else n = [w[0] + dt * Qw[0], w[1] + dt * Qw[1]];
+  if (rule === "bounded") n = [Math.min(1, Math.max(0, n[0])), Math.min(1, Math.max(0, n[1]))];
+  return n;
+}
+hbEndColour = (w, rule) => {
+  const near = (a, b, tol) => Math.abs(w[0] - a) < tol && Math.abs(w[1] - b) < tol;
+  if (rule === "bounded") { if (near(1, 1, 1e-3)) return hbCol.C0; if (near(0, 1, 1e-3)) return hbCol.C1; if (near(1, 0, 1e-3)) return hbCol.C2; }
+  if (rule === "oja") { const r = Math.SQRT1_2; if (near(r, r, 0.02)) return hbCol.C0; if (near(-r, r, 0.02)) return hbCol.C1; if (near(r, -r, 0.02)) return hbCol.C2; }
+  return hbCol.K;
+}
+hbField = {
+  const N = 20, steps = 100, trajs = [];
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    let w = [i / (N - 1), j / (N - 1)]; const pts = [w];
+    for (let s = 0; s < steps; s++) { w = hbStep(w, hbRule, hbQ, hbAlpha); pts.push(w); }
+    trajs.push({pts, col: hbEndColour(w, hbRule)});
+  }
+  return trajs;
+}
+hbTraj = {
+  hbReplay;
+  const steps = 100; let w = hbStart; const pts = [w]; let k = 0;
+  while (true) {
+    if (!viewof hbPause.value && k < steps) { w = hbStep(w, hbRule, hbQ, hbAlpha); pts.push(w); k++; }
+    yield {pts, done: k >= steps, col: k >= steps ? hbEndColour(w, hbRule) : hbCol.K};
+  }
+}
+```
+
+```{ojs}
+//| echo: false
+{
+  const c = hbCanvas, fg = exFg(), {W, H, S, m, top} = hbLay;
+  const [lo, hi] = hbLimits[hbRule];
+  const px = w => m + S * (w - lo) / (hi - lo), py = w => top + S * (1 - (w - lo) / (hi - lo));
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  axisBox(c, m, top, S, S);
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText("w₁", m + S / 2, top + S + 24); c.fillText(lo, px(lo), top + S + 24); c.fillText(hi, px(hi), top + S + 24);
+  c.textAlign = "right"; c.fillText("w₂", m - 10, top + S / 2 + 5); c.fillText(lo, m - 8, py(lo) + 5); c.fillText(hi, m - 8, py(hi) + 5);
+  c.save(); c.beginPath(); c.rect(m, top, S, S); c.clip();
+  c.lineWidth = 1;
+  for (const {pts, col} of hbField) {
+    c.strokeStyle = col; c.globalAlpha = 0.25; c.beginPath();
+    pts.forEach((p, i) => i ? c.lineTo(px(p[0]), py(p[1])) : c.moveTo(px(p[0]), py(p[1]))); c.stroke();
+  }
+  c.globalAlpha = 1; c.lineWidth = 2.5; c.strokeStyle = hbTraj.col; c.beginPath();
+  hbTraj.pts.forEach((p, i) => i ? c.lineTo(px(p[0]), py(p[1])) : c.moveTo(px(p[0]), py(p[1]))); c.stroke();
+  const last = hbTraj.pts[hbTraj.pts.length - 1], first = hbTraj.pts[0];
+  c.fillStyle = hbTraj.col; c.beginPath(); c.arc(px(last[0]), py(last[1]), 6, 0, 2 * Math.PI); c.fill();
+  c.strokeStyle = fg; c.lineWidth = 1.5; c.beginPath(); c.arc(px(first[0]), py(first[1]), 6, 0, 2 * Math.PI); c.stroke();
+  c.restore();
+  c.fillStyle = fg; c.textAlign = "left"; c.fillText(`start (${first[0].toFixed(2)}, ${first[1].toFixed(2)}) · click to move`, m + 8, top + 22);
+  // time course, right
+  const x0 = m + S + 70, tW = W - x0 - 16;
+  const tx = i => x0 + tW * i / 100, ty = w => py(w);
+  axisBox(c, x0, top, tW, S);
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText("time steps", x0 + tW / 2, top + S + 24);
+  c.fillText("0", tx(0), top + S + 24); c.fillText("100", tx(100), top + S + 24);
+  c.textAlign = "right"; c.fillText(lo, x0 - 8, py(lo) + 5); c.fillText(hi, x0 - 8, py(hi) + 5);
+  c.save(); c.beginPath(); c.rect(x0, top, tW, S); c.clip();
+  for (const [j, col] of [[0, hbCol.T1], [1, hbCol.T2]]) {
+    c.strokeStyle = col; c.lineWidth = 2; c.beginPath();
+    hbTraj.pts.forEach((p, i) => i ? c.lineTo(tx(i), ty(p[j])) : c.moveTo(tx(i), ty(p[j]))); c.stroke();
+  }
+  c.restore();
+  c.textAlign = "left"; c.fillStyle = hbCol.T1; c.fillText("w₁", x0 + 8, top + 22); c.fillStyle = hbCol.T2; c.fillText("w₂", x0 + 44, top + 22);
+  return c.canvas;
+}
+```
+
+**What you see.** Left: the weight plane, $w_1$ against $w_2$. The faint lines
+are trajectories from a grid of starting points, coloured by where they end
+after 100 steps. With bounds: blue ends at $(1,1)$, orange at $(0,1)$, green at
+$(1,0)$. With Oja's rule: blue ends at $(1,1)/\sqrt2$, orange at $(-1,1)/\sqrt2$,
+green at $(1,-1)/\sqrt2$. Grey means none of these, which for plain Hebbian
+learning is every trajectory, since they all run off to infinity. The thick
+line is your trajectory, starting at the open circle and ending at the filled
+dot, which takes the colour of its end state once it has arrived. Right: the
+same trajectory as $w_1$ (purple) and $w_2$ (teal) against time.
+
+Try: plain Hebbian learning runs away along the leading eigenvector of $Q$,
+whichever way you start. With bounds the plane splits into basins of
+attraction. Oja's rule keeps $|w|$ finite and converges to a normalised
+eigenvector of $Q$. Change $q$ to see the basins move.
+From the Hebbian learning exercise in *Theoretical Neuroscience*.

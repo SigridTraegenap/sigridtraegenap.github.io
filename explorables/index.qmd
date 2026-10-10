@@ -1,0 +1,19 @@
+---
+title: "Explorables"
+listing:
+  contents:
+    - neuron.qmd
+    - data-analysis.qmd
+    - recurrent-networks.qmd
+    - hebbian.qmd
+  type: grid
+  grid-columns: 2
+  sort: false
+  fields: [title, description]
+---
+
+Interactive versions of material from my teaching: small simulations that run
+in your browser, with sliders you can move while they run. They grew out of
+Jupyter notebooks for *Theoretical Neuroscience* at Goethe University and a
+webinar for the German Neuroscience Olympiad, and are inspired by Dirk
+Brockmann's [Complexity Explorables](https://www.complexity-explorables.org/).

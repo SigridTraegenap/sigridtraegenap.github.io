@@ -1,0 +1,178 @@
+---
+title: "Recurrent networks: from kernel to pattern"
+description: "A difference-of-Gaussians kernel, its spectrum, and a ring network that turns noise into stripes."
+toc: true
+execute:
+  enabled: false
+---
+
+How local excitation and lateral inhibition pick out a spatial frequency, and what a network built from such a kernel does with random input.
+Everything on this page runs in your browser; nothing to install. Change a slider while a simulation is running and it reacts immediately.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## Difference of Gaussians and its spectrum
+
+A local-excitation, lateral-inhibition kernel is the difference of two
+Gaussians. Its Fourier transform tells you which spatial frequency a recurrent
+network with this kernel will amplify most; the next explorable shows that
+network in action.
+
+```{ojs}
+//| echo: false
+viewof sigE = Inputs.range([0.1, 10], {value: 1, step: 0.1, label: "Excitation width σₑ"})
+viewof ampE = Inputs.range([0, 10], {value: 1, step: 0.1, label: "Excitation strength"})
+viewof sigI = Inputs.range([0.1, 10], {value: 2, step: 0.1, label: "Inhibition width σᵢ"})
+viewof ampI = Inputs.range([0, 2], {value: 1, step: 0.05, label: "Inhibition strength"})
+
+gauss = (x, s) => Math.exp(-0.5 * x * x / (s * s)) / (Math.sqrt(2 * Math.PI) * s)
+ghat = (f, s) => Math.exp(-2 * Math.PI * Math.PI * s * s * f * f)
+xmax = 5 * Math.max(sigE, sigI)
+space = Array.from({length: 401}, (_, i) => {
+  const x = -xmax + 2 * xmax * i / 400;
+  const e = ampE * gauss(x, sigE), inh = -ampI * gauss(x, sigI);
+  return {x, Excitation: e, Inhibition: inh, "Difference of Gaussians": e + inh};
+})
+spectrum = Array.from({length: 401}, (_, i) => { const f = 2 * i / 400; return {f, k: Math.abs(ampE * ghat(f, sigE) - ampI * ghat(f, sigI))}; })
+peak = spectrum.reduce((a, b) => (b.k > a.k ? b : a))
+
+html`<div style="display:flex;flex-wrap:wrap;gap:1rem">
+${Plot.plot({
+  width: 370, height: 280, marginLeft: 40, style: {fontSize: "15px"},
+  x: {label: "space"}, y: {label: null, ticks: 0},
+  color: {legend: true, domain: ["Excitation", "Inhibition", "Difference of Gaussians"], range: ["#ff7f0e", "#1f77b4", "black"]},
+  marks: [Plot.ruleY([0], {stroke: "#999"}),
+    ...["Excitation", "Inhibition", "Difference of Gaussians"].map(k => Plot.line(space, {x: "x", y: k, stroke: () => k, strokeWidth: 2}))]
+})}
+${Plot.plot({
+  width: 370, height: 280, marginLeft: 50, style: {fontSize: "15px"},
+  x: {label: "spatial frequency (cycles / unit length)"},
+  y: {label: "|kernel spectrum|", domain: [0, Math.max(0.05, ampE, ampI)]},
+  marks: [Plot.line(spectrum, {x: "f", y: "k", stroke: "gray", strokeWidth: 2}),
+    Plot.ruleX([peak.f], {stroke: "#ff7f0e", strokeDasharray: "4 4"}),
+    Plot.text([peak], {x: "f", y: "k", text: d => `peak at f = ${d.f.toFixed(2)}`, dx: 8, dy: -8, textAnchor: "start"})]
+})}
+</div>`
+```
+
+**What you see.** Left: the excitatory Gaussian in orange, the inhibitory one
+in blue (drawn negative), and their difference in black, as functions of
+distance. $\sigma_e$ and $\sigma_i$ are the widths; the strength sliders scale
+the two curves. Right: the magnitude of the kernel's Fourier transform in grey;
+the orange dashed line marks the spatial frequency with the largest value, the
+one a recurrent network with this kernel amplifies most.
+
+## Pattern formation in a recurrent network
+
+A ring of neurons, each exciting its close neighbours and inhibiting those a
+bit further away. Such a kernel amplifies one spatial frequency more than any
+other, so even random input turns into a regular pattern.
+
+$$\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+$$
+
+- $r$: the firing rates of the 256 neurons on the ring.
+- $W$: the connection matrix. Neuron $i$ receives from neuron $j$ a weight that
+  depends only on their distance: a narrow positive Gaussian (excitation) minus a
+  wider negative one (inhibition). The two width sliders set those Gaussians.
+- $h$: a fixed random external input, one value per neuron, plus optional noise
+  that is redrawn at every time step (the noise slider).
+- $[\cdot]_+$: rectification, negative values are set to zero.
+- $\tau$: the time constant; the clock in the figure counts in units of $\tau$.
+- Gain: $W$ is scaled so that its largest eigenvalue equals the gain slider.
+  Above 1 the corresponding pattern grows; below 1 it decays.
+
+```{ojs}
+//| echo: false
+viewof rnSigE = Inputs.range([1, 25], {value: 5, step: 0.5, label: "Excitation width"})
+viewof rnSigI = Inputs.range([1, 50], {value: 12, step: 0.5, label: "Inhibition width"})
+viewof rnGain = Inputs.range([0.2, 1.6], {value: 1.2, step: 0.02, label: "Gain (largest eigenvalue of W)"})
+viewof rnNoise = Inputs.range([0, 1], {value: 0.1, step: 0.02, label: "Input noise"})
+viewof rnPause = Inputs.toggle({label: "Pause"})
+viewof rnReset = Inputs.button("Reset")
+```
+
+```{ojs}
+//| echo: false
+rnN = 256
+rnKernel = {
+  const N = rnN, sE = rnSigE, sI = rnSigI;
+  const g = (d, s) => Math.exp(-0.5 * d * d / (s * s)) / s;
+  const k = new Float64Array(N);
+  for (let d = 0; d < N; d++) { const dd = Math.min(d, N - d); k[d] = g(dd, sE) - g(dd, sI); }
+  const ev = new Float64Array(N / 2 + 1);
+  for (let m = 0; m <= N / 2; m++) { let s = 0; for (let d = 0; d < N; d++) s += k[d] * Math.cos(2 * Math.PI * m * d / N); ev[m] = s; }
+  let lmax = -Infinity, mmax = 0; for (let m = 0; m <= N / 2; m++) if (ev[m] > lmax) { lmax = ev[m]; mmax = m; }
+  const scale = rnGain / lmax;
+  return {N, k: k.map(x => x * scale), ev: ev.map(x => x * scale), mmax};
+}
+rnState = {
+  rnReset;
+  const N = rnN, dt = 0.1, tau = 1;
+  const h = Float64Array.from({length: N}, () => 0.5 + 0.5 * Math.random());
+  let r = new Float64Array(N).fill(0.5), t = 0;
+  while (true) {
+    if (!viewof rnPause.value) {
+      const {k} = rnKernel; const noise = viewof rnNoise.value;
+      for (let step = 0; step < 5; step++) {
+        const rn = new Float64Array(N);
+        for (let i = 0; i < N; i++) {
+          let s = 0;
+          for (let j = 0; j < N; j++) { const d = (i - j + N) % N; s += k[d] * r[j]; }
+          rn[i] = r[i] + dt / tau * (-r[i] + Math.max(0, s + h[i] + noise * (Math.random() - 0.5) * 2));
+        }
+        r = rn; t += dt;
+      }
+    }
+    yield {r, t};
+  }
+}
+rnCanvas = mkCanvas(760, 400)
+```
+
+```{ojs}
+//| echo: false
+{
+  const {r, t} = rnState, {ev, mmax, N} = rnKernel, c = rnCanvas, fg = exFg();
+  const W = 760, H = 400; c.clearRect(0, 0, W, H); c.font = exFont;
+  const aP = {x0: 90, y0: 12, w: W - 110, h: 170};
+  const rmax = Math.max(1e-6, ...r);
+  axisBox(c, aP.x0, aP.y0, aP.w, aP.h);
+  c.fillStyle = "#1f77b4";
+  for (let i = 0; i < N; i++) { const bh = aP.h * r[i] / rmax; c.fillRect(aP.x0 + aP.w * i / N, aP.y0 + aP.h - bh, aP.w / N, bh); }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("activity", aP.x0 - 8, aP.y0 + aP.h / 2 + 5);
+  c.textAlign = "center"; c.fillText(`position on the ring · t = ${t.toFixed(0)} τ`, aP.x0 + aP.w / 2, aP.y0 + aP.h + 22);
+  const sP = {x0: 90, y0: 240, w: W - 110, h: 110};
+  const M = 40, emax = Math.max(1.6, ...ev), emin = Math.min(-0.5, ...ev);
+  const sy = v => sP.y0 + sP.h * (1 - (v - emin) / (emax - emin));
+  axisBox(c, sP.x0, sP.y0, sP.w, sP.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(sP.x0, sy(1)); c.lineTo(sP.x0 + sP.w, sy(1)); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = "#888"; c.beginPath(); c.moveTo(sP.x0, sy(0)); c.lineTo(sP.x0 + sP.w, sy(0)); c.stroke();
+  for (let m = 0; m <= M; m++) { c.fillStyle = m === mmax ? "#ff7f0e" : "gray"; c.beginPath(); c.arc(sP.x0 + sP.w * m / M, sy(ev[m]), 4, 0, 2 * Math.PI); c.fill(); }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("eigenvalue", sP.x0 - 8, sP.y0 + sP.h / 2 + 5); c.fillText("1", sP.x0 - 8, sy(1) + 5); c.fillText("0", sP.x0 - 8, sy(0) + 5);
+  c.textAlign = "center"; c.fillText(`spatial frequency (waves around the ring) · amplified most: ${mmax}`, sP.x0 + sP.w / 2, sP.y0 + sP.h + 22);
+  c.fillText("0", sP.x0, sP.y0 + sP.h + 42); c.fillText(M, sP.x0 + sP.w, sP.y0 + sP.h + 42);
+  return c.canvas;
+}
+```
+
+**What you see.** Top: the activity $r$ of each neuron as a blue bar, by
+position on the ring. Bottom: the eigenvalues of $W$ for each spatial
+frequency, counted in waves around the ring, as grey dots. The orange dot is the
+largest eigenvalue, the frequency the network amplifies most. The red dashed
+line marks eigenvalue 1, the boundary between decay and growth.
+
+Try: with the gain below 1 the pattern fades and only the random input remains.
+Above 1, the frequency marked in orange takes over. Make the inhibition wider
+and the stripes get broader. From the pattern-formation exercise in
+*Theoretical Neuroscience*.

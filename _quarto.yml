@@ -3,7 +3,6 @@ project:
   output-dir: _site
   render:
     - "*.qmd"
-    - "!teaching.qmd"
     - "!besides-science.qmd"
 
 website:
@@ -23,6 +22,18 @@ website:
         text: CV
       - href: outreach.qmd
         text: Outreach
+      - text: Explorables
+        menu:
+          - href: explorables/index.qmd
+            text: Overview
+          - href: explorables/neuron.qmd
+            text: Integrate-and-fire neuron
+          - href: explorables/data-analysis.qmd
+            text: "Data analysis: PCA and Fourier"
+          - href: explorables/recurrent-networks.qmd
+            text: Recurrent networks
+          - href: explorables/hebbian.qmd
+            text: Hebbian learning
     right:
       - icon: github
         href: https://github.com/SigridTraegenap
@@ -30,7 +41,7 @@ website:
   page-footer:
     center: |
       This site is currently under construction.<br>
-      © 2026 Sigrid Trägenap · [Impressum](impressum.qmd)
+      © 2026 Sigrid Trägenap · [Impressum](/impressum.qmd)
 
 format:
   html:
