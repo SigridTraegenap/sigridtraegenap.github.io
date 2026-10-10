@@ -1,44 +1,281 @@
 ---
 title: "Teaching"
 toc: true
+execute:
+  enabled: false
 ---
 
-Interactive material from courses and tutorials. Everything on this page runs
-in the browser; no installation needed.
+Explorables from courses and tutorials. Everything here runs in your browser;
+nothing to install. Change a slider while a simulation is running and it reacts
+immediately.
 
-<!-- TODO: add your PhD-era widgets here. Quarto supports three routes:
-  1. Observable JS cells (```{ojs}) — pure browser, like the demo below.
-  2. Python notebooks rendered at build time (static figures).
-  3. Embedding existing HTML/JS apps via an <iframe> from the assets/ folder.
--->
+## A leaky integrate-and-fire neuron
 
-## Demo: a rate neuron with a tunable nonlinearity
+The neuron's membrane potential $V$ integrates its input current $I$ and leaks
+back towards rest. Whenever $V$ reaches the threshold, a spike is emitted and
+$V$ is reset.
 
-Drag the sliders to see how gain and threshold change the firing-rate response
-of a single rate neuron, $r = g \cdot \max(0,\, I - \theta)$.
+$$\tau_m \frac{dV}{dt} = (V_{\text{rest}} - V) + R\,I(t)$$
 
 ```{ojs}
 //| echo: false
-viewof gain = Inputs.range([0.1, 3], {value: 1, step: 0.1, label: "Gain g"})
-viewof theta = Inputs.range([-2, 2], {value: 0, step: 0.1, label: "Threshold θ"})
-
-data = Array.from({length: 201}, (_, i) => {
-  const I = -4 + i * 0.04;
-  return {I, r: gain * Math.max(0, I - theta)};
-})
-
-Plot.plot({
-  width: 640, height: 320,
-  x: {label: "Input current I"},
-  y: {label: "Firing rate r", domain: [0, 12]},
-  marks: [
-    Plot.ruleY([0]),
-    Plot.ruleX([theta], {stroke: "gray", strokeDasharray: "4 4"}),
-    Plot.line(data, {x: "I", y: "r", stroke: "steelblue", strokeWidth: 2})
-  ]
-})
+viewof lifI = Inputs.range([0, 25], {value: 8, step: 0.5, label: "Input current (nA)"})
+viewof lifNoise = Inputs.range([0, 10], {value: 0, step: 0.5, label: "Input noise"})
+viewof lifTau = Inputs.range([2, 50], {value: 10, step: 1, label: "Membrane time constant τ (ms)"})
+viewof lifThr = Inputs.range([-60, -35], {value: -50, step: 1, label: "Threshold (mV)"})
+viewof lifPause = Inputs.toggle({label: "Pause"})
+viewof lifReset = Inputs.button("Reset")
 ```
 
-## Courses
+```{ojs}
+//| echo: false
+lifState = {
+  lifReset;                       // re-run when Reset is pressed
+  const dt = 0.1, window = 300, R = 2, Vrest = -65, Vreset = -70, refr = 2;
+  const n = Math.round(window / dt);
+  const V = new Float32Array(n).fill(Vrest), Iarr = new Float32Array(n);
+  let v = Vrest, refrLeft = 0, spikes = [], t = 0;
+  const gauss = () => { let u = 0, w = 0; while (u === 0) u = Math.random(); w = Math.random();
+                        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * w); };
+  while (true) {
+    if (!viewof lifPause.value) {
+      const I0 = viewof lifI.value, sig = viewof lifNoise.value,
+            tau = viewof lifTau.value, thr = viewof lifThr.value;
+      for (let k = 0; k < 20; k++) {          // 2 ms of simulated time per frame
+        const I = I0 + sig * gauss() / Math.sqrt(dt);
+        if (refrLeft > 0) { refrLeft -= dt; v = Vreset; }
+        else {
+          v += dt / tau * ((Vrest - v) + R * I);
+          if (v >= thr) { v = 20; spikes.push(t); refrLeft = refr; }
+        }
+        V.copyWithin(0, 1); V[n - 1] = v;
+        Iarr.copyWithin(0, 1); Iarr[n - 1] = I;
+        if (v === 20) v = Vreset;
+        t += dt;
+      }
+      spikes = spikes.filter(s => t - s < 1000);
+    }
+    yield {V, Iarr, t, window, rate: spikes.filter(s => t - s < 1000).length, thr: viewof lifThr.value};
+  }
+}
+```
 
-- *TODO: course title*, semester, institution. [Materials](#)
+```{ojs}
+//| echo: false
+{
+  const {V, Iarr, t, window, rate, thr} = lifState;
+  const W = 640, H = 300, mL = 50, mB = 30;
+  const c = DOM.context2d(W, H), n = V.length;
+  const fg = getComputedStyle(document.body).color;
+  c.clearRect(0, 0, W, H);
+  // top panel: input current
+  const top = {y0: 10, h: 70, lo: -10, hi: 35};
+  const bot = {y0: 100, h: 170, lo: -80, hi: 30};
+  const sx = i => mL + (W - mL - 10) * i / (n - 1);
+  const sy = (p, v) => p.y0 + p.h * (1 - (v - p.lo) / (p.hi - p.lo));
+  c.strokeStyle = "#999"; c.lineWidth = 1;
+  for (const p of [top, bot]) { c.strokeRect(mL, p.y0, W - mL - 10, p.h); }
+  c.fillStyle = fg; c.font = "11px sans-serif"; c.textAlign = "right";
+  c.fillText("I (nA)", mL - 6, top.y0 + top.h / 2 + 4);
+  c.fillText("V (mV)", mL - 6, bot.y0 + bot.h / 2 + 4);
+  c.fillText(thr, mL - 6, sy(bot, thr) + 4); c.fillText("-65", mL - 6, sy(bot, -65) + 4);
+  c.textAlign = "center"; c.fillText(`last ${window} ms`, W / 2, H - 6);
+  c.fillText(`${rate} spikes / s`, W - 70, bot.y0 + 14);
+  c.setLineDash([4, 4]); c.strokeStyle = "orangered"; c.beginPath();
+  c.moveTo(mL, sy(bot, thr)); c.lineTo(W - 10, sy(bot, thr)); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = "#888"; c.beginPath();
+  for (let i = 0; i < n; i++) i ? c.lineTo(sx(i), sy(top, Math.max(top.lo, Math.min(top.hi, Iarr[i])))) : c.moveTo(sx(0), sy(top, Iarr[0]));
+  c.stroke();
+  c.strokeStyle = "steelblue"; c.lineWidth = 1.5; c.beginPath();
+  for (let i = 0; i < n; i++) i ? c.lineTo(sx(i), sy(bot, V[i])) : c.moveTo(sx(0), sy(bot, V[0]));
+  c.stroke();
+  return c.canvas;
+}
+```
+
+Try: increase the current until the neuron starts to fire, then add noise at a
+sub-threshold current. From the webinar for the German Neuroscience Olympiad 2020.
+[Notebook on GitHub](https://github.com/SigridTraegenap/DNO_webinar_2020) ·
+[Open in Google Colab](https://colab.research.google.com/github/SigridTraegenap/DNO_webinar_2020/blob/master/Leaky%20Integrate%20and%20Fire%20neuron%20model.ipynb)
+
+## Pattern formation in a recurrent network
+
+A ring of neurons, each exciting its close neighbours and inhibiting those a
+bit further away. Such a kernel amplifies one spatial frequency more than any
+other, so even random input turns into a regular pattern.
+
+$$\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+$$
+
+```{ojs}
+//| echo: false
+viewof rnSigE = Inputs.range([1, 20], {value: 4, step: 0.5, label: "Excitation width"})
+viewof rnSigI = Inputs.range([1, 40], {value: 10, step: 0.5, label: "Inhibition width"})
+viewof rnGain = Inputs.range([0.2, 1.6], {value: 1.2, step: 0.02, label: "Gain (largest eigenvalue of W)"})
+viewof rnNoise = Inputs.range([0, 1], {value: 0.1, step: 0.02, label: "Input noise"})
+viewof rnPause = Inputs.toggle({label: "Pause"})
+viewof rnReset = Inputs.button("Reset")
+```
+
+```{ojs}
+//| echo: false
+rnKernel = {
+  const N = 200, sE = rnSigE, sI = rnSigI;
+  const g = (d, s) => Math.exp(-0.5 * d * d / (s * s)) / s;
+  const k = new Float64Array(N);
+  for (let d = 0; d < N; d++) { const dd = Math.min(d, N - d); k[d] = g(dd, sE) - g(dd, sI); }
+  // eigenvalues of the circulant W are the DFT of the kernel (real, since k is symmetric)
+  const ev = new Float64Array(N / 2 + 1);
+  for (let m = 0; m <= N / 2; m++) { let s = 0; for (let d = 0; d < N; d++) s += k[d] * Math.cos(2 * Math.PI * m * d / N); ev[m] = s; }
+  let lmax = -Infinity, mmax = 0; for (let m = 0; m <= N / 2; m++) if (ev[m] > lmax) { lmax = ev[m]; mmax = m; }
+  const scale = rnGain / lmax;
+  return {N, k: k.map(x => x * scale), ev: ev.map(x => x * scale), mmax};
+}
+
+rnState = {
+  rnReset;
+  const N = 200, dt = 0.1, tau = 1;
+  const h = Float64Array.from({length: N}, () => 0.5 + 0.5 * Math.random());
+  let r = new Float64Array(N).fill(0.5), t = 0;
+  while (true) {
+    if (!viewof rnPause.value) {
+      const {k} = rnKernel; const noise = viewof rnNoise.value;
+      for (let step = 0; step < 5; step++) {
+        const rn = new Float64Array(N);
+        for (let i = 0; i < N; i++) {
+          let s = 0;
+          for (let j = 0; j < N; j++) { const d = (i - j + N) % N; s += k[d] * r[j]; }
+          const inp = s + h[i] + noise * (Math.random() - 0.5) * 2;
+          rn[i] = r[i] + dt / tau * (-r[i] + Math.max(0, inp));
+        }
+        r = rn; t += dt;
+      }
+    }
+    yield {r, t};
+  }
+}
+```
+
+```{ojs}
+//| echo: false
+{
+  const {r, t} = rnState, {ev, mmax, N} = rnKernel;
+  const W = 640, H = 320, c = DOM.context2d(W, H);
+  const fg = getComputedStyle(document.body).color;
+  c.clearRect(0, 0, W, H);
+  // activity panel
+  const aP = {x0: 50, y0: 10, w: W - 60, h: 150};
+  const rmax = Math.max(1e-6, ...r);
+  c.strokeStyle = "#999"; c.strokeRect(aP.x0, aP.y0, aP.w, aP.h);
+  c.fillStyle = "steelblue";
+  for (let i = 0; i < N; i++) {
+    const bh = aP.h * r[i] / rmax;
+    c.fillRect(aP.x0 + aP.w * i / N, aP.y0 + aP.h - bh, aP.w / N, bh);
+  }
+  c.fillStyle = fg; c.font = "11px sans-serif"; c.textAlign = "right";
+  c.fillText("activity", aP.x0 - 6, aP.y0 + aP.h / 2 + 4);
+  c.textAlign = "center"; c.fillText(`position on the ring · t = ${t.toFixed(0)} τ`, W / 2, aP.y0 + aP.h + 14);
+  // eigenvalue spectrum panel
+  const sP = {x0: 50, y0: 200, w: W - 60, h: 95};
+  const M = 40, emax = Math.max(1.6, ...ev), emin = Math.min(-0.5, ...ev);
+  const sy = v => sP.y0 + sP.h * (1 - (v - emin) / (emax - emin));
+  c.strokeStyle = "#999"; c.strokeRect(sP.x0, sP.y0, sP.w, sP.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "orangered"; c.beginPath(); c.moveTo(sP.x0, sy(1)); c.lineTo(sP.x0 + sP.w, sy(1)); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = "#888"; c.beginPath(); c.moveTo(sP.x0, sy(0)); c.lineTo(sP.x0 + sP.w, sy(0)); c.stroke();
+  for (let m = 0; m <= M; m++) {
+    c.fillStyle = m === mmax ? "orangered" : "gray";
+    c.beginPath(); c.arc(sP.x0 + sP.w * m / M, sy(ev[m]), 3, 0, 2 * Math.PI); c.fill();
+  }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("eigenvalue", sP.x0 - 6, sP.y0 + sP.h / 2 + 4);
+  c.fillText("1", sP.x0 - 6, sy(1) + 4);
+  c.textAlign = "center"; c.fillText(`spatial frequency (waves around the ring) · amplified most: ${mmax}`, W / 2, sP.y0 + sP.h + 16);
+  return c.canvas;
+}
+```
+
+Try: with the gain below 1 the pattern fades and only the random input remains.
+Above 1, the frequency marked in orange takes over. Make the inhibition wider
+and the stripes get broader. From the pattern-formation exercise in
+*Theoretical Neuroscience*.
+
+## Difference of Gaussians and its spectrum
+
+The same kernel, seen on its own: two Gaussians and their difference, next to
+the kernel's Fourier transform. The peak of the spectrum is the frequency the
+network above amplifies most.
+
+```{ojs}
+//| echo: false
+viewof sigE = Inputs.range([0.1, 10], {value: 1, step: 0.1, label: "Excitation width σₑ"})
+viewof ampE = Inputs.range([0, 10], {value: 1, step: 0.1, label: "Excitation strength"})
+viewof sigI = Inputs.range([0.1, 10], {value: 2, step: 0.1, label: "Inhibition width σᵢ"})
+viewof ampI = Inputs.range([0, 2], {value: 1, step: 0.05, label: "Inhibition strength"})
+
+gauss = (x, s) => Math.exp(-0.5 * x * x / (s * s)) / (Math.sqrt(2 * Math.PI) * s)
+ghat = (f, s) => Math.exp(-2 * Math.PI * Math.PI * s * s * f * f)
+
+xmax = 5 * Math.max(sigE, sigI)
+space = Array.from({length: 401}, (_, i) => {
+  const x = -xmax + 2 * xmax * i / 400;
+  const e = ampE * gauss(x, sigE), inh = -ampI * gauss(x, sigI);
+  return {x, Excitation: e, Inhibition: inh, "Difference of Gaussians": e + inh};
+})
+spectrum = Array.from({length: 401}, (_, i) => {
+  const f = 2 * i / 400;
+  return {f, k: Math.abs(ampE * ghat(f, sigE) - ampI * ghat(f, sigI))};
+})
+peak = spectrum.reduce((a, b) => (b.k > a.k ? b : a))
+
+html`<div style="display:flex;flex-wrap:wrap;gap:1rem">
+${Plot.plot({
+  width: 420, height: 260, marginLeft: 40,
+  x: {label: "space"}, y: {label: null, ticks: 0},
+  color: {legend: true, domain: ["Excitation", "Inhibition", "Difference of Gaussians"],
+          range: ["orangered", "steelblue", "black"]},
+  marks: [
+    Plot.ruleY([0], {stroke: "#999"}),
+    ...["Excitation", "Inhibition", "Difference of Gaussians"].map(k =>
+      Plot.line(space, {x: "x", y: k, stroke: () => k, strokeWidth: 2}))
+  ]
+})}
+${Plot.plot({
+  width: 420, height: 260, marginLeft: 50,
+  x: {label: "spatial frequency (cycles / unit length)"},
+  y: {label: "|kernel spectrum|", domain: [0, Math.max(0.05, ampE, ampI)]},
+  marks: [
+    Plot.line(spectrum, {x: "f", y: "k", stroke: "gray", strokeWidth: 2}),
+    Plot.ruleX([peak.f], {stroke: "orangered", strokeDasharray: "4 4"}),
+    Plot.text([peak], {x: "f", y: "k", text: d => `peak at f = ${d.f.toFixed(2)}`, dx: 8, dy: -8, textAnchor: "start"})
+  ]
+})}
+</div>`
+```
+
+## Figures from the notebooks
+
+Not everything needs to be live. The figures below are pulled directly from
+the exercise notebooks, cell by cell, so they stay in sync with the code.
+
+### Hebbian learning
+
+Weights under plain Hebbian learning grow without bound along the leading
+eigenvector of the input correlation matrix:
+
+{{< embed notebooks/hebbian.ipynb#hebb-trajectory >}}
+
+With saturation bounds, the end state depends on where you start:
+
+{{< embed notebooks/hebbian.ipynb#hebb-samplespace >}}
+
+Oja's rule normalises the weight vector instead:
+
+{{< embed notebooks/hebbian.ipynb#hebb-oja >}}
+
+### Integrate-and-fire neuron, from the webinar notebook
+
+The same neuron as in the explorable above, driven by increasingly strong input:
+
+{{< embed notebooks/lif_dno2020.ipynb#lif-inputs >}}
+
+Five repetitions with noisy input, each a different random perturbation:
+
+{{< embed notebooks/lif_dno2020.ipynb#lif-noise >}}
