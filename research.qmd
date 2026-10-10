@@ -24,14 +24,16 @@ How do feedforward inputs interact with recurrent cortical circuits during
 development? Together with the Fitzpatrick lab we showed that coherent cortical
 responses develop as feedforward inputs become more discriminable and better
 aligned with the recurrent network.
-See *Lempel, Trägenap et al., Neuron 2025*.
+See *Lempel, Trägenap et al., Neuron 2025*
+([doi:10.1016/j.neuron.2025.08.014](https://doi.org/10.1016/j.neuron.2025.08.014)).
 
 ## Millimetre-scale selective amplification
 
 With the Smith lab we study how the developing cortex selectively amplifies
 particular activity patterns across millimetres of cortical surface, and which
 recurrent subnetworks can account for this.
-See *Mulholland, Trägenap et al., bioRxiv 2026* (co-first authors).
+See *Mulholland, Trägenap et al., bioRxiv 2026* (co-first authors;
+[doi:10.64898/2026.03.31.715687](https://doi.org/10.64898/2026.03.31.715687)).
 
 ## Code and data
 

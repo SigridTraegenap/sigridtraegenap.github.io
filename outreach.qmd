@@ -25,9 +25,20 @@ Most of these are science slams: short, funny talks for a general audience.
   from endogenous networks.* Bernstein Conference 2022, Berlin.
   [Video](https://vimeo.com/showcase/9828727/video/749854704)
 
+## Interactive exhibit: EEG Mindball
+
+I built an *EEG Mindball*, an interactive exhibit in which two players move a ball
+by relaxing, measured with a consumer EEG headset. It serves as a hands-on introduction
+to brain signals and has been used at public science exhibitions, including the
+*Hessen schafft Wissen* presence at the Frankfurt Book Fair, the FIAS 20-year
+anniversary exhibition, and the Night of Science.
+
 ## Organising
 
 - **German Neuroscience Olympiad**, national final in Frankfurt, since 2019. Outreach
   and press contact, grading coordination, computational tutorial. The winner goes on to
   the International Brain Bee.
+- **[Night of Science](https://nightofscience.de)**, the annual student-run science
+  night at Goethe University's Riedberg campus, co-organiser 2015 – 2018. Responsible
+  for purchasing, and conceived several of the booths.
 - **PhD symposium** at FIAS following the Bernstein Conference 2024, co-organiser.
