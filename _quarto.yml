@@ -29,11 +29,7 @@ website:
   page-footer:
     center: |
       This site is currently under construction.<br>
-      © 2026 Sigrid Trägenap · The design of this website is based on the
-      [Quarto](https://quarto.org) about-page templates by [Posit](https://posit.co)
-      and the [Bootswatch](https://bootswatch.com) Flatly and Darkly themes,
-      and was built with the help of Claude Fable 5.1.<br>
-      [Impressum](impressum.qmd)
+      © 2026 Sigrid Trägenap · [Impressum](impressum.qmd)
 
 format:
   html:

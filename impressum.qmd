@@ -27,3 +27,8 @@ jeweilige Anbieter oder Betreiber verantwortlich.
 technisch notwendige Daten (z. B. IP-Adresse) durch GitHub verarbeitet; siehe die
 [Datenschutzerklärung von GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement).
 Diese Website setzt keine eigenen Cookies und nutzt keine Tracking-Dienste.
+
+**Gestaltung.** Das Design dieser Website basiert auf den About-Page-Vorlagen von
+[Quarto](https://quarto.org) ([Posit](https://posit.co)) und den
+[Bootswatch](https://bootswatch.com)-Themes Flatly und Darkly. Die Seite wurde mit
+Unterstützung von Claude Fable 5.1 erstellt.
