@@ -1,1 +1,1 @@
-Sitemap: https://sigridtraegenap.github.io/sitemap.xml
+Sitemap: https://traegenap.org/sitemap.xml
