@@ -1,13 +1,15 @@
 project:
   type: website
   output-dir: _site
+  resources:
+    - CNAME
   render:
     - "*.qmd"
     - "!besides-science.qmd"
 
 website:
   title: "Sigrid Trägenap"
-  site-url: https://sigridtraegenap.github.io
+  site-url: https://traegenap.org
   description: "Computational neuroscientist working on cortical development."
   favicon: assets/favicon.png
   navbar:
