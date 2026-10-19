@@ -119,15 +119,99 @@ Now wrap 256 neurons around a ring, so that there are no edges to worry
 about, and connect each pair with a weight given by the kernel above. The
 firing rates $r$ evolve according to
 
-$$\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+ .$$
+$$\tau \frac{dr}{dt} = -r + f\!\left(W r + h\right) .$$
 
-Each neuron relaxes towards its total input with time constant $\tau$. The
-input has two parts: the recurrent input $W r$ from the rest of the ring, and
-an external input $h$ that is drawn at random once per neuron and then held
-fixed. On top of that you can add noise that is redrawn at every time step.
-The brackets denote rectification, so rates cannot go negative. The width
-sliders set the two Gaussians of the kernel, in units of neurons along the
-ring.
+Each neuron relaxes towards a function $f$ of its total input, with time
+constant $\tau$. The input has two parts: the recurrent input $W r$ from the
+rest of the ring, and an external input $h$ that is drawn at random once per
+neuron and then held fixed. On top of that you can add noise that is redrawn
+at every time step. The width sliders set the two Gaussians of the kernel,
+in units of neurons along the ring.
+
+## The nonlinearity
+
+The function $f$ is the neuron's input-output relation, and it is the one
+ingredient the linear analysis above says nothing about. The eigenvalues of
+$W$ tell you which pattern grows, but not where it stops. That is the job of
+$f$, and different choices give qualitatively different networks. The
+selector below switches $f$ in the simulation, and the small plot shows the
+function you have chosen.
+
+```{ojs}
+//| echo: false
+viewof rnNL = Inputs.radio(new Map([
+  ["linear, f(x) = x", "linear"],
+  ["rectified linear, f(x) = [x]₊", "relu"],
+  ["rectified square, f(x) = [x]₊²", "relu2"],
+  ["clipped linear, f(x) = [x]₊ cut off at 1", "clip"],
+  ["sigmoid, f(x) = 1 / (1 + exp(−4(x − 1)))", "sigmoid"]
+]), {value: "relu", label: "Nonlinearity f"})
+rnFuns = ({
+  linear: x => x,
+  relu: x => Math.max(0, x),
+  relu2: x => { const y = Math.max(0, x); return y * y; },
+  clip: x => Math.min(1, Math.max(0, x)),
+  sigmoid: x => 1 / (1 + Math.exp(-4 * (x - 1)))
+})
+nlCanvas = mkCanvas(760, 220)
+```
+
+```{ojs}
+//| echo: false
+{
+  const c = nlCanvas, fg = exFg(), W = 760, H = 220, f = rnFuns[rnNL];
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  const P = {x0: 90, y0: 12, w: W - 110, h: 160}, xlo = -1, xhi = 3, ylo = -1, yhi = 3;
+  const sx = x => P.x0 + P.w * (x - xlo) / (xhi - xlo), sy = y => P.y0 + P.h * (1 - (y - ylo) / (yhi - ylo));
+  axisBox(c, P.x0, P.y0, P.w, P.h);
+  c.strokeStyle = "#bbb"; c.lineWidth = 1; c.beginPath(); c.moveTo(sx(0), P.y0); c.lineTo(sx(0), P.y0 + P.h); c.moveTo(P.x0, sy(0)); c.lineTo(P.x0 + P.w, sy(0)); c.stroke();
+  c.setLineDash([4, 4]); c.strokeStyle = "#999"; c.beginPath(); c.moveTo(sx(xlo), sy(xlo)); c.lineTo(sx(xhi), sy(xhi)); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = "#ff7f0e"; c.lineWidth = 2.5; c.beginPath();
+  for (let i = 0; i <= 300; i++) { const x = xlo + (xhi - xlo) * i / 300, y = Math.min(yhi, Math.max(ylo, f(x))); i ? c.lineTo(sx(x), sy(y)) : c.moveTo(sx(x), sy(y)); }
+  c.stroke();
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText("input x = (W r + h)ᵢ", P.x0 + P.w / 2, P.y0 + P.h + 24);
+  c.fillText(xlo, sx(xlo), P.y0 + P.h + 24); c.fillText(xhi, sx(xhi), P.y0 + P.h + 24);
+  c.textAlign = "right"; c.fillText("f(x)", P.x0 - 10, P.y0 + P.h / 2 + 5); c.fillText(ylo, P.x0 - 8, sy(ylo) + 5); c.fillText(yhi, P.x0 - 8, sy(yhi) + 5);
+  c.textAlign = "left"; c.fillStyle = "#999"; c.fillText("identity", sx(2.2) + 8, sy(2.2) + 18);
+  return c.canvas;
+}
+```
+
+The dashed line is the identity, so you can see where each $f$ departs from
+it. Three features of $f$ matter for the network.
+
+The first is what happens at zero. A linear $f$ lets rates go negative,
+which no real neuron does, and the rectified versions put a floor at zero.
+That floor is already a nonlinearity, and in the default network it is the
+only thing that stops the growing pattern: the troughs of the stripe cannot
+go below zero, and because the kernel has more inhibition than excitation
+overall, the peaks are then held in check by the surround.
+
+The second is what happens for large inputs. The rectified linear and
+rectified square functions have no ceiling, so they rely on inhibition to
+stabilise the network. The clipped linear and the sigmoid saturate, which
+means the network is stable no matter how strong the recurrence is. The
+price is that above saturation the neuron no longer tells its input apart,
+so the stripes become flat-topped and the pattern loses contrast.
+
+The third is the slope. The rectified square has a slope that grows with
+activity, so the effective gain of the network is not fixed by $W$ alone
+but rises with the activity level. This is the ingredient of the
+stabilised supralinear network of Rubin et al. (2015), where it explains
+why cortical responses sum sublinearly for strong inputs. The sigmoid, by
+contrast, has its steepest slope near its midpoint and almost none at either
+end.
+
+| $f$ | floor | ceiling | slope | what to expect in the simulation |
+|---|---|---|---|---|
+| linear | none | none | constant | above gain 1 the pattern grows without limit, stopped here only by a numerical cap |
+| rectified linear | 0 | none | 0, then constant | the default: stripes with zero troughs, held in check by inhibition |
+| rectified square | 0 | none | increasing | sharper, narrower peaks; runs away if inhibition is too weak |
+| clipped linear | 0 | 1 | constant, then 0 | flat-topped stripes, stable at any gain |
+| sigmoid | 0 | 1 | bell-shaped | smooth bumps that become nearly binary at high gain |
+
+: {tbl-colwidths="[18,10,10,18,44]"}
 
 The gain slider is the one to watch. It scales the whole weight matrix so
 that its largest eigenvalue equals the number you set. Because the kernel
@@ -137,7 +221,7 @@ Fourier transform from the first part of the page. If the largest eigenvalue
 is below 1, every pattern decays faster than the recurrence can feed it, and
 the activity just reflects the random input. If it is above 1, the pattern
 at the favoured frequency grows on each pass through the network until the
-rectification stops it. That is the transition from a stable, input-driven
+nonlinearity stops it. That is the transition from a stable, input-driven
 network to one that generates its own pattern.
 
 ```{ojs}
@@ -171,13 +255,14 @@ rnState = {
   let r = new Float64Array(N).fill(0.5), t = 0;
   while (true) {
     if (!viewof rnPause.value) {
-      const {k} = rnKernel; const noise = viewof rnNoise.value;
+      const {k} = rnKernel; const noise = viewof rnNoise.value, f = rnFuns[viewof rnNL.value], cap = 1e3;
       for (let step = 0; step < 5; step++) {
         const rn = new Float64Array(N);
         for (let i = 0; i < N; i++) {
           let s = 0;
           for (let j = 0; j < N; j++) { const d = (i - j + N) % N; s += k[d] * r[j]; }
-          rn[i] = r[i] + dt / tau * (-r[i] + Math.max(0, s + h[i] + noise * (Math.random() - 0.5) * 2));
+          const v = r[i] + dt / tau * (-r[i] + f(s + h[i] + noise * (Math.random() - 0.5) * 2));
+          rn[i] = Math.max(-cap, Math.min(cap, v));
         }
         r = rn; t += dt;
       }
@@ -193,14 +278,17 @@ rnCanvas = mkCanvas(760, 400)
 {
   const {r, t} = rnState, {ev, mmax, N} = rnKernel, c = rnCanvas, fg = exFg();
   const W = 760, H = 400; c.clearRect(0, 0, W, H); c.font = exFont;
-  const aP = {x0: 90, y0: 12, w: W - 110, h: 170};
-  const rmax = Math.max(1e-6, ...r);
+  const aP = {x0: 115, y0: 12, w: W - 135, h: 170};
+  const rmax = Math.max(1e-6, ...r); let rmin = Math.min(0, ...r); if (rmin > -1e-3 * rmax) rmin = 0;
+  const fmt = v => Math.abs(v) >= 1000 ? v.toExponential(1) : v.toPrecision(2);
+  const ry = v => aP.y0 + aP.h * (1 - (v - rmin) / (rmax - rmin));
   axisBox(c, aP.x0, aP.y0, aP.w, aP.h);
   c.fillStyle = "#1f77b4";
-  for (let i = 0; i < N; i++) { const bh = aP.h * r[i] / rmax; c.fillRect(aP.x0 + aP.w * i / N, aP.y0 + aP.h - bh, aP.w / N, bh); }
+  for (let i = 0; i < N; i++) { const y0 = ry(0), y1 = ry(r[i]); c.fillRect(aP.x0 + aP.w * i / N, Math.min(y0, y1), aP.w / N, Math.abs(y1 - y0)); }
   c.fillStyle = fg; c.textAlign = "right"; c.fillText("activity", aP.x0 - 8, aP.y0 + aP.h / 2 + 5);
+  c.fillText(fmt(rmax), aP.x0 - 8, aP.y0 + 6); c.fillText(rmin < 0 ? fmt(rmin) : "0", aP.x0 - 8, aP.y0 + aP.h + 2);
   c.textAlign = "center"; c.fillText(`position on the ring · t = ${t.toFixed(0)} τ`, aP.x0 + aP.w / 2, aP.y0 + aP.h + 22);
-  const sP = {x0: 90, y0: 240, w: W - 110, h: 110};
+  const sP = {x0: 115, y0: 240, w: W - 135, h: 110};
   const M = 40, emax = Math.max(1.6, ...ev), emin = Math.min(-0.5, ...ev);
   const sy = v => sP.y0 + sP.h * (1 - (v - emin) / (emax - emin));
   axisBox(c, sP.x0, sP.y0, sP.w, sP.h);
@@ -253,6 +341,20 @@ Mexican hat kernel imposes its own structure on whatever it is given, and
 why the same mechanism has been proposed for so many different periodic
 patterns in the brain.
 
+Now go back to the nonlinearity selector and switch to linear, with the gain
+still above 1. Press Reset and watch the axis labels of the activity panel:
+the stripes keep their shape but the numbers grow without bound, and the
+troughs go negative. Nothing in a linear network can stop a mode whose
+eigenvalue exceeds 1. Switch to the sigmoid and press Reset: the same network settles into bumps
+that can never exceed 1, however high you push the gain. At the default gain
+they are weak and noisy, because the sigmoid's slope near its midpoint is
+modest. Push the gain up and the bumps sharpen into nearly binary blocks,
+with each neuron either fully on or fully off. Then try the rectified square with the default gain, and
+then with wider excitation: the narrower the peaks, the more the increasing
+slope feeds back on itself, and at some point the network runs away. Making
+inhibition stronger relative to excitation brings it back, which is the
+balance the supralinear network depends on.
+
 This page is based on the pattern-formation exercise in Dayan and Abbott
 (2001, chapter 7). The ring network with a distance-dependent kernel is the
 setting of Amari's (1977) analysis of neural fields, and the same
@@ -274,6 +376,10 @@ Mathematical Modeling of Neural Systems*. MIT Press.
 
 Ermentrout GB, Cowan JD (1979). A mathematical theory of visual
 hallucination patterns. *Biological Cybernetics* 34: 137–150.
+
+Rubin DB, Van Hooser SD, Miller KD (2015). The stabilized supralinear
+network: a unifying circuit motif underlying multi-input integration in
+sensory cortex. *Neuron* 85: 402–417.
 
 Swindale NV (1980). A model for the formation of ocular dominance stripes.
 *Proceedings of the Royal Society B* 208: 243–264.
