@@ -48,9 +48,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-35aa68add6c86a7318e4abfca15e0f82.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-cea1f1bf700eacbc6b64abd16d2799fe.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-35aa68add6c86a7318e4abfca15e0f82.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-86312c41d8c8d97270542994db1177a1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -82,7 +82,7 @@ ul.task-list li input[type="checkbox"] {
 
 </head>
 
-<body class="nav-fixed fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -335,7 +335,24 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#structure-before-experience" id="toc-structure-before-experience" class="nav-link active" data-scroll-target="#structure-before-experience">Structure before experience</a></li>
+  <li><a href="#from-variable-to-reliable" id="toc-from-variable-to-reliable" class="nav-link" data-scroll-target="#from-variable-to-reliable">From variable to reliable</a></li>
+  <li><a href="#feedforward-input-meets-recurrent-circuits" id="toc-feedforward-input-meets-recurrent-circuits" class="nav-link" data-scroll-target="#feedforward-input-meets-recurrent-circuits">Feedforward input meets recurrent circuits</a></li>
+  <li><a href="#selective-amplification-across-the-cortical-sheet" id="toc-selective-amplification-across-the-cortical-sheet" class="nav-link" data-scroll-target="#selective-amplification-across-the-cortical-sheet">Selective amplification across the cortical sheet</a></li>
+  <li><a href="#a-detour-into-skin" id="toc-a-detour-into-skin" class="nav-link" data-scroll-target="#a-detour-into-skin">A detour into skin</a></li>
+  <li><a href="#looking-ahead-across-the-animal-tree" id="toc-looking-ahead-across-the-animal-tree" class="nav-link" data-scroll-target="#looking-ahead-across-the-animal-tree">Looking ahead: across the animal tree</a></li>
+  <li><a href="#looking-ahead-from-biology-to-learning-machines" id="toc-looking-ahead-from-biology-to-learning-machines" class="nav-link" data-scroll-target="#looking-ahead-from-biology-to-learning-machines">Looking ahead: from biology to learning machines</a></li>
+  <li><a href="#how-i-work" id="toc-how-i-work" class="nav-link" data-scroll-target="#how-i-work">How I work</a></li>
+  <li><a href="#recorded-talks" id="toc-recorded-talks" class="nav-link" data-scroll-target="#recorded-talks">Recorded talks</a></li>
+  <li><a href="#code-and-data" id="toc-code-and-data" class="nav-link" data-scroll-target="#code-and-data">Code and data</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -359,34 +376,45 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>I am interested in how the brain builds reliable representations of the world during development, and in particular in the part that the cortex’s own internal structure plays in this process.</p>
-<section id="how-the-cortex-prepares-for-seeing-before-it-sees" class="level2">
-<h2 class="anchored" data-anchor-id="how-the-cortex-prepares-for-seeing-before-it-sees">How the cortex prepares for seeing before it sees</h2>
-<p>Before eye opening, the visual cortex already shows richly structured spontaneous activity. I want to understand what this endogenous structure is good for: how it is shaped by recurrent connectivity, and how far it constrains what the cortex can later learn from experience.</p>
+<p>I want to understand how a visual cortex that has never seen anything gets ready to see, and how the first days of visual experience turn that preparation into a reliable representation of the world. Everything below is a version of that question. I work on it with recurrent network models of cortical circuits and with chronically imaged populations of neurons in the developing ferret visual cortex, and I try to keep the models simple enough to take apart and the data close enough that the models have to answer to it.</p>
+<section id="structure-before-experience" class="level2">
+<h2 class="anchored" data-anchor-id="structure-before-experience">Structure before experience</h2>
+<p>The visual cortex is not a blank slate waiting for input. Already before eye opening, it shows spontaneous activity with a rich spatial organisation: patterns on the scale of millimetres, repeating with a characteristic wavelength, correlated across distant parts of the cortical sheet, and confined to a small number of dimensions. This organisation is generated to a large part by the cortex’s own recurrent circuitry; it persists when the retina and thalamus are silenced. Work from our group together with the Fitzpatrick lab, and from several other groups, has shown that the layout of these spontaneous patterns before eye opening predicts the layout of the orientation map that the same patch of cortex will have afterwards. The developing cortex, in other words, has a repertoire of patterns it readily produces before it has any visual reason to.</p>
+<p>I want to know what this endogenous structure is for. One reading is that it is a scaffold: a set of preferred activity patterns that experience then selects among and sharpens. Another is that it is a constraint: whatever the cortex later learns has to be expressible in terms of patterns the network can already sustain. Both readings make predictions about what should happen at eye opening, and testing them is the thread running through my work.</p>
 </section>
-<section id="how-experience-turns-variable-responses-into-reliable-ones" class="level2">
-<h2 class="anchored" data-anchor-id="how-experience-turns-variable-responses-into-reliable-ones">How experience turns variable responses into reliable ones</h2>
-<p>At eye opening, responses to the same stimulus differ from trial to trial; within days they become reliable. I am interested in the circuit mechanisms behind this transition. Our work so far suggests that reliability emerges when visual input becomes aligned with the pre-existing network structure, rather than through a general reduction of noise. See <em>Trägenap et al., Nature Neuroscience 2025</em> (<a href="https://fias.institute/en/news/news-publicity/learning-to-see-a-mix-of-nature-and-nurture/">press release</a> · <a href="https://www.nature.com/articles/s41593-024-01857-3.epdf?sharing_token=GwWYQRrz-zub53Fug5n7UdRgN0jAjWel9jnR3ZoTv0M7mcLR7y-jFw14-nj_gtm6ywdvYoPVRIr_VUd7JsYV_8IKHS0hYLlzSCcrssR-rATJZeAwYyx6R5SJjIyj4cSPLALkqJbHibiN74JKVL2qsolm3CfkUvDI4TAUomlN-BQ%3D">free-to-read version</a>).</p>
+<section id="from-variable-to-reliable" class="level2">
+<h2 class="anchored" data-anchor-id="from-variable-to-reliable">From variable to reliable</h2>
+<p>Models of cortical development have mostly been built to explain tuning and map layout: why a neuron prefers one orientation, and why neighbouring neurons prefer similar ones. They say much less about a property that is just as important for seeing, namely reliability. If the same stimulus is shown twice, does the cortex respond the same way twice?</p>
+<p>At eye opening it does not. The response to a simple oriented grating varies strongly from trial to trial, and each response resembles one of the spontaneous patterns more than it resembles the response to the same grating a moment later. Over the following days this changes. Responses to the same stimulus become reproducible, responses to different stimuli become distinct, and an orientation map emerges that then stays stable. In <em>Trägenap et al., Nature Neuroscience 2025</em> we followed this transition in individual ferrets, imaging the same region of cortex day after day through the week after eye opening, and asked what change in the circuit could account for it.</p>
+<p>The explanation that fits the data is not that the cortex becomes quieter or that its noise goes down. It is that the visual input becomes aligned with the network’s own structure. The recurrent network amplifies some activity patterns and suppresses others, and reliability emerges once the feedforward drive for a stimulus comes to lie along the amplified patterns, so that the network’s response to a stimulus and its spontaneous activity begin to agree. A model in which this alignment is the only thing that changes reproduces the rise in reliability, the growing match between evoked and spontaneous patterns, and the time course over days. Models in which the input is merely strengthened, or the noise merely reduced, do not. (<a href="https://fias.institute/en/news/news-publicity/learning-to-see-a-mix-of-nature-and-nurture/">press release</a> · <a href="https://www.nature.com/articles/s41593-024-01857-3.epdf?sharing_token=GwWYQRrz-zub53Fug5n7UdRgN0jAjWel9jnR3ZoTv0M7mcLR7y-jFw14-nj_gtm6ywdvYoPVRIr_VUd7JsYV_8IKHS0hYLlzSCcrssR-rATJZeAwYyx6R5SJjIyj4cSPLALkqJbHibiN74JKVL2qsolm3CfkUvDI4TAUomlN-BQ%3D">free-to-read version</a>)</p>
+<p>I find this result appealing because it recasts the question of nature and nurture. The cortex arrives with a set of patterns it represents well. Experience does not have to build a representation from nothing; it has to bring the input into register with what is already there.</p>
 </section>
 <section id="feedforward-input-meets-recurrent-circuits" class="level2">
 <h2 class="anchored" data-anchor-id="feedforward-input-meets-recurrent-circuits">Feedforward input meets recurrent circuits</h2>
-<p>How do feedforward inputs and recurrent cortical circuits shape each other as the cortex matures? With the Fitzpatrick lab we found that coherent cortical responses develop as feedforward inputs become more discriminable and better aligned with the recurrent network. See <em>Lempel, Trägenap et al., Neuron 2025</em> (<a href="https://fias.institute/en/news/news-publicity/learning-to-see-is-teamwork/">press release</a> · <a href="https://doi.org/10.1016/j.neuron.2025.08.014">doi:10.1016/j.neuron.2025.08.014</a>).</p>
+<p>This raises the next question: what is the feedforward input itself doing during that week? With the Fitzpatrick lab we looked at both sides of the junction, the thalamic input arriving in cortex and the cortical response it produces, across the same developmental window. In <em>Lempel, Trägenap et al., Neuron 2025</em> we found that coherent cortical responses develop as two things change together. The feedforward inputs for different stimuli become more distinguishable from one another, and they become better aligned with the recurrent network they feed into. Neither change on its own accounts for the data. (<a href="https://fias.institute/en/news/news-publicity/learning-to-see-is-teamwork/">press release</a> · <a href="https://doi.org/10.1016/j.neuron.2025.08.014">doi:10.1016/j.neuron.2025.08.014</a>)</p>
+<p>Part of what makes this hard to study is that two-photon imaging in the ferret does not reach the thalamic input layer, which lies too deep. So this work combines imaging of the superficial layers with electrophysiology and modelling to say something about the layer we cannot see.</p>
 </section>
 <section id="selective-amplification-across-the-cortical-sheet" class="level2">
 <h2 class="anchored" data-anchor-id="selective-amplification-across-the-cortical-sheet">Selective amplification across the cortical sheet</h2>
-<p>Which activity patterns does the developing cortex amplify, and which does it suppress? With the Smith lab we study selective amplification on the scale of millimetres and ask which recurrent subnetworks can account for it. See <em>Mulholland, Trägenap et al., bioRxiv 2026</em> (co-first authors; <a href="https://doi.org/10.64898/2026.03.31.715687">doi:10.64898/2026.03.31.715687</a>).</p>
+<p>Underneath both results is a claim about the recurrent network: that it amplifies activity patterns with a particular spatial scale and suppresses others, acting as a pattern-selective filter. The classic account of how this could work is local excitation and wider inhibition, which pick out one wavelength. The Smith lab has tested this directly with patterned optogenetic stimulation: uniform light evokes modular activity at the network’s preferred wavelength, and patterns at other wavelengths are pulled towards it (<em>Mulholland, Kaschube and Smith, 2024</em>). The <a href="./teaching/recurrent-networks.html">recurrent networks page</a> in the Teaching section walks through the underlying mechanism in its simplest form.</p>
+<p>With the Smith lab I am now asking which patterns the developing cortex amplifies on the scale of millimetres, how selective that amplification is, and which recurrent subnetworks can account for it. This is the work in <em>Mulholland, Trägenap et al., bioRxiv 2026</em> (co-first authors; <a href="https://doi.org/10.64898/2026.03.31.715687">doi:10.64898/2026.03.31.715687</a>). One thing we have learned along the way is that a perfectly uniform network of this kind would be too permissive, sustaining any pattern of the right wavelength equally well. It is the heterogeneity of real cortex, in connection strengths and in local anisotropies, that confines activity to a small set of patterns, and it is this set that the spontaneous activity reveals.</p>
+</section>
+<section id="a-detour-into-skin" class="level2">
+<h2 class="anchored" data-anchor-id="a-detour-into-skin">A detour into skin</h2>
+<p>For several years, funded by the Center for Multiscale Modelling in Frankfurt, I also worked on models of pattern formation in the developing skin of cuttlefish. In the details this is a different subject, but the models belong to the same family: a field of interacting elements, local activation and longer-range inhibition, and a pattern with a characteristic wavelength that emerges from the interactions rather than from a template. Seeing the same mechanism at work in two systems that share no cells, no molecules and no evolutionary purpose was a useful reminder that the explanation lies in the structure of the interactions, not in the particular biology that implements them.</p>
 </section>
 <section id="looking-ahead-across-the-animal-tree" class="level2">
 <h2 class="anchored" data-anchor-id="looking-ahead-across-the-animal-tree">Looking ahead: across the animal tree</h2>
-<p>Most of what we know about cortical development comes from a handful of species. Yet brains differ, shaped by different evolutionary histories and different ways of seeing the world. By comparing how the cortex is organised in ferrets, cats, tree shrews and mice, I hope to tell apart the developmental principles that are shared across species from those that are particular to one. Where a species departs from the others, the departure itself points to the mechanism at work.</p>
+<p>Most of what we know about cortical development comes from a handful of species, and these species differ in instructive ways. Carnivores, primates and tree shrews have smooth orientation maps with a periodic layout and pinwheels; rodents have the same selectivity but arranged in a salt-and-pepper fashion, and their spontaneous activity shows none of the low-dimensional, map-like structure described above. Several hypotheses have been proposed for why, from cortical size to the density of thalamic afferents to the loss of an ancestral columnar organisation, and none has settled the matter. By comparing how the cortex is organised and how it develops across ferrets, cats, tree shrews and mice, I hope to separate the developmental principles that are shared from those that belong to one lineage. Where a species departs from the others, the departure points at the mechanism, and a theory that explains only one species is not yet a theory of the cortex.</p>
 </section>
 <section id="looking-ahead-from-biology-to-learning-machines" class="level2">
 <h2 class="anchored" data-anchor-id="looking-ahead-from-biology-to-learning-machines">Looking ahead: from biology to learning machines</h2>
-<p>The developing cortex solves a problem that artificial systems also face: how to learn quickly from limited experience. I am curious whether the strategy we see in the brain, starting from a structured prior and aligning input to it, could make learning in artificial neural networks faster or more robust.</p>
+<p>The developing cortex solves a problem that artificial systems also face: how to learn quickly from limited experience. The strategy we see in the brain is to start from a structured prior, generated by the network’s own dynamics, and to align incoming data with it rather than learn a representation from nothing. I am curious whether this strategy, made explicit, could make learning in artificial neural networks faster or more robust, and in the other direction, whether the tools built for understanding learning in deep networks can tell us something about what the cortex does in its first week of seeing.</p>
 </section>
-<section id="approach" class="level2">
-<h2 class="anchored" data-anchor-id="approach">Approach</h2>
-<p>I work at the interface of theory and experiment: dynamical recurrent network models, analysis of large-scale calcium imaging data, and the comparison of model predictions with chronically recorded neural populations. I enjoy working closely with experimental partners and being part of the loop between theory and experiment that drives science forward: a model can suggest what to measure, and the measurement reshapes the model. In my PhD work I have collaborated with the labs of David Fitzpatrick (Max Planck Florida Institute for Neuroscience) and Gordon Smith (University of Minnesota).</p>
+<section id="how-i-work" class="level2">
+<h2 class="anchored" data-anchor-id="how-i-work">How I work</h2>
+<p>I sit between theory and experiment and I like it there. In practice this means dynamical recurrent network models of cortical circuits, analysis of large-scale two-photon and widefield calcium imaging data, and the comparison of the two: a model suggests what to measure, the measurement reshapes the model, and neither side gets to be right on its own. During my PhD I have done this in long-running collaborations with the labs of David Fitzpatrick (Max Planck Florida Institute for Neuroscience) and Gordon Smith (University of Minnesota). Much of what I have learned about doing science well has come from the friction between the way a theorist and an experimentalist look at the same figure.</p>
+<p>A few habits follow from this. I prefer the simplest model that can be wrong, because a model I cannot break is a model I cannot learn from. Before fitting anything, I spend time on the question of what the model predicts that the data could contradict. And I try to make models playable: the parameter-exploration notebook linked below and the <a href="./teaching/index.html">interactive pages</a> in the Teaching section exist because changing a parameter and watching the pattern respond has taught me things that a derivation did not.</p>
 </section>
 <section id="recorded-talks" class="level2">
 <h2 class="anchored" data-anchor-id="recorded-talks">Recorded talks</h2>
@@ -832,7 +860,7 @@ ul.task-list li input[type="checkbox"] {
       &nbsp;
     </div>   
     <div class="nav-footer-center">
-<p>This site is currently under construction.<br> © 2026 Sigrid Trägenap · <a href="./impressum.html">Impressum</a></p>
+<p>This site is currently under construction.<br> © 2026 Sigrid Trägenap · <a href="./impressum.html">Impressum und Datenschutz</a></p>
 </div>
     <div class="nav-footer-right">
       &nbsp;
