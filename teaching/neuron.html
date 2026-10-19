@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="The simplest model of a spiking neuron: a live membrane trace, a dose of noise, and an f-I curve that fills in as you explore.">
+
+<title>The leaky integrate-and-fire neuron – Sigrid Trägenap</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-35aa68add6c86a7318e4abfca15e0f82.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-cea1f1bf700eacbc6b64abd16d2799fe.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-35aa68add6c86a7318e4abfca15e0f82.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Sigrid Trägenap</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../research.html"> 
+<span class="menu-text">Research Interests</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../publications.html"> 
+<span class="menu-text">Publications</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../outreach.html"> 
+<span class="menu-text">Outreach</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-teaching" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Teaching</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-teaching">    
+        <li>
+    <a class="dropdown-item" href="../teaching/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/neuron.html">
+ <span class="dropdown-text">Integrate-and-fire neuron</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/pca.html">
+ <span class="dropdown-text">Principal component analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/fourier.html">
+ <span class="dropdown-text">Sampling and the Fourier transform</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/recurrent-networks.html">
+ <span class="dropdown-text">Recurrent networks</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hebbian.html">
+ <span class="dropdown-text">Hebbian learning</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/SigridTraegenap"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-model" id="toc-the-model" class="nav-link active" data-scroll-target="#the-model">The model</a></li>
+  <li><a href="#reading-the-figure" id="toc-reading-the-figure" class="nav-link" data-scroll-target="#reading-the-figure">Reading the figure</a></li>
+  <li><a href="#things-to-try" id="toc-things-to-try" class="nav-link" data-scroll-target="#things-to-try">Things to try</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">The leaky integrate-and-fire neuron</h1>
+</div>
+
+<div>
+  <div class="description">
+    The simplest model of a spiking neuron: a live membrane trace, a dose of noise, and an f-I curve that fills in as you explore.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>A real neuron is a complicated thing, but a surprising amount of its behaviour can be captured by treating it as a leaky bucket. Current flows in, the membrane voltage rises, some of it leaks away, and once the voltage reaches a threshold the neuron fires a spike and starts over. That is the leaky integrate-and-fire model. It goes back to Lapicque (1907), long before anyone knew what an action potential was made of, and it is still the first model most people meet in computational neuroscience. I used it in a webinar for the German Neuroscience Olympiad in 2020, and this page is the interactive version of that notebook.</p>
+<p>Everything runs in your browser. The simulation keeps going while you move the sliders, so you can watch the neuron react to a change in its input.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="26" data-source-offset="-92"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 25;"><span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>exFont <span class="op">=</span> <span class="st">"16px "</span> <span class="op">+</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontFamily</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>exFg <span class="op">=</span> () <span class="kw">=&gt;</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">color</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>mkCanvas <span class="op">=</span> (W<span class="op">,</span> H) <span class="kw">=&gt;</span> {</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> c <span class="op">=</span> DOM<span class="op">.</span><span class="fu">context2d</span>(W<span class="op">,</span> H)<span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">width</span> <span class="op">=</span> <span class="st">"100%"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">maxWidth</span> <span class="op">=</span> W <span class="op">+</span> <span class="st">"px"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">height</span> <span class="op">=</span> <span class="st">"auto"</span><span class="op">;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>axisBox <span class="op">=</span> (c<span class="op">,</span> x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h) <span class="kw">=&gt;</span> { c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">strokeRect</span>(x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h)<span class="op">;</span> }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<section id="the-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-model">The model</h2>
+<p>The only variable is the membrane potential <span class="math inline">\(V\)</span>, measured in millivolts. Left alone, it sits at the resting potential <span class="math inline">\(V_{\text{rest}} = -65\)</span> mV. An input current <span class="math inline">\(I\)</span> pushes it away from rest, and the leak pulls it back, so that</p>
+<p><span class="math display">\[\tau_m \frac{dV}{dt} = (V_{\text{rest}} - V) + R\,I(t).\]</span></p>
+<p>The membrane time constant <span class="math inline">\(\tau_m\)</span> sets how fast <span class="math inline">\(V\)</span> follows a change in input. A small <span class="math inline">\(\tau_m\)</span> means a nervous neuron that tracks its input closely, a large one means a sluggish neuron that averages over a longer stretch of time. The input resistance <span class="math inline">\(R\)</span> converts current to voltage and is fixed at 2 MΩ here, so a steady current of 10 nA lifts the voltage by 20 mV in the long run.</p>
+<p>The equation alone would just let <span class="math inline">\(V\)</span> settle at a new level. The spike is added by hand: whenever <span class="math inline">\(V\)</span> reaches the threshold <span class="math inline">\(V_{\text{th}}\)</span>, the neuron is said to fire, <span class="math inline">\(V\)</span> is reset to <span class="math inline">\(V_{\text{reset}} = -70\)</span> mV, and it is held there for a refractory period of 2 ms before the integration starts again. Nothing about the shape of a real action potential is in the model. The spike is just an event, drawn here as a vertical stroke so that you can see it.</p>
+<p>With noise switched on, a random Gaussian value is added to the current at every time step. The slider sets the size of these fluctuations. This is a crude stand-in for the thousands of synaptic inputs a cortical neuron receives, which never add up to a perfectly steady current.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="65" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 64;"><span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>viewof lifI <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">25</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">8</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Input current (nA)"</span>})</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>viewof lifNoise <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">10</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Input noise (0 = off)"</span>})</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>viewof lifTau <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">2</span><span class="op">,</span> <span class="dv">50</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Membrane time constant τ (ms)"</span>})</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>viewof lifThr <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="op">-</span><span class="dv">60</span><span class="op">,</span> <span class="op">-</span><span class="dv">35</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="op">-</span><span class="dv">50</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Threshold (mV)"</span>})</span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>viewof lifPause <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Pause"</span>})</span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>viewof lifReset <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">button</span>(<span class="st">"Reset (also clears the f-I points)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="75" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 74;"><span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>lifState <span class="op">=</span> {</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>  lifReset<span class="op">;</span></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> dt <span class="op">=</span> <span class="fl">0.1</span><span class="op">,</span> win <span class="op">=</span> <span class="dv">300</span><span class="op">,</span> R <span class="op">=</span> <span class="dv">2</span><span class="op">,</span> Vrest <span class="op">=</span> <span class="op">-</span><span class="dv">65</span><span class="op">,</span> Vreset <span class="op">=</span> <span class="op">-</span><span class="dv">70</span><span class="op">,</span> refr <span class="op">=</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> n <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(win <span class="op">/</span> dt)<span class="op">;</span></span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> V <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n)<span class="op">.</span><span class="fu">fill</span>(Vrest)<span class="op">,</span> Iarr <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n)<span class="op">;</span></span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> v <span class="op">=</span> Vrest<span class="op">,</span> refrLeft <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> t <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> fi <span class="op">=</span> <span class="kw">new</span> <span class="bu">Map</span>()<span class="op">;</span></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> key <span class="op">=</span> <span class="kw">null</span><span class="op">,</span> sinceChange <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> spikesSince <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> lastSig <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> gauss <span class="op">=</span> () <span class="kw">=&gt;</span> { <span class="kw">let</span> u <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="cf">while</span> (u <span class="op">===</span> <span class="dv">0</span>) u <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>()<span class="op">;</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">return</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="op">-</span><span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">log</span>(u)) <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(<span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>())<span class="op">;</span> }<span class="op">;</span></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (<span class="kw">true</span>) {</span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> I0 <span class="op">=</span> viewof lifI<span class="op">.</span><span class="at">value</span><span class="op">,</span> sig <span class="op">=</span> viewof lifNoise<span class="op">.</span><span class="at">value</span><span class="op">,</span></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>          tau <span class="op">=</span> viewof lifTau<span class="op">.</span><span class="at">value</span><span class="op">,</span> thr <span class="op">=</span> viewof lifThr<span class="op">.</span><span class="at">value</span><span class="op">;</span></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>viewof lifPause<span class="op">.</span><span class="at">value</span>) {</span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> k <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>I0<span class="sc">}</span><span class="vs">|</span><span class="sc">${</span>sig <span class="op">&gt;</span> <span class="dv">0</span><span class="sc">}</span><span class="vs">`</span><span class="op">;</span></span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (sig <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> sig <span class="op">!==</span> lastSig) { <span class="cf">for</span> (<span class="kw">const</span> [kk<span class="op">,</span> p] <span class="kw">of</span> fi) <span class="cf">if</span> (p<span class="op">.</span><span class="at">noisy</span>) fi<span class="op">.</span><span class="fu">delete</span>(kk)<span class="op">;</span> }</span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (sig <span class="op">&gt;</span> <span class="dv">0</span>) lastSig <span class="op">=</span> sig<span class="op">;</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (k <span class="op">!==</span> key) { key <span class="op">=</span> k<span class="op">;</span> sinceChange <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> spikesSince <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> }</span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> s <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> s <span class="op">&lt;</span> <span class="dv">20</span><span class="op">;</span> s<span class="op">++</span>) {</span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> I <span class="op">=</span> I0 <span class="op">+</span> sig <span class="op">*</span> <span class="fu">gauss</span>() <span class="op">/</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(dt)<span class="op">;</span></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (refrLeft <span class="op">&gt;</span> <span class="dv">0</span>) { refrLeft <span class="op">-=</span> dt<span class="op">;</span> v <span class="op">=</span> Vreset<span class="op">;</span> }</span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span> {</span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>          v <span class="op">+=</span> dt <span class="op">/</span> tau <span class="op">*</span> ((Vrest <span class="op">-</span> v) <span class="op">+</span> R <span class="op">*</span> I)<span class="op">;</span></span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> (v <span class="op">&gt;=</span> thr) { v <span class="op">=</span> <span class="dv">20</span><span class="op">;</span> spikesSince<span class="op">++;</span> refrLeft <span class="op">=</span> refr<span class="op">;</span> }</span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>        V<span class="op">.</span><span class="fu">copyWithin</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span> V[n <span class="op">-</span> <span class="dv">1</span>] <span class="op">=</span> v<span class="op">;</span></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>        Iarr<span class="op">.</span><span class="fu">copyWithin</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span> Iarr[n <span class="op">-</span> <span class="dv">1</span>] <span class="op">=</span> I<span class="op">;</span></span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (v <span class="op">===</span> <span class="dv">20</span>) v <span class="op">=</span> Vreset<span class="op">;</span></span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>        t <span class="op">+=</span> dt<span class="op">;</span> sinceChange <span class="op">+=</span> dt<span class="op">;</span></span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (sinceChange <span class="op">&gt;=</span> <span class="dv">500</span>) fi<span class="op">.</span><span class="fu">set</span>(key<span class="op">,</span> {<span class="dt">I</span><span class="op">:</span> I0<span class="op">,</span> <span class="dt">noisy</span><span class="op">:</span> sig <span class="op">&gt;</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">rate</span><span class="op">:</span> <span class="dv">1000</span> <span class="op">*</span> spikesSince <span class="op">/</span> sinceChange})<span class="op">;</span></span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> {V<span class="op">,</span> Iarr<span class="op">,</span> t<span class="op">,</span> win<span class="op">,</span> fi<span class="op">,</span> thr<span class="op">,</span> tau<span class="op">,</span> sig<span class="op">,</span> I0<span class="op">,</span> R<span class="op">,</span> Vrest<span class="op">,</span> refr<span class="op">,</span></span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>           <span class="dt">rate</span><span class="op">:</span> sinceChange <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">1000</span> <span class="op">*</span> spikesSince <span class="op">/</span> sinceChange <span class="op">:</span> <span class="dv">0</span>}<span class="op">;</span></span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>lifCanvas <span class="op">=</span> <span class="fu">mkCanvas</span>(<span class="dv">760</span><span class="op">,</span> <span class="dv">360</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="115" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 114;"><span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> {V<span class="op">,</span> Iarr<span class="op">,</span> win<span class="op">,</span> fi<span class="op">,</span> thr<span class="op">,</span> tau<span class="op">,</span> sig<span class="op">,</span> I0<span class="op">,</span> R<span class="op">,</span> Vrest<span class="op">,</span> refr<span class="op">,</span> rate} <span class="op">=</span> lifState<span class="op">;</span></span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> blue <span class="op">=</span> <span class="st">"#1f77b4"</span><span class="op">,</span> orange <span class="op">=</span> <span class="st">"#ff7f0e"</span><span class="op">,</span> c <span class="op">=</span> lifCanvas<span class="op">,</span> fg <span class="op">=</span> <span class="fu">exFg</span>()<span class="op">;</span></span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> W <span class="op">=</span> <span class="dv">760</span><span class="op">,</span> H <span class="op">=</span> <span class="dv">360</span><span class="op">,</span> n <span class="op">=</span> V<span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">clearRect</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> W<span class="op">,</span> H)<span class="op">;</span> c<span class="op">.</span><span class="at">font</span> <span class="op">=</span> exFont<span class="op">;</span></span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a>  <span class="co">// traces, left</span></span>
+<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> mL <span class="op">=</span> <span class="dv">80</span><span class="op">,</span> trR <span class="op">=</span> <span class="dv">470</span><span class="op">;</span></span>
+<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> top <span class="op">=</span> {<span class="dt">y0</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">80</span><span class="op">,</span> <span class="dt">lo</span><span class="op">:</span> <span class="op">-</span><span class="dv">10</span><span class="op">,</span> <span class="dt">hi</span><span class="op">:</span> <span class="dv">35</span>}<span class="op">;</span></span>
+<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> bot <span class="op">=</span> {<span class="dt">y0</span><span class="op">:</span> <span class="dv">112</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span> <span class="dt">lo</span><span class="op">:</span> <span class="op">-</span><span class="dv">80</span><span class="op">,</span> <span class="dt">hi</span><span class="op">:</span> <span class="dv">30</span>}<span class="op">;</span></span>
+<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> sx <span class="op">=</span> i <span class="kw">=&gt;</span> mL <span class="op">+</span> (trR <span class="op">-</span> mL) <span class="op">*</span> i <span class="op">/</span> (n <span class="op">-</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> sy <span class="op">=</span> (p<span class="op">,</span> v) <span class="kw">=&gt;</span> p<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> p<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (v <span class="op">-</span> p<span class="op">.</span><span class="at">lo</span>) <span class="op">/</span> (p<span class="op">.</span><span class="at">hi</span> <span class="op">-</span> p<span class="op">.</span><span class="at">lo</span>))<span class="op">;</span></span>
+<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> p <span class="kw">of</span> [top<span class="op">,</span> bot]) <span class="fu">axisBox</span>(c<span class="op">,</span> mL<span class="op">,</span> p<span class="op">.</span><span class="at">y0</span><span class="op">,</span> trR <span class="op">-</span> mL<span class="op">,</span> p<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span></span>
+<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"I (nA)"</span><span class="op">,</span> mL <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> top<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> top<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"V (mV)"</span><span class="op">,</span> mL <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> bot<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> bot<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(thr<span class="op">,</span> mL <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">sy</span>(bot<span class="op">,</span> thr) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"-65"</span><span class="op">,</span> mL <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">sy</span>(bot<span class="op">,</span> <span class="op">-</span><span class="dv">65</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`last </span><span class="sc">${</span>win<span class="sc">}</span><span class="vs"> ms`</span><span class="op">,</span> (mL <span class="op">+</span> trR) <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> H <span class="op">-</span> <span class="dv">14</span>)<span class="op">;</span></span>
+<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`</span><span class="sc">${</span>rate<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">0</span>)<span class="sc">}</span><span class="vs"> spikes / s`</span><span class="op">,</span> trR <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> bot<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">4</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"red"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(mL<span class="op">,</span> <span class="fu">sy</span>(bot<span class="op">,</span> thr))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(trR<span class="op">,</span> <span class="fu">sy</span>(bot<span class="op">,</span> thr))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#888"</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++</span>) { <span class="kw">const</span> y <span class="op">=</span> <span class="fu">sy</span>(top<span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(top<span class="op">.</span><span class="at">lo</span><span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(top<span class="op">.</span><span class="at">hi</span><span class="op">,</span> Iarr[i])))<span class="op">;</span> i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i)<span class="op">,</span> y) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">sx</span>(<span class="dv">0</span>)<span class="op">,</span> y)<span class="op">;</span> }</span>
+<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> sig <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> orange <span class="op">:</span> blue<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">1.5</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++</span>) i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i)<span class="op">,</span> <span class="fu">sy</span>(bot<span class="op">,</span> V[i])) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">sx</span>(<span class="dv">0</span>)<span class="op">,</span> <span class="fu">sy</span>(bot<span class="op">,</span> V[<span class="dv">0</span>]))<span class="op">;</span></span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a>  <span class="co">// f-I curve, right</span></span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> fP <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">560</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">180</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">300</span>}<span class="op">;</span></span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> Imax <span class="op">=</span> <span class="dv">25</span><span class="op">,</span> fmax <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="dv">100</span><span class="op">,</span> <span class="op">...</span><span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>(fi<span class="op">.</span><span class="fu">values</span>())<span class="op">.</span><span class="fu">map</span>(p <span class="kw">=&gt;</span> p<span class="op">.</span><span class="at">rate</span>)) <span class="op">*</span> <span class="fl">1.1</span><span class="op">;</span></span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> fx <span class="op">=</span> I <span class="kw">=&gt;</span> fP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> fP<span class="op">.</span><span class="at">w</span> <span class="op">*</span> I <span class="op">/</span> Imax<span class="op">,</span> fy <span class="op">=</span> f <span class="kw">=&gt;</span> fP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> fP<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> f <span class="op">/</span> fmax)<span class="op">;</span></span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> fP<span class="op">.</span><span class="at">x0</span><span class="op">,</span> fP<span class="op">.</span><span class="at">y0</span><span class="op">,</span> fP<span class="op">.</span><span class="at">w</span><span class="op">,</span> fP<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span></span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"input (nA)"</span><span class="op">,</span> fP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> fP<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> H <span class="op">-</span> <span class="dv">14</span>)<span class="op">;</span></span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> <span class="fu">fx</span>(<span class="dv">0</span>)<span class="op">,</span> fP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> fP<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">20</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(Imax<span class="op">,</span> <span class="fu">fx</span>(Imax)<span class="op">,</span> fP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> fP<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">translate</span>(fP<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">44</span><span class="op">,</span> fP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> fP<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">rotate</span>(<span class="op">-</span><span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"spikes / s"</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> fP<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">fy</span>(<span class="dv">0</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(fmax<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">0</span>)<span class="op">,</span> fP<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">fy</span>(fmax) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">3</span><span class="op">,</span> <span class="dv">3</span>])<span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> blue<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> <span class="kw">let</span> started <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> I <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> I <span class="op">&lt;=</span> Imax<span class="op">;</span> I <span class="op">+=</span> <span class="fl">0.1</span>) {</span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> d <span class="op">=</span> R <span class="op">*</span> I <span class="op">-</span> (thr <span class="op">-</span> Vrest)<span class="op">;</span> <span class="cf">if</span> (d <span class="op">&lt;=</span> <span class="dv">0</span>) <span class="cf">continue</span><span class="op">;</span></span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> f <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(fmax<span class="op">,</span> <span class="dv">1000</span> <span class="op">/</span> (refr <span class="op">+</span> tau <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">log</span>(R <span class="op">*</span> I <span class="op">/</span> d)))<span class="op">;</span></span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a>    started <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">fx</span>(I)<span class="op">,</span> <span class="fu">fy</span>(f)) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">fx</span>(I)<span class="op">,</span> <span class="fu">fy</span>(f))<span class="op">;</span> started <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> [k<span class="op">,</span> p] <span class="kw">of</span> fi) { c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> p<span class="op">.</span><span class="at">noisy</span> <span class="op">?</span> orange <span class="op">:</span> blue<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">arc</span>(<span class="fu">fx</span>(p<span class="op">.</span><span class="at">I</span>)<span class="op">,</span> <span class="fu">fy</span>(p<span class="op">.</span><span class="at">rate</span>)<span class="op">,</span> <span class="dv">5</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> }</span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> sig <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> orange <span class="op">:</span> blue<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">2</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">arc</span>(<span class="fu">fx</span>(I0)<span class="op">,</span> <span class="fu">fy</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(rate<span class="op">,</span> fmax))<span class="op">,</span> <span class="dv">8</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"left"</span><span class="op">;</span> c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> blue<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"noise-free"</span><span class="op">,</span> fP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> <span class="dv">8</span><span class="op">,</span> fP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">22</span>)<span class="op">;</span></span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> orange<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(sig <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="vs">`noise </span><span class="sc">${</span>sig<span class="sc">}</span><span class="vs">`</span> <span class="op">:</span> <span class="st">"noise (off)"</span><span class="op">,</span> fP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> <span class="dv">8</span><span class="op">,</span> fP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">44</span>)<span class="op">;</span></span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">;</span></span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</section>
+<section id="reading-the-figure" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-figure">Reading the figure</h2>
+<p>The two panels on the left show the last 300 ms of the simulation. The upper one is the input current, the lower one the membrane potential, blue while the input is noise-free and orange once you add noise. The red dashed line is the threshold. Each time the trace touches it you see a spike drawn up to +20 mV, then the voltage drops to the reset value and climbs again. The number in the corner is the firing rate, averaged since you last changed a setting.</p>
+<p>The panel on the right is the f-I curve, the firing rate as a function of the input current. This is the standard way to characterise a neuron, and the page builds it up from your own experiments: every input strength you leave the neuron at for half a second adds a dot. Blue dots are noise-free measurements, orange dots were taken at the current noise level. Changing the noise level clears the orange dots, because they no longer belong to the same curve. The open ring shows where the current setting sits.</p>
+<p>The blue dashed line is not a measurement. It is the exact firing rate of the noise-free model, which you can work out by hand: the time the voltage needs to climb from reset to threshold under a constant current, plus the refractory period, is one interspike interval, and the rate is its inverse,</p>
+<p><span class="math display">\[f = \frac{1}{t_{\text{ref}} + \tau_m \ln \dfrac{RI}{RI - (V_{\text{th}} - V_{\text{rest}})}} .\]</span></p>
+<p>The formula makes two things obvious. Below the rheobase current <span class="math inline">\(I = (V_{\text{th}} - V_{\text{rest}})/R\)</span>, the voltage never reaches threshold and the rate is zero, so the curve has a hard corner. And at large currents the rate saturates at <span class="math inline">\(1/t_{\text{ref}}\)</span>, because the neuron cannot fire faster than once per refractory period.</p>
+</section>
+<section id="things-to-try" class="level2">
+<h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
+<p>Start with the noise off and raise the current slowly. Nothing happens until you cross 7.5 nA, and then the neuron starts firing at a rate that goes up quickly at first and then more slowly. Your dots should land on the dashed curve.</p>
+<p>Now set the current to 6 nA, just below the rheobase, and turn on the noise. The voltage hovers below threshold and crosses it now and then, so the neuron fires at a low and irregular rate where the noise-free model is silent. Take a few measurements at different currents and compare the orange dots with the dashed line. Noise does not just add scatter, it rounds off the corner of the f-I curve, and this smoothing is the main reason real neurons do not show a hard threshold in their rate.</p>
+<p>Change the time constant. With a long <span class="math inline">\(\tau_m\)</span> the voltage trace is smooth and the neuron is slow to respond, but the noise-free f-I curve shifts too, since a slower climb means a longer interval. With a short <span class="math inline">\(\tau_m\)</span> and noise on, the trace becomes jagged and the firing increasingly random.</p>
+<p>The model and the f-I formula are treated in Dayan and Abbott (2001, chapter 5) and at greater length in Gerstner et al.&nbsp;(2014), which also covers what noise does to the firing statistics. Brunel and van Rossum (2007) tell the story of Lapicque’s original paper.</p>
+<p><a href="https://github.com/SigridTraegenap/DNO_webinar_2020">Notebook on GitHub</a> · <a href="https://colab.research.google.com/github/SigridTraegenap/DNO_webinar_2020/blob/master/Leaky%20Integrate%20and%20Fire%20neuron%20model.ipynb">Open in Google Colab</a></p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Brunel N, van Rossum MCW (2007). Lapicque’s 1907 paper: from frogs to integrate-and-fire. <em>Biological Cybernetics</em> 97: 337–339.</p>
+<p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
+<p>Gerstner W, Kistler WM, Naud R, Paninski L (2014). <em>Neuronal Dynamics: From Single Neurons to Networks and Models of Cognition</em>. Cambridge University Press.</p>
+<p>Lapicque L (1907). Recherches quantitatives sur l’excitation électrique des nerfs traitée comme une polarisation. <em>Journal de Physiologie et de Pathologie Générale</em> 9: 620–635.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ii8vIHNoYXJlZCBoZWxwZXJzOiBvbmUgcGVyc2lzdGVudCBjYW52YXMgcGVyIGV4cGxvcmFibGUsIHRleHQtc2l6ZWQgZm9udHMsIHJlc3BvbnNpdmUgd2lkdGhcbmV4Rm9udCA9IFwiMTZweCBcIiArIGdldENvbXB1dGVkU3R5bGUoZG9jdW1lbnQuYm9keSkuZm9udEZhbWlseVxuZXhGZyA9ICgpID0+IGdldENvbXB1dGVkU3R5bGUoZG9jdW1lbnQuYm9keSkuY29sb3Jcbm1rQ2FudmFzID0gKFcsIEgpID0+IHtcbiAgY29uc3QgYyA9IERPTS5jb250ZXh0MmQoVywgSCk7XG4gIGMuY2FudmFzLnN0eWxlLndpZHRoID0gXCIxMDAlXCI7IGMuY2FudmFzLnN0eWxlLm1heFdpZHRoID0gVyArIFwicHhcIjsgYy5jYW52YXMuc3R5bGUuaGVpZ2h0ID0gXCJhdXRvXCI7XG4gIHJldHVybiBjO1xufVxuYXhpc0JveCA9IChjLCB4LCB5LCB3LCBoKSA9PiB7IGMuc3Ryb2tlU3R5bGUgPSBcIiM5OTlcIjsgYy5saW5lV2lkdGggPSAxOyBjLnN0cm9rZVJlY3QoeCwgeSwgdywgaCk7IH1cbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InZpZXdvZiBsaWZJID0gSW5wdXRzLnJhbmdlKFswLCAyNV0sIHt2YWx1ZTogOCwgc3RlcDogMC41LCBsYWJlbDogXCJJbnB1dCBjdXJyZW50IChuQSlcIn0pXG52aWV3b2YgbGlmTm9pc2UgPSBJbnB1dHMucmFuZ2UoWzAsIDEwXSwge3ZhbHVlOiAwLCBzdGVwOiAwLjUsIGxhYmVsOiBcIklucHV0IG5vaXNlICgwID0gb2ZmKVwifSlcbnZpZXdvZiBsaWZUYXUgPSBJbnB1dHMucmFuZ2UoWzIsIDUwXSwge3ZhbHVlOiAxMCwgc3RlcDogMSwgbGFiZWw6IFwiTWVtYnJhbmUgdGltZSBjb25zdGFudCDPhCAobXMpXCJ9KVxudmlld29mIGxpZlRociA9IElucHV0cy5yYW5nZShbLTYwLCAtMzVdLCB7dmFsdWU6IC01MCwgc3RlcDogMSwgbGFiZWw6IFwiVGhyZXNob2xkIChtVilcIn0pXG52aWV3b2YgbGlmUGF1c2UgPSBJbnB1dHMudG9nZ2xlKHtsYWJlbDogXCJQYXVzZVwifSlcbnZpZXdvZiBsaWZSZXNldCA9IElucHV0cy5idXR0b24oXCJSZXNldCAoYWxzbyBjbGVhcnMgdGhlIGYtSSBwb2ludHMpXCIpXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTMiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJsaWZTdGF0ZSA9IHtcbiAgbGlmUmVzZXQ7XG4gIGNvbnN0IGR0ID0gMC4xLCB3aW4gPSAzMDAsIFIgPSAyLCBWcmVzdCA9IC02NSwgVnJlc2V0ID0gLTcwLCByZWZyID0gMjtcbiAgY29uc3QgbiA9IE1hdGgucm91bmQod2luIC8gZHQpO1xuICBjb25zdCBWID0gbmV3IEZsb2F0MzJBcnJheShuKS5maWxsKFZyZXN0KSwgSWFyciA9IG5ldyBGbG9hdDMyQXJyYXkobik7XG4gIGxldCB2ID0gVnJlc3QsIHJlZnJMZWZ0ID0gMCwgdCA9IDA7XG4gIGNvbnN0IGZpID0gbmV3IE1hcCgpO1xuICBsZXQga2V5ID0gbnVsbCwgc2luY2VDaGFuZ2UgPSAwLCBzcGlrZXNTaW5jZSA9IDAsIGxhc3RTaWcgPSAwO1xuICBjb25zdCBnYXVzcyA9ICgpID0+IHsgbGV0IHUgPSAwOyB3aGlsZSAodSA9PT0gMCkgdSA9IE1hdGgucmFuZG9tKCk7XG4gICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4gTWF0aC5zcXJ0KC0yICogTWF0aC5sb2codSkpICogTWF0aC5jb3MoMiAqIE1hdGguUEkgKiBNYXRoLnJhbmRvbSgpKTsgfTtcbiAgd2hpbGUgKHRydWUpIHtcbiAgICBjb25zdCBJMCA9IHZpZXdvZiBsaWZJLnZhbHVlLCBzaWcgPSB2aWV3b2YgbGlmTm9pc2UudmFsdWUsXG4gICAgICAgICAgdGF1ID0gdmlld29mIGxpZlRhdS52YWx1ZSwgdGhyID0gdmlld29mIGxpZlRoci52YWx1ZTtcbiAgICBpZiAoIXZpZXdvZiBsaWZQYXVzZS52YWx1ZSkge1xuICAgICAgY29uc3QgayA9IGAke0kwfXwke3NpZyA+IDB9YDtcbiAgICAgIGlmIChzaWcgPiAwICYmIHNpZyAhPT0gbGFzdFNpZykgeyBmb3IgKGNvbnN0IFtraywgcF0gb2YgZmkpIGlmIChwLm5vaXN5KSBmaS5kZWxldGUoa2spOyB9XG4gICAgICBpZiAoc2lnID4gMCkgbGFzdFNpZyA9IHNpZztcbiAgICAgIGlmIChrICE9PSBrZXkpIHsga2V5ID0gazsgc2luY2VDaGFuZ2UgPSAwOyBzcGlrZXNTaW5jZSA9IDA7IH1cbiAgICAgIGZvciAobGV0IHMgPSAwOyBzIDwgMjA7IHMrKykge1xuICAgICAgICBjb25zdCBJID0gSTAgKyBzaWcgKiBnYXVzcygpIC8gTWF0aC5zcXJ0KGR0KTtcbiAgICAgICAgaWYgKHJlZnJMZWZ0ID4gMCkgeyByZWZyTGVmdCAtPSBkdDsgdiA9IFZyZXNldDsgfVxuICAgICAgICBlbHNlIHtcbiAgICAgICAgICB2ICs9IGR0IC8gdGF1ICogKChWcmVzdCAtIHYpICsgUiAqIEkpO1xuICAgICAgICAgIGlmICh2ID49IHRocikgeyB2ID0gMjA7IHNwaWtlc1NpbmNlKys7IHJlZnJMZWZ0ID0gcmVmcjsgfVxuICAgICAgICB9XG4gICAgICAgIFYuY29weVdpdGhpbigwLCAxKTsgVltuIC0gMV0gPSB2O1xuICAgICAgICBJYXJyLmNvcHlXaXRoaW4oMCwgMSk7IElhcnJbbiAtIDFdID0gSTtcbiAgICAgICAgaWYgKHYgPT09IDIwKSB2ID0gVnJlc2V0O1xuICAgICAgICB0ICs9IGR0OyBzaW5jZUNoYW5nZSArPSBkdDtcbiAgICAgIH1cbiAgICAgIGlmIChzaW5jZUNoYW5nZSA+PSA1MDApIGZpLnNldChrZXksIHtJOiBJMCwgbm9pc3k6IHNpZyA+IDAsIHJhdGU6IDEwMDAgKiBzcGlrZXNTaW5jZSAvIHNpbmNlQ2hhbmdlfSk7XG4gICAgfVxuICAgIHlpZWxkIHtWLCBJYXJyLCB0LCB3aW4sIGZpLCB0aHIsIHRhdSwgc2lnLCBJMCwgUiwgVnJlc3QsIHJlZnIsXG4gICAgICAgICAgIHJhdGU6IHNpbmNlQ2hhbmdlID4gMCA/IDEwMDAgKiBzcGlrZXNTaW5jZSAvIHNpbmNlQ2hhbmdlIDogMH07XG4gIH1cbn1cbmxpZkNhbnZhcyA9IG1rQ2FudmFzKDc2MCwgMzYwKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC00IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoie1xuICBjb25zdCB7ViwgSWFyciwgd2luLCBmaSwgdGhyLCB0YXUsIHNpZywgSTAsIFIsIFZyZXN0LCByZWZyLCByYXRlfSA9IGxpZlN0YXRlO1xuICBjb25zdCBibHVlID0gXCIjMWY3N2I0XCIsIG9yYW5nZSA9IFwiI2ZmN2YwZVwiLCBjID0gbGlmQ2FudmFzLCBmZyA9IGV4RmcoKTtcbiAgY29uc3QgVyA9IDc2MCwgSCA9IDM2MCwgbiA9IFYubGVuZ3RoO1xuICBjLmNsZWFyUmVjdCgwLCAwLCBXLCBIKTsgYy5mb250ID0gZXhGb250O1xuICAvLyB0cmFjZXMsIGxlZnRcbiAgY29uc3QgbUwgPSA4MCwgdHJSID0gNDcwO1xuICBjb25zdCB0b3AgPSB7eTA6IDEyLCBoOiA4MCwgbG86IC0xMCwgaGk6IDM1fTtcbiAgY29uc3QgYm90ID0ge3kwOiAxMTIsIGg6IDIwMCwgbG86IC04MCwgaGk6IDMwfTtcbiAgY29uc3Qgc3ggPSBpID0+IG1MICsgKHRyUiAtIG1MKSAqIGkgLyAobiAtIDEpO1xuICBjb25zdCBzeSA9IChwLCB2KSA9PiBwLnkwICsgcC5oICogKDEgLSAodiAtIHAubG8pIC8gKHAuaGkgLSBwLmxvKSk7XG4gIGZvciAoY29uc3QgcCBvZiBbdG9wLCBib3RdKSBheGlzQm94KGMsIG1MLCBwLnkwLCB0clIgLSBtTCwgcC5oKTtcbiAgYy5maWxsU3R5bGUgPSBmZzsgYy50ZXh0QWxpZ24gPSBcInJpZ2h0XCI7XG4gIGMuZmlsbFRleHQoXCJJIChuQSlcIiwgbUwgLSA4LCB0b3AueTAgKyB0b3AuaCAvIDIgKyA1KTtcbiAgYy5maWxsVGV4dChcIlYgKG1WKVwiLCBtTCAtIDgsIGJvdC55MCArIGJvdC5oIC8gMiArIDUpO1xuICBjLmZpbGxUZXh0KHRociwgbUwgLSA4LCBzeShib3QsIHRocikgKyA1KTsgYy5maWxsVGV4dChcIi02NVwiLCBtTCAtIDgsIHN5KGJvdCwgLTY1KSArIDUpO1xuICBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoYGxhc3QgJHt3aW59IG1zYCwgKG1MICsgdHJSKSAvIDIsIEggLSAxNCk7XG4gIGMudGV4dEFsaWduID0gXCJyaWdodFwiOyBjLmZpbGxUZXh0KGAke3JhdGUudG9GaXhlZCgwKX0gc3Bpa2VzIC8gc2AsIHRyUiAtIDgsIGJvdC55MCArIDIwKTtcbiAgYy5zZXRMaW5lRGFzaChbNCwgNF0pOyBjLnN0cm9rZVN0eWxlID0gXCJyZWRcIjsgYy5iZWdpblBhdGgoKTsgYy5tb3ZlVG8obUwsIHN5KGJvdCwgdGhyKSk7IGMubGluZVRvKHRyUiwgc3koYm90LCB0aHIpKTsgYy5zdHJva2UoKTsgYy5zZXRMaW5lRGFzaChbXSk7XG4gIGMuc3Ryb2tlU3R5bGUgPSBcIiM4ODhcIjsgYy5saW5lV2lkdGggPSAxOyBjLmJlZ2luUGF0aCgpO1xuICBmb3IgKGxldCBpID0gMDsgaSA8IG47IGkrKykgeyBjb25zdCB5ID0gc3kodG9wLCBNYXRoLm1heCh0b3AubG8sIE1hdGgubWluKHRvcC5oaSwgSWFycltpXSkpKTsgaSA/IGMubGluZVRvKHN4KGkpLCB5KSA6IGMubW92ZVRvKHN4KDApLCB5KTsgfVxuICBjLnN0cm9rZSgpO1xuICBjLnN0cm9rZVN0eWxlID0gc2lnID4gMCA/IG9yYW5nZSA6IGJsdWU7IGMubGluZVdpZHRoID0gMS41OyBjLmJlZ2luUGF0aCgpO1xuICBmb3IgKGxldCBpID0gMDsgaSA8IG47IGkrKykgaSA/IGMubGluZVRvKHN4KGkpLCBzeShib3QsIFZbaV0pKSA6IGMubW92ZVRvKHN4KDApLCBzeShib3QsIFZbMF0pKTtcbiAgYy5zdHJva2UoKTtcbiAgLy8gZi1JIGN1cnZlLCByaWdodFxuICBjb25zdCBmUCA9IHt4MDogNTYwLCB5MDogMTIsIHc6IDE4MCwgaDogMzAwfTtcbiAgY29uc3QgSW1heCA9IDI1LCBmbWF4ID0gTWF0aC5tYXgoMTAwLCAuLi5BcnJheS5mcm9tKGZpLnZhbHVlcygpKS5tYXAocCA9PiBwLnJhdGUpKSAqIDEuMTtcbiAgY29uc3QgZnggPSBJID0+IGZQLngwICsgZlAudyAqIEkgLyBJbWF4LCBmeSA9IGYgPT4gZlAueTAgKyBmUC5oICogKDEgLSBmIC8gZm1heCk7XG4gIGF4aXNCb3goYywgZlAueDAsIGZQLnkwLCBmUC53LCBmUC5oKTtcbiAgYy5maWxsU3R5bGUgPSBmZzsgYy50ZXh0QWxpZ24gPSBcImNlbnRlclwiO1xuICBjLmZpbGxUZXh0KFwiaW5wdXQgKG5BKVwiLCBmUC54MCArIGZQLncgLyAyLCBIIC0gMTQpO1xuICBjLmZpbGxUZXh0KFwiMFwiLCBmeCgwKSwgZlAueTAgKyBmUC5oICsgMjApOyBjLmZpbGxUZXh0KEltYXgsIGZ4KEltYXgpLCBmUC55MCArIGZQLmggKyAyMCk7XG4gIGMuc2F2ZSgpOyBjLnRyYW5zbGF0ZShmUC54MCAtIDQ0LCBmUC55MCArIGZQLmggLyAyKTsgYy5yb3RhdGUoLU1hdGguUEkgLyAyKTsgYy5maWxsVGV4dChcInNwaWtlcyAvIHNcIiwgMCwgMCk7IGMucmVzdG9yZSgpO1xuICBjLnRleHRBbGlnbiA9IFwicmlnaHRcIjsgYy5maWxsVGV4dChcIjBcIiwgZlAueDAgLSA2LCBmeSgwKSArIDUpOyBjLmZpbGxUZXh0KGZtYXgudG9GaXhlZCgwKSwgZlAueDAgLSA2LCBmeShmbWF4KSArIDUpO1xuICBjLnNldExpbmVEYXNoKFszLCAzXSk7IGMuc3Ryb2tlU3R5bGUgPSBibHVlOyBjLmxpbmVXaWR0aCA9IDE7IGMuYmVnaW5QYXRoKCk7IGxldCBzdGFydGVkID0gZmFsc2U7XG4gIGZvciAobGV0IEkgPSAwOyBJIDw9IEltYXg7IEkgKz0gMC4xKSB7XG4gICAgY29uc3QgZCA9IFIgKiBJIC0gKHRociAtIFZyZXN0KTsgaWYgKGQgPD0gMCkgY29udGludWU7XG4gICAgY29uc3QgZiA9IE1hdGgubWluKGZtYXgsIDEwMDAgLyAocmVmciArIHRhdSAqIE1hdGgubG9nKFIgKiBJIC8gZCkpKTtcbiAgICBzdGFydGVkID8gYy5saW5lVG8oZngoSSksIGZ5KGYpKSA6IGMubW92ZVRvKGZ4KEkpLCBmeShmKSk7IHN0YXJ0ZWQgPSB0cnVlO1xuICB9XG4gIGMuc3Ryb2tlKCk7IGMuc2V0TGluZURhc2goW10pO1xuICBmb3IgKGNvbnN0IFtrLCBwXSBvZiBmaSkgeyBjLmZpbGxTdHlsZSA9IHAubm9pc3kgPyBvcmFuZ2UgOiBibHVlOyBjLmJlZ2luUGF0aCgpOyBjLmFyYyhmeChwLkkpLCBmeShwLnJhdGUpLCA1LCAwLCAyICogTWF0aC5QSSk7IGMuZmlsbCgpOyB9XG4gIGMuc3Ryb2tlU3R5bGUgPSBzaWcgPiAwID8gb3JhbmdlIDogYmx1ZTsgYy5saW5lV2lkdGggPSAyOyBjLmJlZ2luUGF0aCgpOyBjLmFyYyhmeChJMCksIGZ5KE1hdGgubWluKHJhdGUsIGZtYXgpKSwgOCwgMCwgMiAqIE1hdGguUEkpOyBjLnN0cm9rZSgpO1xuICBjLnRleHRBbGlnbiA9IFwibGVmdFwiOyBjLmZpbGxTdHlsZSA9IGJsdWU7IGMuZmlsbFRleHQoXCJub2lzZS1mcmVlXCIsIGZQLngwICsgOCwgZlAueTAgKyAyMik7XG4gIGMuZmlsbFN0eWxlID0gb3JhbmdlOyBjLmZpbGxUZXh0KHNpZyA+IDAgPyBgbm9pc2UgJHtzaWd9YCA6IFwibm9pc2UgKG9mZilcIiwgZlAueDAgKyA4LCBmUC55MCArIDQ0KTtcbiAgcmV0dXJuIGMuY2FudmFzO1xufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdsaWZJJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2xpZk5vaXNlJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2xpZlRhdScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdsaWZUaHInKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnbGlmUGF1c2UnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnbGlmUmVzZXQnKSJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../teaching";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/traegenap\.org");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This site is currently under construction.<br> © 2026 Sigrid Trägenap · <a href="../impressum.html">Impressum</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

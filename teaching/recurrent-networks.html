@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="How local excitation and wider inhibition single out one spatial frequency, and how a ring of neurons wired that way turns random input into stripes.">
+
+<title>Recurrent networks: from kernel to pattern – Sigrid Trägenap</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-35aa68add6c86a7318e4abfca15e0f82.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-cea1f1bf700eacbc6b64abd16d2799fe.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-35aa68add6c86a7318e4abfca15e0f82.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Sigrid Trägenap</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../research.html"> 
+<span class="menu-text">Research Interests</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../publications.html"> 
+<span class="menu-text">Publications</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../outreach.html"> 
+<span class="menu-text">Outreach</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-teaching" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Teaching</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-teaching">    
+        <li>
+    <a class="dropdown-item" href="../teaching/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/neuron.html">
+ <span class="dropdown-text">Integrate-and-fire neuron</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/pca.html">
+ <span class="dropdown-text">Principal component analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/fourier.html">
+ <span class="dropdown-text">Sampling and the Fourier transform</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/recurrent-networks.html">
+ <span class="dropdown-text">Recurrent networks</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hebbian.html">
+ <span class="dropdown-text">Hebbian learning</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/SigridTraegenap"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#difference-of-gaussians-and-its-spectrum" id="toc-difference-of-gaussians-and-its-spectrum" class="nav-link active" data-scroll-target="#difference-of-gaussians-and-its-spectrum">Difference of Gaussians and its spectrum</a></li>
+  <li><a href="#pattern-formation-in-a-recurrent-network" id="toc-pattern-formation-in-a-recurrent-network" class="nav-link" data-scroll-target="#pattern-formation-in-a-recurrent-network">Pattern formation in a recurrent network</a></li>
+  <li><a href="#reading-the-figure" id="toc-reading-the-figure" class="nav-link" data-scroll-target="#reading-the-figure">Reading the figure</a></li>
+  <li><a href="#things-to-try" id="toc-things-to-try" class="nav-link" data-scroll-target="#things-to-try">Things to try</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Recurrent networks: from kernel to pattern</h1>
+</div>
+
+<div>
+  <div class="description">
+    How local excitation and wider inhibition single out one spatial frequency, and how a ring of neurons wired that way turns random input into stripes.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Many parts of cortex are wired in a similar way: neurons excite their close neighbours and, through interneurons, inhibit cells a bit further away. This “Mexican hat” arrangement is simple to write down, but what it does to activity is not obvious at first sight. The short version is that such a network has a favourite spatial scale. It amplifies activity patterns at one particular wavelength and damps everything else, so almost any input comes out striped. This is one of the standard explanations for periodic patterns in cortex, such as orientation columns or the regular spacing of ocular dominance bands (Swindale 1980; Ermentrout and Cowan 1979), and it is the neural cousin of Turing’s (1952) mechanism for patterns in chemistry and development.</p>
+<p>This page is in two parts. The first looks at the connection kernel alone and asks which spatial frequency it favours. The second puts the kernel into a network and lets you watch the stripes emerge. Everything runs in your browser and updates while you move the sliders.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="31" data-source-offset="-92"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 30;"><span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>exFont <span class="op">=</span> <span class="st">"16px "</span> <span class="op">+</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontFamily</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>exFg <span class="op">=</span> () <span class="kw">=&gt;</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">color</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>mkCanvas <span class="op">=</span> (W<span class="op">,</span> H) <span class="kw">=&gt;</span> {</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> c <span class="op">=</span> DOM<span class="op">.</span><span class="fu">context2d</span>(W<span class="op">,</span> H)<span class="op">;</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">width</span> <span class="op">=</span> <span class="st">"100%"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">maxWidth</span> <span class="op">=</span> W <span class="op">+</span> <span class="st">"px"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">height</span> <span class="op">=</span> <span class="st">"auto"</span><span class="op">;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">;</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>axisBox <span class="op">=</span> (c<span class="op">,</span> x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h) <span class="kw">=&gt;</span> { c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">strokeRect</span>(x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h)<span class="op">;</span> }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<section id="difference-of-gaussians-and-its-spectrum" class="level2">
+<h2 class="anchored" data-anchor-id="difference-of-gaussians-and-its-spectrum">Difference of Gaussians and its spectrum</h2>
+<p>Write the strength of the connection between two neurons as a function of their distance. Excitation is a narrow Gaussian with width <span class="math inline">\(\sigma_e\)</span>, inhibition a wider one with width <span class="math inline">\(\sigma_i\)</span>, and the kernel is the difference of the two. Up close excitation wins and the kernel is positive; further out the broader inhibition takes over and it becomes negative.</p>
+<p>The useful trick is to look at this kernel in the Fourier domain. A recurrent network applies the kernel to its activity over and over again, and convolution with a kernel multiplies each spatial frequency of the activity by the kernel’s Fourier transform at that frequency. So the transform tells you directly which frequencies get amplified on every pass and which get suppressed. The Fourier transform of a Gaussian is again a Gaussian, with a width inversely proportional to the original one. The narrow excitatory Gaussian therefore covers a wide band of frequencies, the broad inhibitory Gaussian only the low ones. Their difference is small at frequency zero, where inhibition cancels excitation, rises to a peak, and then falls off again once excitation runs out. That peak is the frequency the network will favour.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="64" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 63;"><span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>viewof sigE <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.1</span><span class="op">,</span> <span class="dv">10</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Excitation width σₑ"</span>})</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>viewof ampE <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">10</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Excitation strength"</span>})</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>viewof sigI <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.1</span><span class="op">,</span> <span class="dv">10</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Inhibition width σᵢ"</span>})</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>viewof ampI <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">2</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Inhibition strength"</span>})</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>gauss <span class="op">=</span> (x<span class="op">,</span> s) <span class="kw">=&gt;</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">exp</span>(<span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> x <span class="op">*</span> x <span class="op">/</span> (s <span class="op">*</span> s)) <span class="op">/</span> (<span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>) <span class="op">*</span> s)</span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>ghat <span class="op">=</span> (f<span class="op">,</span> s) <span class="kw">=&gt;</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">exp</span>(<span class="op">-</span><span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> s <span class="op">*</span> s <span class="op">*</span> f <span class="op">*</span> f)</span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>xmax <span class="op">=</span> <span class="dv">5</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(sigE<span class="op">,</span> sigI)</span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>space <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> <span class="dv">401</span>}<span class="op">,</span> (_<span class="op">,</span> i) <span class="kw">=&gt;</span> {</span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> x <span class="op">=</span> <span class="op">-</span>xmax <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> xmax <span class="op">*</span> i <span class="op">/</span> <span class="dv">400</span><span class="op">;</span></span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> e <span class="op">=</span> ampE <span class="op">*</span> <span class="fu">gauss</span>(x<span class="op">,</span> sigE)<span class="op">,</span> inh <span class="op">=</span> <span class="op">-</span>ampI <span class="op">*</span> <span class="fu">gauss</span>(x<span class="op">,</span> sigI)<span class="op">;</span></span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {x<span class="op">,</span> <span class="dt">Excitation</span><span class="op">:</span> e<span class="op">,</span> <span class="dt">Inhibition</span><span class="op">:</span> inh<span class="op">,</span> <span class="st">"Difference of Gaussians"</span><span class="op">:</span> e <span class="op">+</span> inh}<span class="op">;</span></span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>spectrum <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> <span class="dv">401</span>}<span class="op">,</span> (_<span class="op">,</span> i) <span class="kw">=&gt;</span> { <span class="kw">const</span> f <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> i <span class="op">/</span> <span class="dv">400</span><span class="op">;</span> <span class="cf">return</span> {f<span class="op">,</span> <span class="dt">k</span><span class="op">:</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(ampE <span class="op">*</span> <span class="fu">ghat</span>(f<span class="op">,</span> sigE) <span class="op">-</span> ampI <span class="op">*</span> <span class="fu">ghat</span>(f<span class="op">,</span> sigI))}<span class="op">;</span> })</span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>peak <span class="op">=</span> spectrum<span class="op">.</span><span class="fu">reduce</span>((a<span class="op">,</span> b) <span class="kw">=&gt;</span> (b<span class="op">.</span><span class="at">k</span> <span class="op">&gt;</span> a<span class="op">.</span><span class="at">k</span> <span class="op">?</span> b <span class="op">:</span> a))</span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="fu">html</span><span class="vs">`&lt;div style="display:flex;flex-wrap:wrap;gap:1rem"&gt;</span></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="sc">${</span>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>  <span class="dt">width</span><span class="op">:</span> <span class="dv">370</span><span class="op">,</span> <span class="dt">height</span><span class="op">:</span> <span class="dv">280</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">40</span><span class="op">,</span> <span class="dt">style</span><span class="op">:</span> {<span class="dt">fontSize</span><span class="op">:</span> <span class="st">"15px"</span>}<span class="op">,</span></span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"space"</span>}<span class="op">,</span> <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="kw">null</span><span class="op">,</span> <span class="dt">ticks</span><span class="op">:</span> <span class="dv">0</span>}<span class="op">,</span></span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="st">"Excitation"</span><span class="op">,</span> <span class="st">"Inhibition"</span><span class="op">,</span> <span class="st">"Difference of Gaussians"</span>]<span class="op">,</span> <span class="dt">range</span><span class="op">:</span> [<span class="st">"#ff7f0e"</span><span class="op">,</span> <span class="st">"#1f77b4"</span><span class="op">,</span> <span class="st">"black"</span>]}<span class="op">,</span></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [Plot<span class="op">.</span><span class="fu">ruleY</span>([<span class="dv">0</span>]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#999"</span>})<span class="op">,</span></span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span>[<span class="st">"Excitation"</span><span class="op">,</span> <span class="st">"Inhibition"</span><span class="op">,</span> <span class="st">"Difference of Gaussians"</span>]<span class="op">.</span><span class="fu">map</span>(k <span class="kw">=&gt;</span> Plot<span class="op">.</span><span class="fu">line</span>(space<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> k<span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> () <span class="kw">=&gt;</span> k<span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="dv">2</span>}))]</span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a>})<span class="sc">}</span></span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a><span class="sc">${</span>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a>  <span class="dt">width</span><span class="op">:</span> <span class="dv">370</span><span class="op">,</span> <span class="dt">height</span><span class="op">:</span> <span class="dv">280</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span> <span class="dt">style</span><span class="op">:</span> {<span class="dt">fontSize</span><span class="op">:</span> <span class="st">"15px"</span>}<span class="op">,</span></span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"spatial frequency (cycles / unit length)"</span>}<span class="op">,</span></span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"|kernel spectrum|"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="fl">0.05</span><span class="op">,</span> ampE<span class="op">,</span> ampI)]}<span class="op">,</span></span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [Plot<span class="op">.</span><span class="fu">line</span>(spectrum<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"f"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"k"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> <span class="st">"gray"</span><span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="dv">2</span>})<span class="op">,</span></span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleX</span>([peak<span class="op">.</span><span class="at">f</span>]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#ff7f0e"</span><span class="op">,</span> <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"4 4"</span>})<span class="op">,</span></span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>([peak]<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"f"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"k"</span><span class="op">,</span> <span class="dt">text</span><span class="op">:</span> d <span class="kw">=&gt;</span> <span class="vs">`peak at f = </span><span class="sc">${</span>d<span class="op">.</span><span class="at">f</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> <span class="dt">dx</span><span class="op">:</span> <span class="dv">8</span><span class="op">,</span> <span class="dt">dy</span><span class="op">:</span> <span class="op">-</span><span class="dv">8</span><span class="op">,</span> <span class="dt">textAnchor</span><span class="op">:</span> <span class="st">"start"</span>})]</span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>})<span class="sc">}</span></span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a><span class="vs">&lt;/div&gt;`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-7" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-8" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-9" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-10" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-11" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</div>
+<p>The left plot shows the excitatory Gaussian in orange, the inhibitory one in blue, drawn negative, and their difference in black. The right plot is the magnitude of the kernel’s Fourier transform, with the orange dashed line at its peak. With the default settings the peak sits at about 0.15 cycles per unit length, a wavelength of six to seven units, a few times the width of the inhibitory surround.</p>
+<p>A few things are worth trying before moving on. Make inhibition wider and the peak moves to lower frequencies: the stripes the network will produce get broader. Make excitation wider, closer to the inhibition width, and the peak gets lower and broader, since the two Gaussians cancel over a larger range of frequencies. Set the inhibition strength to zero and the peak moves to frequency zero, meaning the network would simply amplify uniform activity rather than any pattern. The Mexican hat shape, not just excitation, is what makes stripes.</p>
+</section>
+<section id="pattern-formation-in-a-recurrent-network" class="level2">
+<h2 class="anchored" data-anchor-id="pattern-formation-in-a-recurrent-network">Pattern formation in a recurrent network</h2>
+<p>Now wrap 256 neurons around a ring, so that there are no edges to worry about, and connect each pair with a weight given by the kernel above. The firing rates <span class="math inline">\(r\)</span> evolve according to</p>
+<p><span class="math display">\[\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+ .\]</span></p>
+<p>Each neuron relaxes towards its total input with time constant <span class="math inline">\(\tau\)</span>. The input has two parts: the recurrent input <span class="math inline">\(W r\)</span> from the rest of the ring, and an external input <span class="math inline">\(h\)</span> that is drawn at random once per neuron and then held fixed. On top of that you can add noise that is redrawn at every time step. The brackets denote rectification, so rates cannot go negative. The width sliders set the two Gaussians of the kernel, in units of neurons along the ring.</p>
+<p>The gain slider is the one to watch. It scales the whole weight matrix so that its largest eigenvalue equals the number you set. Because the kernel depends only on distance, the eigenvectors of <span class="math inline">\(W\)</span> are sine waves around the ring, one for each spatial frequency, and the eigenvalues are the kernel’s Fourier transform from the first part of the page. If the largest eigenvalue is below 1, every pattern decays faster than the recurrence can feed it, and the activity just reflects the random input. If it is above 1, the pattern at the favoured frequency grows on each pass through the network until the rectification stops it. That is the transition from a stable, input-driven network to one that generates its own pattern.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="144" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 143;"><span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>viewof rnSigE <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">1</span><span class="op">,</span> <span class="dv">25</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Excitation width"</span>})</span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>viewof rnSigI <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">1</span><span class="op">,</span> <span class="dv">50</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Inhibition width"</span>})</span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>viewof rnGain <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.2</span><span class="op">,</span> <span class="fl">1.6</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">1.2</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.02</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Gain (largest eigenvalue of W)"</span>})</span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>viewof rnNoise <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">1</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.02</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Input noise"</span>})</span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a>viewof rnPause <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Pause"</span>})</span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a>viewof rnReset <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">button</span>(<span class="st">"Reset"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="154" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 153;"><span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a>rnN <span class="op">=</span> <span class="dv">256</span></span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a>rnKernel <span class="op">=</span> {</span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> N <span class="op">=</span> rnN<span class="op">,</span> sE <span class="op">=</span> rnSigE<span class="op">,</span> sI <span class="op">=</span> rnSigI<span class="op">;</span></span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> g <span class="op">=</span> (d<span class="op">,</span> s) <span class="kw">=&gt;</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">exp</span>(<span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> d <span class="op">*</span> d <span class="op">/</span> (s <span class="op">*</span> s)) <span class="op">/</span> s<span class="op">;</span></span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> k <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N)<span class="op">;</span></span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> d <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> d <span class="op">&lt;</span> N<span class="op">;</span> d<span class="op">++</span>) { <span class="kw">const</span> dd <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(d<span class="op">,</span> N <span class="op">-</span> d)<span class="op">;</span> k[d] <span class="op">=</span> <span class="fu">g</span>(dd<span class="op">,</span> sE) <span class="op">-</span> <span class="fu">g</span>(dd<span class="op">,</span> sI)<span class="op">;</span> }</span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> ev <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> m <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> m <span class="op">&lt;=</span> N <span class="op">/</span> <span class="dv">2</span><span class="op">;</span> m<span class="op">++</span>) { <span class="kw">let</span> s <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> d <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> d <span class="op">&lt;</span> N<span class="op">;</span> d<span class="op">++</span>) s <span class="op">+=</span> k[d] <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(<span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> m <span class="op">*</span> d <span class="op">/</span> N)<span class="op">;</span> ev[m] <span class="op">=</span> s<span class="op">;</span> }</span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> lmax <span class="op">=</span> <span class="op">-</span><span class="kw">Infinity</span><span class="op">,</span> mmax <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> m <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> m <span class="op">&lt;=</span> N <span class="op">/</span> <span class="dv">2</span><span class="op">;</span> m<span class="op">++</span>) <span class="cf">if</span> (ev[m] <span class="op">&gt;</span> lmax) { lmax <span class="op">=</span> ev[m]<span class="op">;</span> mmax <span class="op">=</span> m<span class="op">;</span> }</span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> scale <span class="op">=</span> rnGain <span class="op">/</span> lmax<span class="op">;</span></span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {N<span class="op">,</span> <span class="dt">k</span><span class="op">:</span> k<span class="op">.</span><span class="fu">map</span>(x <span class="kw">=&gt;</span> x <span class="op">*</span> scale)<span class="op">,</span> <span class="dt">ev</span><span class="op">:</span> ev<span class="op">.</span><span class="fu">map</span>(x <span class="kw">=&gt;</span> x <span class="op">*</span> scale)<span class="op">,</span> mmax}<span class="op">;</span></span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a>rnState <span class="op">=</span> {</span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>  rnReset<span class="op">;</span></span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> N <span class="op">=</span> rnN<span class="op">,</span> dt <span class="op">=</span> <span class="fl">0.1</span><span class="op">,</span> tau <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> h <span class="op">=</span> <span class="bu">Float64Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> N}<span class="op">,</span> () <span class="kw">=&gt;</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>())<span class="op">;</span></span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> r <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N)<span class="op">.</span><span class="fu">fill</span>(<span class="fl">0.5</span>)<span class="op">,</span> t <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (<span class="kw">true</span>) {</span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>viewof rnPause<span class="op">.</span><span class="at">value</span>) {</span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> {k} <span class="op">=</span> rnKernel<span class="op">;</span> <span class="kw">const</span> noise <span class="op">=</span> viewof rnNoise<span class="op">.</span><span class="at">value</span><span class="op">;</span></span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> step <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> step <span class="op">&lt;</span> <span class="dv">5</span><span class="op">;</span> step<span class="op">++</span>) {</span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> rn <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N)<span class="op">;</span></span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a>          <span class="kw">let</span> s <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a>          <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> N<span class="op">;</span> j<span class="op">++</span>) { <span class="kw">const</span> d <span class="op">=</span> (i <span class="op">-</span> j <span class="op">+</span> N) <span class="op">%</span> N<span class="op">;</span> s <span class="op">+=</span> k[d] <span class="op">*</span> r[j]<span class="op">;</span> }</span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a>          rn[i] <span class="op">=</span> r[i] <span class="op">+</span> dt <span class="op">/</span> tau <span class="op">*</span> (<span class="op">-</span>r[i] <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="dv">0</span><span class="op">,</span> s <span class="op">+</span> h[i] <span class="op">+</span> noise <span class="op">*</span> (<span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>() <span class="op">-</span> <span class="fl">0.5</span>) <span class="op">*</span> <span class="dv">2</span>))<span class="op">;</span></span>
+<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a>        r <span class="op">=</span> rn<span class="op">;</span> t <span class="op">+=</span> dt<span class="op">;</span></span>
+<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> {r<span class="op">,</span> t}<span class="op">;</span></span>
+<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-186"><a href="#cb4-186" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-187"><a href="#cb4-187" aria-hidden="true" tabindex="-1"></a>rnCanvas <span class="op">=</span> <span class="fu">mkCanvas</span>(<span class="dv">760</span><span class="op">,</span> <span class="dv">400</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-4-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-4-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-4-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-4-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb5" data-startfrom="191" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 190;"><span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> {r<span class="op">,</span> t} <span class="op">=</span> rnState<span class="op">,</span> {ev<span class="op">,</span> mmax<span class="op">,</span> N} <span class="op">=</span> rnKernel<span class="op">,</span> c <span class="op">=</span> rnCanvas<span class="op">,</span> fg <span class="op">=</span> <span class="fu">exFg</span>()<span class="op">;</span></span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> W <span class="op">=</span> <span class="dv">760</span><span class="op">,</span> H <span class="op">=</span> <span class="dv">400</span><span class="op">;</span> c<span class="op">.</span><span class="fu">clearRect</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> W<span class="op">,</span> H)<span class="op">;</span> c<span class="op">.</span><span class="at">font</span> <span class="op">=</span> exFont<span class="op">;</span></span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> aP <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">90</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> W <span class="op">-</span> <span class="dv">110</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">170</span>}<span class="op">;</span></span>
+<span id="cb5-195"><a href="#cb5-195" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> rmax <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="fl">1e-6</span><span class="op">,</span> <span class="op">...</span>r)<span class="op">;</span></span>
+<span id="cb5-196"><a href="#cb5-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> aP<span class="op">.</span><span class="at">x0</span><span class="op">,</span> aP<span class="op">.</span><span class="at">y0</span><span class="op">,</span> aP<span class="op">.</span><span class="at">w</span><span class="op">,</span> aP<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb5-197"><a href="#cb5-197" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> <span class="st">"#1f77b4"</span><span class="op">;</span></span>
+<span id="cb5-198"><a href="#cb5-198" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) { <span class="kw">const</span> bh <span class="op">=</span> aP<span class="op">.</span><span class="at">h</span> <span class="op">*</span> r[i] <span class="op">/</span> rmax<span class="op">;</span> c<span class="op">.</span><span class="fu">fillRect</span>(aP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> aP<span class="op">.</span><span class="at">w</span> <span class="op">*</span> i <span class="op">/</span> N<span class="op">,</span> aP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> aP<span class="op">.</span><span class="at">h</span> <span class="op">-</span> bh<span class="op">,</span> aP<span class="op">.</span><span class="at">w</span> <span class="op">/</span> N<span class="op">,</span> bh)<span class="op">;</span> }</span>
+<span id="cb5-199"><a href="#cb5-199" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"activity"</span><span class="op">,</span> aP<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> aP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> aP<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb5-200"><a href="#cb5-200" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`position on the ring · t = </span><span class="sc">${</span>t<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">0</span>)<span class="sc">}</span><span class="vs"> τ`</span><span class="op">,</span> aP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> aP<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> aP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> aP<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">22</span>)<span class="op">;</span></span>
+<span id="cb5-201"><a href="#cb5-201" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> sP <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">90</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">240</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> W <span class="op">-</span> <span class="dv">110</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">110</span>}<span class="op">;</span></span>
+<span id="cb5-202"><a href="#cb5-202" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> M <span class="op">=</span> <span class="dv">40</span><span class="op">,</span> emax <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="fl">1.6</span><span class="op">,</span> <span class="op">...</span>ev)<span class="op">,</span> emin <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(<span class="op">-</span><span class="fl">0.5</span><span class="op">,</span> <span class="op">...</span>ev)<span class="op">;</span></span>
+<span id="cb5-203"><a href="#cb5-203" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> sy <span class="op">=</span> v <span class="kw">=&gt;</span> sP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (v <span class="op">-</span> emin) <span class="op">/</span> (emax <span class="op">-</span> emin))<span class="op">;</span></span>
+<span id="cb5-204"><a href="#cb5-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> sP<span class="op">.</span><span class="at">x0</span><span class="op">,</span> sP<span class="op">.</span><span class="at">y0</span><span class="op">,</span> sP<span class="op">.</span><span class="at">w</span><span class="op">,</span> sP<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb5-205"><a href="#cb5-205" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">4</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"red"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(sP<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">1</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(sP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">1</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb5-206"><a href="#cb5-206" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#888"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(sP<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(sP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb5-207"><a href="#cb5-207" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> m <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> m <span class="op">&lt;=</span> M<span class="op">;</span> m<span class="op">++</span>) { c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> m <span class="op">===</span> mmax <span class="op">?</span> <span class="st">"#ff7f0e"</span> <span class="op">:</span> <span class="st">"gray"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">arc</span>(sP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">w</span> <span class="op">*</span> m <span class="op">/</span> M<span class="op">,</span> <span class="fu">sy</span>(ev[m])<span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> }</span>
+<span id="cb5-208"><a href="#cb5-208" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"eigenvalue"</span><span class="op">,</span> sP<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> sP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"1"</span><span class="op">,</span> sP<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">1</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> sP<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb5-209"><a href="#cb5-209" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`spatial frequency (waves around the ring) · amplified most: </span><span class="sc">${</span>mmax<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> sP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> sP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">22</span>)<span class="op">;</span></span>
+<span id="cb5-210"><a href="#cb5-210" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> sP<span class="op">.</span><span class="at">x0</span><span class="op">,</span> sP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">42</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(M<span class="op">,</span> sP<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">w</span><span class="op">,</span> sP<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> sP<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">42</span>)<span class="op">;</span></span>
+<span id="cb5-211"><a href="#cb5-211" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">;</span></span>
+<span id="cb5-212"><a href="#cb5-212" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-5" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</section>
+<section id="reading-the-figure" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-figure">Reading the figure</h2>
+<p>The upper panel shows the activity of every neuron as a bar, laid out by position on the ring, with the clock in units of <span class="math inline">\(\tau\)</span> underneath. The lower panel shows the eigenvalues of <span class="math inline">\(W\)</span>, one grey dot for each spatial frequency, counted in whole waves around the ring. This is the same curve as the kernel spectrum in the first part of the page, just sampled at the frequencies that fit on the ring and scaled by the gain. The orange dot is the largest eigenvalue, and the red dashed line marks the value 1, the boundary between decay and growth.</p>
+<p>With the default settings the gain is 1.2 and the orange dot sits above the line. After a moment the activity organises into a regular set of bumps, and if you count them you will find the number next to the orange dot. The random input is still there, which is why the bumps are not all the same height, but the spacing is set entirely by the kernel.</p>
+</section>
+<section id="things-to-try" class="level2">
+<h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
+<p>Pull the gain below 1 and press Reset. The bumps fade and what is left is a noisy copy of the random input: the network is now a filter that smooths its input a little, nothing more. Push the gain back above 1 and the pattern grows back, from whatever small ripples in the input happen to match the favoured frequency. Near the threshold the growth is slow and you can watch it happen.</p>
+<p>Make the inhibition wider. The orange dot moves left, to a lower frequency, and after a Reset the bumps are fewer and broader. Make excitation wider instead and the bumps get broader too, but the peak of the spectrum also gets flatter, so neighbouring frequencies compete and the pattern takes longer to settle.</p>
+<p>Turn the noise up. The pattern survives surprisingly well, because the network amplifies only the component of the noise at its favourite frequency and ignores the rest. This is the sense in which a recurrent network with a Mexican hat kernel imposes its own structure on whatever it is given, and why the same mechanism has been proposed for so many different periodic patterns in the brain.</p>
+<p>This page is based on the pattern-formation exercise in Dayan and Abbott (2001, chapter 7). The ring network with a distance-dependent kernel is the setting of Amari’s (1977) analysis of neural fields, and the same architecture, with the ring standing for preferred orientation rather than position, is the ring model of orientation tuning of Ben-Yishai et al. (1995).</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Amari S (1977). Dynamics of pattern formation in lateral-inhibition type neural fields. <em>Biological Cybernetics</em> 27: 77–87.</p>
+<p>Ben-Yishai R, Bar-Or RL, Sompolinsky H (1995). Theory of orientation tuning in visual cortex. <em>Proceedings of the National Academy of Sciences</em> 92: 3844–3848.</p>
+<p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
+<p>Ermentrout GB, Cowan JD (1979). A mathematical theory of visual hallucination patterns. <em>Biological Cybernetics</em> 34: 137–150.</p>
+<p>Swindale NV (1980). A model for the formation of ocular dominance stripes. <em>Proceedings of the Royal Society B</em> 208: 243–264.</p>
+<p>Turing AM (1952). The chemical basis of morphogenesis. <em>Philosophical Transactions of the Royal Society B</em> 237: 37–72.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ii8vIHNoYXJlZCBoZWxwZXJzOiBvbmUgcGVyc2lzdGVudCBjYW52YXMgcGVyIGV4cGxvcmFibGUsIHRleHQtc2l6ZWQgZm9udHMsIHJlc3BvbnNpdmUgd2lkdGhcbmV4Rm9udCA9IFwiMTZweCBcIiArIGdldENvbXB1dGVkU3R5bGUoZG9jdW1lbnQuYm9keSkuZm9udEZhbWlseVxuZXhGZyA9ICgpID0+IGdldENvbXB1dGVkU3R5bGUoZG9jdW1lbnQuYm9keSkuY29sb3Jcbm1rQ2FudmFzID0gKFcsIEgpID0+IHtcbiAgY29uc3QgYyA9IERPTS5jb250ZXh0MmQoVywgSCk7XG4gIGMuY2FudmFzLnN0eWxlLndpZHRoID0gXCIxMDAlXCI7IGMuY2FudmFzLnN0eWxlLm1heFdpZHRoID0gVyArIFwicHhcIjsgYy5jYW52YXMuc3R5bGUuaGVpZ2h0ID0gXCJhdXRvXCI7XG4gIHJldHVybiBjO1xufVxuYXhpc0JveCA9IChjLCB4LCB5LCB3LCBoKSA9PiB7IGMuc3Ryb2tlU3R5bGUgPSBcIiM5OTlcIjsgYy5saW5lV2lkdGggPSAxOyBjLnN0cm9rZVJlY3QoeCwgeSwgdywgaCk7IH1cbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InZpZXdvZiBzaWdFID0gSW5wdXRzLnJhbmdlKFswLjEsIDEwXSwge3ZhbHVlOiAxLCBzdGVwOiAwLjEsIGxhYmVsOiBcIkV4Y2l0YXRpb24gd2lkdGggz4PigpFcIn0pXG52aWV3b2YgYW1wRSA9IElucHV0cy5yYW5nZShbMCwgMTBdLCB7dmFsdWU6IDEsIHN0ZXA6IDAuMSwgbGFiZWw6IFwiRXhjaXRhdGlvbiBzdHJlbmd0aFwifSlcbnZpZXdvZiBzaWdJID0gSW5wdXRzLnJhbmdlKFswLjEsIDEwXSwge3ZhbHVlOiAyLCBzdGVwOiAwLjEsIGxhYmVsOiBcIkluaGliaXRpb24gd2lkdGggz4PhtaJcIn0pXG52aWV3b2YgYW1wSSA9IElucHV0cy5yYW5nZShbMCwgMl0sIHt2YWx1ZTogMSwgc3RlcDogMC4wNSwgbGFiZWw6IFwiSW5oaWJpdGlvbiBzdHJlbmd0aFwifSlcblxuZ2F1c3MgPSAoeCwgcykgPT4gTWF0aC5leHAoLTAuNSAqIHggKiB4IC8gKHMgKiBzKSkgLyAoTWF0aC5zcXJ0KDIgKiBNYXRoLlBJKSAqIHMpXG5naGF0ID0gKGYsIHMpID0+IE1hdGguZXhwKC0yICogTWF0aC5QSSAqIE1hdGguUEkgKiBzICogcyAqIGYgKiBmKVxueG1heCA9IDUgKiBNYXRoLm1heChzaWdFLCBzaWdJKVxuc3BhY2UgPSBBcnJheS5mcm9tKHtsZW5ndGg6IDQwMX0sIChfLCBpKSA9PiB7XG4gIGNvbnN0IHggPSAteG1heCArIDIgKiB4bWF4ICogaSAvIDQwMDtcbiAgY29uc3QgZSA9IGFtcEUgKiBnYXVzcyh4LCBzaWdFKSwgaW5oID0gLWFtcEkgKiBnYXVzcyh4LCBzaWdJKTtcbiAgcmV0dXJuIHt4LCBFeGNpdGF0aW9uOiBlLCBJbmhpYml0aW9uOiBpbmgsIFwiRGlmZmVyZW5jZSBvZiBHYXVzc2lhbnNcIjogZSArIGluaH07XG59KVxuc3BlY3RydW0gPSBBcnJheS5mcm9tKHtsZW5ndGg6IDQwMX0sIChfLCBpKSA9PiB7IGNvbnN0IGYgPSAyICogaSAvIDQwMDsgcmV0dXJuIHtmLCBrOiBNYXRoLmFicyhhbXBFICogZ2hhdChmLCBzaWdFKSAtIGFtcEkgKiBnaGF0KGYsIHNpZ0kpKX07IH0pXG5wZWFrID0gc3BlY3RydW0ucmVkdWNlKChhLCBiKSA9PiAoYi5rID4gYS5rID8gYiA6IGEpKVxuXG5odG1sYDxkaXYgc3R5bGU9XCJkaXNwbGF5OmZsZXg7ZmxleC13cmFwOndyYXA7Z2FwOjFyZW1cIj5cbiR7UGxvdC5wbG90KHtcbiAgd2lkdGg6IDM3MCwgaGVpZ2h0OiAyODAsIG1hcmdpbkxlZnQ6IDQwLCBzdHlsZToge2ZvbnRTaXplOiBcIjE1cHhcIn0sXG4gIHg6IHtsYWJlbDogXCJzcGFjZVwifSwgeToge2xhYmVsOiBudWxsLCB0aWNrczogMH0sXG4gIGNvbG9yOiB7bGVnZW5kOiB0cnVlLCBkb21haW46IFtcIkV4Y2l0YXRpb25cIiwgXCJJbmhpYml0aW9uXCIsIFwiRGlmZmVyZW5jZSBvZiBHYXVzc2lhbnNcIl0sIHJhbmdlOiBbXCIjZmY3ZjBlXCIsIFwiIzFmNzdiNFwiLCBcImJsYWNrXCJdfSxcbiAgbWFya3M6IFtQbG90LnJ1bGVZKFswXSwge3N0cm9rZTogXCIjOTk5XCJ9KSxcbiAgICAuLi5bXCJFeGNpdGF0aW9uXCIsIFwiSW5oaWJpdGlvblwiLCBcIkRpZmZlcmVuY2Ugb2YgR2F1c3NpYW5zXCJdLm1hcChrID0+IFBsb3QubGluZShzcGFjZSwge3g6IFwieFwiLCB5OiBrLCBzdHJva2U6ICgpID0+IGssIHN0cm9rZVdpZHRoOiAyfSkpXVxufSl9XG4ke1Bsb3QucGxvdCh7XG4gIHdpZHRoOiAzNzAsIGhlaWdodDogMjgwLCBtYXJnaW5MZWZ0OiA1MCwgc3R5bGU6IHtmb250U2l6ZTogXCIxNXB4XCJ9LFxuICB4OiB7bGFiZWw6IFwic3BhdGlhbCBmcmVxdWVuY3kgKGN5Y2xlcyAvIHVuaXQgbGVuZ3RoKVwifSxcbiAgeToge2xhYmVsOiBcInxrZXJuZWwgc3BlY3RydW18XCIsIGRvbWFpbjogWzAsIE1hdGgubWF4KDAuMDUsIGFtcEUsIGFtcEkpXX0sXG4gIG1hcmtzOiBbUGxvdC5saW5lKHNwZWN0cnVtLCB7eDogXCJmXCIsIHk6IFwia1wiLCBzdHJva2U6IFwiZ3JheVwiLCBzdHJva2VXaWR0aDogMn0pLFxuICAgIFBsb3QucnVsZVgoW3BlYWsuZl0sIHtzdHJva2U6IFwiI2ZmN2YwZVwiLCBzdHJva2VEYXNoYXJyYXk6IFwiNCA0XCJ9KSxcbiAgICBQbG90LnRleHQoW3BlYWtdLCB7eDogXCJmXCIsIHk6IFwia1wiLCB0ZXh0OiBkID0+IGBwZWFrIGF0IGYgPSAke2QuZi50b0ZpeGVkKDIpfWAsIGR4OiA4LCBkeTogLTgsIHRleHRBbmNob3I6IFwic3RhcnRcIn0pXVxufSl9XG48L2Rpdj5gXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTMiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJ2aWV3b2Ygcm5TaWdFID0gSW5wdXRzLnJhbmdlKFsxLCAyNV0sIHt2YWx1ZTogNSwgc3RlcDogMC41LCBsYWJlbDogXCJFeGNpdGF0aW9uIHdpZHRoXCJ9KVxudmlld29mIHJuU2lnSSA9IElucHV0cy5yYW5nZShbMSwgNTBdLCB7dmFsdWU6IDEyLCBzdGVwOiAwLjUsIGxhYmVsOiBcIkluaGliaXRpb24gd2lkdGhcIn0pXG52aWV3b2Ygcm5HYWluID0gSW5wdXRzLnJhbmdlKFswLjIsIDEuNl0sIHt2YWx1ZTogMS4yLCBzdGVwOiAwLjAyLCBsYWJlbDogXCJHYWluIChsYXJnZXN0IGVpZ2VudmFsdWUgb2YgVylcIn0pXG52aWV3b2Ygcm5Ob2lzZSA9IElucHV0cy5yYW5nZShbMCwgMV0sIHt2YWx1ZTogMC4xLCBzdGVwOiAwLjAyLCBsYWJlbDogXCJJbnB1dCBub2lzZVwifSlcbnZpZXdvZiByblBhdXNlID0gSW5wdXRzLnRvZ2dsZSh7bGFiZWw6IFwiUGF1c2VcIn0pXG52aWV3b2Ygcm5SZXNldCA9IElucHV0cy5idXR0b24oXCJSZXNldFwiKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC00IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoicm5OID0gMjU2XG5ybktlcm5lbCA9IHtcbiAgY29uc3QgTiA9IHJuTiwgc0UgPSByblNpZ0UsIHNJID0gcm5TaWdJO1xuICBjb25zdCBnID0gKGQsIHMpID0+IE1hdGguZXhwKC0wLjUgKiBkICogZCAvIChzICogcykpIC8gcztcbiAgY29uc3QgayA9IG5ldyBGbG9hdDY0QXJyYXkoTik7XG4gIGZvciAobGV0IGQgPSAwOyBkIDwgTjsgZCsrKSB7IGNvbnN0IGRkID0gTWF0aC5taW4oZCwgTiAtIGQpOyBrW2RdID0gZyhkZCwgc0UpIC0gZyhkZCwgc0kpOyB9XG4gIGNvbnN0IGV2ID0gbmV3IEZsb2F0NjRBcnJheShOIC8gMiArIDEpO1xuICBmb3IgKGxldCBtID0gMDsgbSA8PSBOIC8gMjsgbSsrKSB7IGxldCBzID0gMDsgZm9yIChsZXQgZCA9IDA7IGQgPCBOOyBkKyspIHMgKz0ga1tkXSAqIE1hdGguY29zKDIgKiBNYXRoLlBJICogbSAqIGQgLyBOKTsgZXZbbV0gPSBzOyB9XG4gIGxldCBsbWF4ID0gLUluZmluaXR5LCBtbWF4ID0gMDsgZm9yIChsZXQgbSA9IDA7IG0gPD0gTiAvIDI7IG0rKykgaWYgKGV2W21dID4gbG1heCkgeyBsbWF4ID0gZXZbbV07IG1tYXggPSBtOyB9XG4gIGNvbnN0IHNjYWxlID0gcm5HYWluIC8gbG1heDtcbiAgcmV0dXJuIHtOLCBrOiBrLm1hcCh4ID0+IHggKiBzY2FsZSksIGV2OiBldi5tYXAoeCA9PiB4ICogc2NhbGUpLCBtbWF4fTtcbn1cbnJuU3RhdGUgPSB7XG4gIHJuUmVzZXQ7XG4gIGNvbnN0IE4gPSBybk4sIGR0ID0gMC4xLCB0YXUgPSAxO1xuICBjb25zdCBoID0gRmxvYXQ2NEFycmF5LmZyb20oe2xlbmd0aDogTn0sICgpID0+IDAuNSArIDAuNSAqIE1hdGgucmFuZG9tKCkpO1xuICBsZXQgciA9IG5ldyBGbG9hdDY0QXJyYXkoTikuZmlsbCgwLjUpLCB0ID0gMDtcbiAgd2hpbGUgKHRydWUpIHtcbiAgICBpZiAoIXZpZXdvZiByblBhdXNlLnZhbHVlKSB7XG4gICAgICBjb25zdCB7a30gPSBybktlcm5lbDsgY29uc3Qgbm9pc2UgPSB2aWV3b2Ygcm5Ob2lzZS52YWx1ZTtcbiAgICAgIGZvciAobGV0IHN0ZXAgPSAwOyBzdGVwIDwgNTsgc3RlcCsrKSB7XG4gICAgICAgIGNvbnN0IHJuID0gbmV3IEZsb2F0NjRBcnJheShOKTtcbiAgICAgICAgZm9yIChsZXQgaSA9IDA7IGkgPCBOOyBpKyspIHtcbiAgICAgICAgICBsZXQgcyA9IDA7XG4gICAgICAgICAgZm9yIChsZXQgaiA9IDA7IGogPCBOOyBqKyspIHsgY29uc3QgZCA9IChpIC0gaiArIE4pICUgTjsgcyArPSBrW2RdICogcltqXTsgfVxuICAgICAgICAgIHJuW2ldID0gcltpXSArIGR0IC8gdGF1ICogKC1yW2ldICsgTWF0aC5tYXgoMCwgcyArIGhbaV0gKyBub2lzZSAqIChNYXRoLnJhbmRvbSgpIC0gMC41KSAqIDIpKTtcbiAgICAgICAgfVxuICAgICAgICByID0gcm47IHQgKz0gZHQ7XG4gICAgICB9XG4gICAgfVxuICAgIHlpZWxkIHtyLCB0fTtcbiAgfVxufVxucm5DYW52YXMgPSBta0NhbnZhcyg3NjAsIDQwMClcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtNSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6IntcbiAgY29uc3Qge3IsIHR9ID0gcm5TdGF0ZSwge2V2LCBtbWF4LCBOfSA9IHJuS2VybmVsLCBjID0gcm5DYW52YXMsIGZnID0gZXhGZygpO1xuICBjb25zdCBXID0gNzYwLCBIID0gNDAwOyBjLmNsZWFyUmVjdCgwLCAwLCBXLCBIKTsgYy5mb250ID0gZXhGb250O1xuICBjb25zdCBhUCA9IHt4MDogOTAsIHkwOiAxMiwgdzogVyAtIDExMCwgaDogMTcwfTtcbiAgY29uc3Qgcm1heCA9IE1hdGgubWF4KDFlLTYsIC4uLnIpO1xuICBheGlzQm94KGMsIGFQLngwLCBhUC55MCwgYVAudywgYVAuaCk7XG4gIGMuZmlsbFN0eWxlID0gXCIjMWY3N2I0XCI7XG4gIGZvciAobGV0IGkgPSAwOyBpIDwgTjsgaSsrKSB7IGNvbnN0IGJoID0gYVAuaCAqIHJbaV0gLyBybWF4OyBjLmZpbGxSZWN0KGFQLngwICsgYVAudyAqIGkgLyBOLCBhUC55MCArIGFQLmggLSBiaCwgYVAudyAvIE4sIGJoKTsgfVxuICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwicmlnaHRcIjsgYy5maWxsVGV4dChcImFjdGl2aXR5XCIsIGFQLngwIC0gOCwgYVAueTAgKyBhUC5oIC8gMiArIDUpO1xuICBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoYHBvc2l0aW9uIG9uIHRoZSByaW5nIMK3IHQgPSAke3QudG9GaXhlZCgwKX0gz4RgLCBhUC54MCArIGFQLncgLyAyLCBhUC55MCArIGFQLmggKyAyMik7XG4gIGNvbnN0IHNQID0ge3gwOiA5MCwgeTA6IDI0MCwgdzogVyAtIDExMCwgaDogMTEwfTtcbiAgY29uc3QgTSA9IDQwLCBlbWF4ID0gTWF0aC5tYXgoMS42LCAuLi5ldiksIGVtaW4gPSBNYXRoLm1pbigtMC41LCAuLi5ldik7XG4gIGNvbnN0IHN5ID0gdiA9PiBzUC55MCArIHNQLmggKiAoMSAtICh2IC0gZW1pbikgLyAoZW1heCAtIGVtaW4pKTtcbiAgYXhpc0JveChjLCBzUC54MCwgc1AueTAsIHNQLncsIHNQLmgpO1xuICBjLnNldExpbmVEYXNoKFs0LCA0XSk7IGMuc3Ryb2tlU3R5bGUgPSBcInJlZFwiOyBjLmJlZ2luUGF0aCgpOyBjLm1vdmVUbyhzUC54MCwgc3koMSkpOyBjLmxpbmVUbyhzUC54MCArIHNQLncsIHN5KDEpKTsgYy5zdHJva2UoKTsgYy5zZXRMaW5lRGFzaChbXSk7XG4gIGMuc3Ryb2tlU3R5bGUgPSBcIiM4ODhcIjsgYy5iZWdpblBhdGgoKTsgYy5tb3ZlVG8oc1AueDAsIHN5KDApKTsgYy5saW5lVG8oc1AueDAgKyBzUC53LCBzeSgwKSk7IGMuc3Ryb2tlKCk7XG4gIGZvciAobGV0IG0gPSAwOyBtIDw9IE07IG0rKykgeyBjLmZpbGxTdHlsZSA9IG0gPT09IG1tYXggPyBcIiNmZjdmMGVcIiA6IFwiZ3JheVwiOyBjLmJlZ2luUGF0aCgpOyBjLmFyYyhzUC54MCArIHNQLncgKiBtIC8gTSwgc3koZXZbbV0pLCA0LCAwLCAyICogTWF0aC5QSSk7IGMuZmlsbCgpOyB9XG4gIGMuZmlsbFN0eWxlID0gZmc7IGMudGV4dEFsaWduID0gXCJyaWdodFwiOyBjLmZpbGxUZXh0KFwiZWlnZW52YWx1ZVwiLCBzUC54MCAtIDgsIHNQLnkwICsgc1AuaCAvIDIgKyA1KTsgYy5maWxsVGV4dChcIjFcIiwgc1AueDAgLSA4LCBzeSgxKSArIDUpOyBjLmZpbGxUZXh0KFwiMFwiLCBzUC54MCAtIDgsIHN5KDApICsgNSk7XG4gIGMudGV4dEFsaWduID0gXCJjZW50ZXJcIjsgYy5maWxsVGV4dChgc3BhdGlhbCBmcmVxdWVuY3kgKHdhdmVzIGFyb3VuZCB0aGUgcmluZykgwrcgYW1wbGlmaWVkIG1vc3Q6ICR7bW1heH1gLCBzUC54MCArIHNQLncgLyAyLCBzUC55MCArIHNQLmggKyAyMik7XG4gIGMuZmlsbFRleHQoXCIwXCIsIHNQLngwLCBzUC55MCArIHNQLmggKyA0Mik7IGMuZmlsbFRleHQoTSwgc1AueDAgKyBzUC53LCBzUC55MCArIHNQLmggKyA0Mik7XG4gIHJldHVybiBjLmNhbnZhcztcbn1cbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnc2lnRScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdhbXBFJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ3NpZ0knKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnYW1wSScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdyblNpZ0UnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgncm5TaWdJJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ3JuR2FpbicpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdybk5vaXNlJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ3JuUGF1c2UnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgncm5SZXNldCcpIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../teaching";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/traegenap\.org");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This site is currently under construction.<br> © 2026 Sigrid Trägenap · <a href="../impressum.html">Impressum</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

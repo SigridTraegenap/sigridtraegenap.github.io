@@ -1,11 +1,12 @@
 [
   {
-    "listing": "/explorables/index.html",
+    "listing": "/teaching/index.html",
     "items": [
-      "/explorables/neuron.html",
-      "/explorables/data-analysis.html",
-      "/explorables/recurrent-networks.html",
-      "/explorables/hebbian.html"
+      "/teaching/neuron.html",
+      "/teaching/pca.html",
+      "/teaching/fourier.html",
+      "/teaching/recurrent-networks.html",
+      "/teaching/hebbian.html"
     ]
   }
 ]

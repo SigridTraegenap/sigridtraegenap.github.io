@@ -1,47 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://traegenap.org/teaching/recurrent-networks.html</loc>
+    <lastmod>2026-10-19T08:37:47.043Z</lastmod>
+  </url>
+  <url>
+    <loc>https://traegenap.org/teaching/neuron.html</loc>
+    <lastmod>2026-10-19T08:37:47.043Z</lastmod>
+  </url>
+  <url>
+    <loc>https://traegenap.org/teaching/hebbian.html</loc>
+    <lastmod>2026-10-19T08:37:47.043Z</lastmod>
+  </url>
+  <url>
     <loc>https://traegenap.org/research.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
+    <lastmod>2026-10-19T08:37:47.041Z</lastmod>
   </url>
   <url>
     <loc>https://traegenap.org/outreach.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
+    <lastmod>2026-10-19T08:37:47.041Z</lastmod>
   </url>
   <url>
     <loc>https://traegenap.org/impressum.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
-  </url>
-  <url>
-    <loc>https://traegenap.org/explorables/neuron.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
-  </url>
-  <url>
-    <loc>https://traegenap.org/explorables/hebbian.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
+    <lastmod>2026-10-19T08:37:47.041Z</lastmod>
   </url>
   <url>
     <loc>https://traegenap.org/cv.html</loc>
-    <lastmod>2026-10-17T07:15:31.376Z</lastmod>
-  </url>
-  <url>
-    <loc>https://traegenap.org/explorables/data-analysis.html</loc>
-    <lastmod>2026-10-17T07:15:31.376Z</lastmod>
-  </url>
-  <url>
-    <loc>https://traegenap.org/explorables/index.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
-  </url>
-  <url>
-    <loc>https://traegenap.org/explorables/recurrent-networks.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
+    <lastmod>2026-10-19T08:37:47.041Z</lastmod>
   </url>
   <url>
     <loc>https://traegenap.org/index.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
+    <lastmod>2026-10-19T08:37:47.041Z</lastmod>
   </url>
   <url>
     <loc>https://traegenap.org/publications.html</loc>
-    <lastmod>2026-10-17T07:15:31.377Z</lastmod>
+    <lastmod>2026-10-19T08:37:47.041Z</lastmod>
+  </url>
+  <url>
+    <loc>https://traegenap.org/teaching/fourier.html</loc>
+    <lastmod>2026-10-19T08:37:47.041Z</lastmod>
+  </url>
+  <url>
+    <loc>https://traegenap.org/teaching/index.html</loc>
+    <lastmod>2026-10-19T08:37:47.043Z</lastmod>
+  </url>
+  <url>
+    <loc>https://traegenap.org/teaching/pca.html</loc>
+    <lastmod>2026-10-19T08:37:47.043Z</lastmod>
   </url>
 </urlset>
