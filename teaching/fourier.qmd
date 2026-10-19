@@ -1,0 +1,214 @@
+---
+title: "Sampling and the discrete Fourier transform"
+description: "What happens to a signal when you only measure it at discrete points: the Nyquist frequency, aliasing, leakage, and rebuilding a signal from a few frequencies."
+toc: true
+execute:
+  enabled: false
+---
+
+Every recording is a list of numbers taken at discrete times, and the Fourier
+transform is how we ask such a list which frequencies it contains. The
+transform itself is a one-line formula. What takes getting used to is the way
+sampling changes what the formula can tell you: measure too slowly and a fast
+oscillation shows up as a slow one, record for too short a time and a clean
+peak smears out. This page lets you produce those effects on purpose, with a
+signal whose true content you know.
+
+Everything runs in your browser, and the figure updates as soon as you move a
+slider.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## The setup
+
+The signal is the sum of two sine waves,
+
+$$y(x) = a_1 \sin(2\pi f_1 x) + a_2 \sin(2\pi f_2 x),$$
+
+with frequencies $f_1$ and $f_2$ in cycles per unit length and amplitudes
+$a_1$ and $a_2$. I write the variable as $x$ rather than $t$ because the same
+mathematics applies to a signal in space, for instance a pattern of activity
+along a strip of cortex, but you can read it as time throughout.
+
+We do not get to see $y(x)$ itself. We see $N$ samples $y_n = y(x_n)$ taken
+at points spaced $\Delta x$ apart over an interval of length $T$, so that
+$N = T / \Delta x$. The discrete Fourier transform (DFT) of these samples is
+
+$$Y_m = \sum_{n=0}^{N-1} y_n\, e^{-2\pi i\, m n / N},$$
+
+and it tells us how much of each frequency $f_m = m / T$ is present. Two
+facts about these frequencies are the whole point of the page.
+
+First, the frequencies are spaced $1/T$ apart. A longer recording gives a
+finer frequency grid. If a true frequency of the signal does not fall on the
+grid, the DFT has to represent it with a mix of neighbouring grid
+frequencies, and the peak spreads out. This is called leakage.
+
+Second, the grid stops at the Nyquist frequency $f_{\text{Ny}} = 1 / (2
+\Delta x)$, half the sampling rate (Nyquist 1928; Shannon 1949). A sine wave needs at least two samples per
+cycle to be told apart from a slower one. If the signal contains a frequency
+above $f_{\text{Ny}}$, the samples are indistinguishable from the samples of
+a lower frequency, and the DFT reports that lower frequency instead. This is
+aliasing, and once it has happened there is no way to undo it from the
+samples alone. The same effect makes wagon wheels appear to turn backwards in
+films.
+
+The last slider, $K$, uses the transform in the other direction. It keeps the
+$K$ strongest frequencies in the spectrum, throws the rest away and rebuilds
+the signal from what is left. If the spectrum is clean, two components are
+enough to reproduce the signal exactly. If it is not, you need more.
+
+```{ojs}
+//| echo: false
+viewof ftF1 = Inputs.range([0, 12], {value: 1, step: 0.1, label: "f₁ (cycles / unit)"})
+viewof ftA1 = Inputs.range([0, 2], {value: 1, step: 0.1, label: "a₁"})
+viewof ftF2 = Inputs.range([0, 12], {value: 3.5, step: 0.1, label: "f₂ (cycles / unit)"})
+viewof ftA2 = Inputs.range([0, 2], {value: 0.5, step: 0.1, label: "a₂"})
+viewof ftDx = Inputs.range([0.02, 0.5], {value: 0.1, step: 0.01, label: "Sampling interval Δx"})
+viewof ftT = Inputs.range([1, 8], {value: 4, step: 0.5, label: "Interval length T"})
+viewof ftK = Inputs.range([0, 10], {value: 2, step: 1, label: "K components kept for reconstruction"})
+```
+
+```{ojs}
+//| echo: false
+ft = {
+  const T = ftT, dx = ftDx, N = Math.max(4, Math.floor(T / dx)), x0 = -T / 2;
+  const sig = x => ftA1 * Math.sin(2 * Math.PI * ftF1 * x) + ftA2 * Math.sin(2 * Math.PI * ftF2 * x);
+  const xs = Array.from({length: N}, (_, n) => x0 + n * dx), ys = xs.map(sig);
+  const M = Math.floor(N / 2), re = new Float64Array(M + 1), im = new Float64Array(M + 1);
+  for (let m = 0; m <= M; m++) for (let n = 0; n < N; n++) { const a = -2 * Math.PI * m * n / N; re[m] += ys[n] * Math.cos(a); im[m] += ys[n] * Math.sin(a); }
+  const amp = Array.from({length: M + 1}, (_, m) => ({m, f: m / T, A: (m === 0 ? 1 : 2) * Math.hypot(re[m], im[m]) / N, ph: Math.atan2(im[m], re[m])}));
+  const kept = amp.slice(1).sort((a, b) => b.A - a.A).slice(0, ftK);
+  const rec = x => amp[0].A * Math.cos(amp[0].ph) + kept.reduce((s, c) => s + c.A * Math.cos(2 * Math.PI * c.f * (x - x0) + c.ph), 0);
+  const fine = Array.from({length: 600}, (_, i) => x0 + T * i / 599);
+  const fNy = 1 / (2 * dx);
+  const alias = f => { const fs = 2 * fNy; let g = Math.abs(f - Math.round(f / fs) * fs); return g; };
+  return {T, dx, N, x0, xs, ys, fine, sig, rec, amp, kept, fNy, alias};
+}
+ftCanvas = mkCanvas(760, 450)
+```
+
+```{ojs}
+//| echo: false
+{
+  const c = ftCanvas, fg = exFg(), W = 760, H = 450, blue = "#1f77b4", orange = "#ff7f0e";
+  const {T, N, x0, xs, ys, fine, sig, rec, amp, kept, fNy, alias} = ft;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  // signal panel
+  const sP = {x0: 80, y0: 12, w: W - 100, h: 170};
+  const ymax = Math.max(0.5, ftA1 + ftA2) * 1.15;
+  const sx = x => sP.x0 + sP.w * (x - x0) / T, sy = y => sP.y0 + sP.h * (1 - (y + ymax) / (2 * ymax));
+  axisBox(c, sP.x0, sP.y0, sP.w, sP.h);
+  c.strokeStyle = "#888"; c.lineWidth = 1; c.beginPath(); c.moveTo(sP.x0, sy(0)); c.lineTo(sP.x0 + sP.w, sy(0)); c.stroke();
+  c.strokeStyle = "#aaa"; c.lineWidth = 1.5; c.beginPath(); fine.forEach((x, i) => i ? c.lineTo(sx(x), sy(sig(x))) : c.moveTo(sx(x), sy(sig(x)))); c.stroke();
+  c.strokeStyle = orange; c.lineWidth = 2; c.beginPath(); fine.forEach((x, i) => i ? c.lineTo(sx(x), sy(rec(x))) : c.moveTo(sx(x), sy(rec(x)))); c.stroke();
+  c.fillStyle = blue; xs.forEach((x, n) => { c.beginPath(); c.arc(sx(x), sy(ys[n]), 3.5, 0, 2 * Math.PI); c.fill(); });
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText(`x  ·  N = ${N} samples`, sP.x0 + sP.w / 2, sP.y0 + sP.h + 22);
+  c.textAlign = "right"; c.fillText("y", sP.x0 - 10, sP.y0 + sP.h / 2 + 5);
+  c.fillText(ymax.toFixed(1), sP.x0 - 8, sP.y0 + 6); c.fillText((-ymax).toFixed(1), sP.x0 - 8, sP.y0 + sP.h + 2);
+  // spectrum panel
+  const pP = {x0: 80, y0: 240, w: W - 100, h: 140};
+  const fmax = Math.max(fNy * 1.05, 0.5), Amax = Math.max(0.5, ...amp.slice(1).map(a => a.A)) * 1.15;
+  const fx = f => pP.x0 + pP.w * f / fmax, fy = A => pP.y0 + pP.h * (1 - A / Amax);
+  axisBox(c, pP.x0, pP.y0, pP.w, pP.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(fx(fNy), pP.y0); c.lineTo(fx(fNy), pP.y0 + pP.h); c.stroke();
+  c.strokeStyle = "#2ca02c";
+  for (const [f, a] of [[ftF1, ftA1], [ftF2, ftA2]]) if (a > 0) { const g = alias(f); c.beginPath(); c.moveTo(fx(g), pP.y0); c.lineTo(fx(g), pP.y0 + pP.h); c.stroke(); }
+  c.setLineDash([]);
+  for (const a of amp.slice(1)) {
+    const isKept = kept.includes(a);
+    c.strokeStyle = isKept ? orange : blue; c.lineWidth = isKept ? 3 : 1.5;
+    c.beginPath(); c.moveTo(fx(a.f), fy(0)); c.lineTo(fx(a.f), fy(a.A)); c.stroke();
+    c.fillStyle = isKept ? orange : blue; c.beginPath(); c.arc(fx(a.f), fy(a.A), 3, 0, 2 * Math.PI); c.fill();
+  }
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText(`frequency (cycles / unit)  ·  Nyquist ${fNy.toFixed(2)}`, pP.x0 + pP.w / 2, pP.y0 + pP.h + 22);
+  c.fillText("0", fx(0), pP.y0 + pP.h + 42); c.fillText(fmax.toFixed(1), fx(fmax), pP.y0 + pP.h + 42);
+  c.textAlign = "right"; c.fillText("|Y|·2/N", pP.x0 - 10, pP.y0 + pP.h / 2 + 5);
+  c.fillText(Amax.toFixed(1), pP.x0 - 8, pP.y0 + 6); c.fillText("0", pP.x0 - 8, pP.y0 + pP.h + 2);
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+The upper panel shows the signal. The thin grey curve is the true continuous
+$y(x)$, which in a real experiment you would never get to see. The blue dots
+are the samples, the only thing the transform has access to. The orange curve
+is the signal rebuilt from the $K$ strongest frequencies. When the orange
+curve lies on top of the grey one, the reconstruction has recovered the
+signal from its samples.
+
+The lower panel is the amplitude spectrum. There is one stem for each grid
+frequency $f_m = m/T$, with the height scaled so that a pure sine of
+amplitude $a$ gives a stem of height $a$. The red dashed line marks the
+Nyquist frequency, where the grid ends. The two green dashed lines mark where
+the true frequencies $f_1$ and $f_2$ ought to appear. If a true frequency lies
+above Nyquist, its green line is drawn at the frequency it gets aliased to,
+so you can see the stem land in the wrong place. Stems used in the
+reconstruction are drawn in orange, the rest in blue.
+
+With the default settings everything is well behaved. Both frequencies sit
+on the grid, both are below Nyquist, the spectrum shows two clean stems of
+heights $a_1$ and $a_2$, and with $K = 2$ the reconstruction is perfect.
+
+## Things to try
+
+Raise $f_2$ slowly past the Nyquist frequency, which is 5 cycles per unit at
+the default sampling interval. Just below it the stem still sits where it
+should. Just above it, the green line and the stem jump to a lower
+frequency, and the orange reconstruction now contains a slow oscillation that
+was never in the signal. Look at the blue dots in the upper panel while you
+do this: they genuinely are consistent with that slower wave. Then make the
+sampling interval smaller. Nyquist moves up, the fast component is resolved
+again, and the problem goes away. That is the one reliable cure for aliasing:
+sample faster, or filter out the fast components before you sample.
+
+Set $f_1$ to 1 and change $T$ from 4 to 4.5. The signal has not changed, but
+the grid has, and 1 cycle per unit no longer lies on it. The single stem
+turns into a cluster around the true frequency. With $K = 2$ the
+reconstruction is now visibly wrong, and you need to raise $K$ to get the
+signal back. The general lesson is that the width of a peak in a spectrum is
+set by the recording length, not by the signal, and that a sharp peak needs a
+recording that is long compared to the period.
+
+Set both amplitudes to the same value and bring $f_1$ and $f_2$ close
+together. At some point the two stems merge into one, and no setting of $K$
+separates them. The frequency resolution is $1/T$, so two frequencies closer
+than that cannot be distinguished, no matter how finely you sample.
+
+This page is based on the Fourier exercises in Dayan and Abbott (2001). The
+transform here is computed by the direct sum, which is fine for a few hundred
+samples. For anything larger one uses the fast Fourier transform of Cooley
+and Tukey (1965), which gives the same numbers in a fraction of the time.
+Press et al. (2007) is a practical reference for both the algorithm and the
+pitfalls of sampling.
+
+## References
+
+Cooley JW, Tukey JW (1965). An algorithm for the machine calculation of
+complex Fourier series. *Mathematics of Computation* 19: 297–301.
+
+Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
+Mathematical Modeling of Neural Systems*. MIT Press.
+
+Nyquist H (1928). Certain topics in telegraph transmission theory.
+*Transactions of the American Institute of Electrical Engineers* 47: 617–644.
+
+Press WH, Teukolsky SA, Vetterling WT, Flannery BP (2007). *Numerical
+Recipes: The Art of Scientific Computing*, 3rd edition. Cambridge University
+Press.
+
+Shannon CE (1949). Communication in the presence of noise. *Proceedings of
+the IRE* 37: 10–21.

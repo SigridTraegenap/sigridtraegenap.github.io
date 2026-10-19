@@ -24,17 +24,19 @@ website:
         text: CV
       - href: outreach.qmd
         text: Outreach
-      - text: Explorables
+      - text: Teaching
         menu:
-          - href: explorables/index.qmd
+          - href: teaching/index.qmd
             text: Overview
-          - href: explorables/neuron.qmd
+          - href: teaching/neuron.qmd
             text: Integrate-and-fire neuron
-          - href: explorables/data-analysis.qmd
-            text: "Data analysis: PCA and Fourier"
-          - href: explorables/recurrent-networks.qmd
+          - href: teaching/pca.qmd
+            text: Principal component analysis
+          - href: teaching/fourier.qmd
+            text: Sampling and the Fourier transform
+          - href: teaching/recurrent-networks.qmd
             text: Recurrent networks
-          - href: explorables/hebbian.qmd
+          - href: teaching/hebbian.qmd
             text: Hebbian learning
     right:
       - icon: github

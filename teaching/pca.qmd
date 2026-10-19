@@ -1,0 +1,237 @@
+---
+title: "Principal component analysis"
+description: "Four measurements per flower, boiled down to two: what PCA does to the iris data, and why standardising the variables matters."
+aliases:
+  - /explorables/data-analysis.html
+toc: true
+execute:
+  enabled: false
+---
+
+Suppose you have measured a lot of things about a lot of objects and want to
+look at the result. If you measured two things, you draw a scatter plot. If you
+measured four, as in the data set on this page, you cannot draw the plot
+anymore, and with recordings from hundreds of neurons the problem is far worse.
+Principal component analysis (PCA) is the standard way out. It finds the few
+directions in which the data actually vary and lets you look at those.
+
+Everything on this page runs in your browser. Nothing needs installing, and the
+figure updates as soon as you change a setting.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## The data and the method
+
+The data are the iris measurements collected by Anderson and made famous by
+Fisher (1936), probably the most used data set in statistics: 150 flowers
+from three species, and for each flower the length and width of a sepal and
+of a petal, in centimetres. Nothing
+about the method is specific to flowers. You could replace the four
+measurements by the firing rates of four neurons and everything below would
+read the same.
+
+Write the measurements as a matrix $X$ with one row per flower and one column
+per measurement, and subtract the mean of each column so that the cloud of
+points is centred at the origin. The covariance matrix
+
+$$C = \frac{1}{n} X^{\mathsf T} X$$
+
+is a $4 \times 4$ table whose diagonal holds the variance of each measurement
+and whose off-diagonal entries say how strongly two measurements vary together.
+PCA, which goes back to Pearson (1901) and Hotelling (1933), asks a simple
+question of this matrix: along which direction in the four-dimensional
+measurement space is the spread of the data largest? The
+answer is the eigenvector of $C$ with the largest eigenvalue,
+
+$$C\, e_k = \lambda_k e_k ,$$
+
+and the eigenvalue $\lambda_k$ is exactly the variance of the data along
+$e_k$. The second principal component is the direction of largest spread
+among all directions perpendicular to the first, and so on. Because the
+eigenvalues add up to the total variance, the fraction
+$\lambda_k / \sum_j \lambda_j$ tells you how much of the data's variability
+each component accounts for. If the first two fractions are large, a plot
+along those two directions shows you most of what there is to see.
+
+One detail matters more than it looks: whether you standardise. The
+measurements all happen to be in centimetres here, but petal length ranges
+over about six centimetres while sepal width ranges over barely two. Variance
+grows with the square of the range, so without any correction the first
+component is mostly petal length, simply because that number is the biggest.
+Dividing each column by its standard deviation puts all four measurements on
+an equal footing. Whether that is the right thing to do depends on the data.
+If the measurements have different units, you almost always want it.
+
+```{ojs}
+//| echo: false
+irisRaw = FileAttachment("iris.json").json()
+viewof pcStd = Inputs.toggle({label: "Standardise each variable (z-score)", value: true})
+pcAxisOpts = new Map([["PC 1", "pc0"], ["PC 2", "pc1"], ["PC 3", "pc2"], ["PC 4", "pc3"],
+  ...irisRaw.features.map((f, i) => [f, "v" + i])])
+viewof pcX = Inputs.select(pcAxisOpts, {value: "pc0", label: "Horizontal axis"})
+viewof pcY = Inputs.select(pcAxisOpts, {value: "pc1", label: "Vertical axis"})
+viewof pcColour = Inputs.toggle({label: "Colour by species", value: true})
+```
+
+```{ojs}
+//| echo: false
+symEig = A => {           // Jacobi eigenvalue iteration for a small symmetric matrix
+  const n = A.length, a = A.map(r => r.slice()), v = Array.from({length: n}, (_, i) => Array.from({length: n}, (_, j) => +(i === j)));
+  for (let sweep = 0; sweep < 60; sweep++) {
+    let off = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) off += a[i][j] ** 2;
+    if (off < 1e-18) break;
+    for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) {
+      if (Math.abs(a[p][q]) < 1e-15) continue;
+      const th = (a[q][q] - a[p][p]) / (2 * a[p][q]), t = Math.sign(th || 1) / (Math.abs(th) + Math.sqrt(th * th + 1));
+      const cs = 1 / Math.sqrt(t * t + 1), sn = t * cs;
+      for (let k = 0; k < n; k++) { const akp = a[k][p], akq = a[k][q]; a[k][p] = cs * akp - sn * akq; a[k][q] = sn * akp + cs * akq; }
+      for (let k = 0; k < n; k++) { const apk = a[p][k], aqk = a[q][k]; a[p][k] = cs * apk - sn * aqk; a[q][k] = sn * apk + cs * aqk; }
+      for (let k = 0; k < n; k++) { const vkp = v[k][p], vkq = v[k][q]; v[k][p] = cs * vkp - sn * vkq; v[k][q] = sn * vkp + cs * vkq; }
+    }
+  }
+  const order = [...Array(n).keys()].sort((i, j) => a[j][j] - a[i][i]);
+  return {values: order.map(i => a[i][i]), vectors: order.map(i => { const col = v.map(r => r[i]); const big = col.reduce((b, x) => Math.abs(x) > Math.abs(b) ? x : b, 0); return big < 0 ? col.map(x => -x) : col; })};
+}
+pca = {
+  const rows = irisRaw.rows, d = 4, n = rows.length;
+  const mean = Array.from({length: d}, (_, j) => rows.reduce((s, r) => s + r[j], 0) / n);
+  const sd = Array.from({length: d}, (_, j) => Math.sqrt(rows.reduce((s, r) => s + (r[j] - mean[j]) ** 2, 0) / n));
+  const X = rows.map(r => Array.from({length: d}, (_, j) => (r[j] - mean[j]) / (pcStd ? sd[j] : 1)));
+  const C = Array.from({length: d}, (_, i) => Array.from({length: d}, (_, j) => X.reduce((s, x) => s + x[i] * x[j], 0) / n));
+  const {values, vectors} = symEig(C);
+  const scores = X.map(x => vectors.map(e => e.reduce((s, ei, j) => s + ei * x[j], 0)));
+  const total = values.reduce((s, l) => s + l, 0);
+  return {X, C, values, vectors, scores, total, species: rows.map(r => r[4]), mean, sd};
+}
+pcCanvas = mkCanvas(760, 580)
+```
+
+```{ojs}
+//| echo: false
+{
+  const c = pcCanvas, fg = exFg(), W = 760, H = 580, cols = ["#1f77b4", "#ff7f0e", "#2ca02c"];
+  const {X, values, vectors, scores, total, species} = pca, feats = irisRaw.features;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  const get = (key, i) => key.startsWith("pc") ? scores[i][+key[2]] : X[i][+key[1]];
+  const label = key => key.startsWith("pc") ? `PC ${+key[2] + 1}` : feats[+key[1]] + (pcStd ? " (z-scored)" : " (cm, centred)");
+  const xs = X.map((_, i) => get(pcX, i)), ys = X.map((_, i) => get(pcY, i));
+  const lim = Math.max(...xs.map(Math.abs), ...ys.map(Math.abs)) * 1.1;
+  const sP = {x0: 90, y0: 12, s: 360};
+  const px = v => sP.x0 + sP.s * (v + lim) / (2 * lim), py = v => sP.y0 + sP.s * (1 - (v + lim) / (2 * lim));
+  axisBox(c, sP.x0, sP.y0, sP.s, sP.s);
+  c.strokeStyle = "#ccc"; c.lineWidth = 1; c.beginPath(); c.moveTo(px(0), sP.y0); c.lineTo(px(0), sP.y0 + sP.s); c.moveTo(sP.x0, py(0)); c.lineTo(sP.x0 + sP.s, py(0)); c.stroke();
+  // principal axes drawn in the plane of two raw variables
+  if (!pcX.startsWith("pc") && !pcY.startsWith("pc")) {
+    const i = +pcX[1], j = +pcY[1];
+    for (const [k, col] of [[0, "#d62728"], [1, "#9467bd"]]) {
+      const e = vectors[k], L = 2 * Math.sqrt(values[k]);
+      c.strokeStyle = col; c.lineWidth = 3; c.beginPath(); c.moveTo(px(-L * e[i]), py(-L * e[j])); c.lineTo(px(L * e[i]), py(L * e[j])); c.stroke();
+      c.fillStyle = col; c.textAlign = "left"; c.fillText(`PC ${k + 1}`, px(L * e[i]) + 6, py(L * e[j]) + 5);
+    }
+  }
+  X.forEach((_, i) => { c.fillStyle = pcColour ? cols[species[i]] : "#555"; c.globalAlpha = 0.6; c.beginPath(); c.arc(px(xs[i]), py(ys[i]), 4.5, 0, 2 * Math.PI); c.fill(); });
+  c.globalAlpha = 1; c.fillStyle = fg; c.textAlign = "center";
+  c.fillText(label(pcX), sP.x0 + sP.s / 2, sP.y0 + sP.s + 24);
+  c.fillText((-lim).toFixed(1), sP.x0, sP.y0 + sP.s + 44); c.fillText(lim.toFixed(1), sP.x0 + sP.s, sP.y0 + sP.s + 44);
+  c.save(); c.translate(sP.x0 - 60, sP.y0 + sP.s / 2); c.rotate(-Math.PI / 2); c.fillText(label(pcY), 0, 0); c.restore();
+  c.textAlign = "right"; c.fillText(lim.toFixed(1), sP.x0 - 8, sP.y0 + 6); c.fillText((-lim).toFixed(1), sP.x0 - 8, sP.y0 + sP.s + 2);
+  if (pcColour) irisRaw.species.forEach((s, k) => { c.fillStyle = cols[k]; c.textAlign = "left"; c.fillText(s, sP.x0 + 10, sP.y0 + 22 + 22 * k); });
+  // explained variance bars, right
+  const bP = {x0: 520, y0: 12, w: 220, h: 150};
+  axisBox(c, bP.x0, bP.y0, bP.w, bP.h);
+  values.forEach((l, k) => {
+    const frac = l / total, bw = bP.w / 4 * 0.7, bx = bP.x0 + bP.w * (k + 0.15) / 4;
+    c.fillStyle = "#1f77b4"; c.fillRect(bx, bP.y0 + bP.h * (1 - frac), bw, bP.h * frac);
+    c.fillStyle = fg; c.textAlign = "center"; c.fillText(`${(100 * frac).toFixed(0)}%`, bx + bw / 2, bP.y0 + bP.h * (1 - frac) - 6);
+    c.fillText(`PC ${k + 1}`, bx + bw / 2, bP.y0 + bP.h + 22);
+  });
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText("explained variance", bP.x0 + bP.w / 2, bP.y0 + bP.h + 44);
+  // loadings table, full width below the scatter
+  const tY = 470, colX = j => 250 + 125 * j;
+  c.fillStyle = fg; c.textAlign = "left"; c.fillText("loadings: components of each eₖ", 90, tY);
+  c.font = "14px " + getComputedStyle(document.body).fontFamily;
+  feats.forEach((f, j) => { c.textAlign = "center"; c.fillText(f, colX(j), tY + 24); });
+  values.forEach((_, k) => {
+    c.textAlign = "left"; c.fillText(`PC ${k + 1}`, 90, tY + 46 + 20 * k);
+    vectors[k].forEach((e, j) => { c.textAlign = "center"; c.fillText(e.toFixed(2), colX(j), tY + 46 + 20 * k); });
+  });
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+The large panel on the left is the scatter plot. Each dot is one flower,
+placed according to whatever you chose for the two axes. By default these are
+the first two principal components, so you are looking at the
+four-dimensional cloud from the angle that shows the most spread. Colour marks
+the species, blue for *setosa*, orange for *versicolor* and green for
+*virginica*. It is worth switching the colours off for a moment: the grey
+cloud is what PCA actually works with. The method never sees the species
+labels, and yet the three groups come out separated, because the differences
+between species are also the biggest source of variance in the data.
+
+You can also put two of the original measurements on the axes. Then the plot
+is an ordinary scatter plot of those two columns, and on top of it the first
+two principal components are drawn as lines through the origin, PC 1 in red
+and PC 2 in purple. Each line is as long as two standard deviations of the
+data along it, so you see both where the component points and how much of the
+spread it captures. Note that the lines are projections of four-dimensional
+directions onto the two measurements you picked, so they need not look
+perpendicular.
+
+The bars on the right show the share of the total variance that each
+component explains. With standardisation on, the first component accounts for
+roughly three quarters and the second for most of the rest, which is the
+justification for looking at only two of the four dimensions. Below the
+scatter plot is the table of loadings, the entries of each eigenvector. A
+loading says how much a given measurement contributes to a component. The
+first component has similar loadings on three of the four measurements with
+the same sign, so it is essentially "overall size of the flower". The second
+is dominated by sepal width and separates flowers that are wide for their size
+from those that are narrow.
+
+## Things to try
+
+Switch standardisation off and watch the loadings table. The first component
+is now almost entirely petal length, and the explained-variance share of PC 1
+goes up, not because the structure got cleaner but because one variable with
+a large range now dominates. Then put petal length and sepal width on the two
+axes, with standardisation still off, and look at where the red line points.
+
+Put the third and fourth components on the axes. There is almost nothing left
+to see, which is what a small eigenvalue means in practice: those directions
+are mostly measurement noise and natural variation within a species.
+
+This page is based on the dimensionality-reduction exercise in Dayan and
+Abbott (2001). For how the same method is used on neural population
+recordings, where the "measurements" are the firing rates of many neurons,
+Cunningham and Yu (2014) is a good starting point.
+
+## References
+
+Cunningham JP, Yu BM (2014). Dimensionality reduction for large-scale neural
+recordings. *Nature Neuroscience* 17: 1500–1509.
+
+Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
+Mathematical Modeling of Neural Systems*. MIT Press.
+
+Fisher RA (1936). The use of multiple measurements in taxonomic problems.
+*Annals of Eugenics* 7: 179–188.
+
+Hotelling H (1933). Analysis of a complex of statistical variables into
+principal components. *Journal of Educational Psychology* 24: 417–441.
+
+Pearson K (1901). On lines and planes of closest fit to systems of points in
+space. *Philosophical Magazine* 2: 559–572.

@@ -1,0 +1,31 @@
+---
+title: "Teaching"
+aliases:
+  - /explorables/index.html
+  - /explorables/
+listing:
+  contents:
+    - neuron.qmd
+    - pca.qmd
+    - fourier.qmd
+    - recurrent-networks.qmd
+    - hebbian.qmd
+  type: grid
+  grid-columns: 2
+  sort: false
+  fields: [title, description]
+---
+
+Most of my teaching material started out as Jupyter notebooks: exercises for
+the *Theoretical Neuroscience* lecture at Goethe University Frankfurt, and a
+webinar I gave for the German Neuroscience Olympiad in 2020. Notebooks are
+great for a course, but they are a hassle to open just to look at one plot.
+So I have moved the parts that benefit most from playing around onto these
+pages, where they run directly in the browser.
+
+Each page has one small simulation and a handful of sliders. The simulation
+keeps running while you move a slider, so you can watch what a parameter does
+rather than read about it. The text is meant to make sense on its own, but it
+is not a replacement for the book. The exercises come from Dayan and Abbott's
+*Theoretical Neuroscience*, and the format is borrowed from Dirk Brockmann's
+[Complexity Explorables](https://www.complexity-explorables.org/).

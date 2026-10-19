@@ -1,0 +1,281 @@
+---
+title: "Recurrent networks: from kernel to pattern"
+description: "How local excitation and wider inhibition single out one spatial frequency, and how a ring of neurons wired that way turns random input into stripes."
+aliases:
+  - /explorables/recurrent-networks.html
+toc: true
+execute:
+  enabled: false
+---
+
+Many parts of cortex are wired in a similar way: neurons excite their close
+neighbours and, through interneurons, inhibit cells a bit further away. This
+"Mexican hat" arrangement is simple to write down, but what it does to
+activity is not obvious at first sight. The short version is that such a
+network has a favourite spatial scale. It amplifies activity patterns at one
+particular wavelength and damps everything else, so almost any input comes
+out striped. This is one of the standard explanations for periodic patterns
+in cortex, such as orientation columns or the regular spacing of ocular
+dominance bands (Swindale 1980; Ermentrout and Cowan 1979), and it is the
+neural cousin of Turing's (1952) mechanism for patterns in chemistry and
+development.
+
+This page is in two parts. The first looks at the connection kernel alone and
+asks which spatial frequency it favours. The second puts the kernel into a
+network and lets you watch the stripes emerge. Everything runs in your
+browser and updates while you move the sliders.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## Difference of Gaussians and its spectrum
+
+Write the strength of the connection between two neurons as a function of
+their distance. Excitation is a narrow Gaussian with width $\sigma_e$,
+inhibition a wider one with width $\sigma_i$, and the kernel is the
+difference of the two. Up close excitation wins and the kernel is positive;
+further out the broader inhibition takes over and it becomes negative.
+
+The useful trick is to look at this kernel in the Fourier domain. A
+recurrent network applies the kernel to its activity over and over again,
+and convolution with a kernel multiplies each spatial frequency of the
+activity by the kernel's Fourier transform at that frequency. So the
+transform tells you directly which frequencies get amplified on every pass
+and which get suppressed. The Fourier transform of a Gaussian is again a
+Gaussian, with a width inversely proportional to the original one. The
+narrow excitatory Gaussian therefore covers a wide band of frequencies, the
+broad inhibitory Gaussian only the low ones. Their difference is small at
+frequency zero, where inhibition cancels excitation, rises to a peak, and
+then falls off again once excitation runs out. That peak is the frequency
+the network will favour.
+
+```{ojs}
+//| echo: false
+viewof sigE = Inputs.range([0.1, 10], {value: 1, step: 0.1, label: "Excitation width σₑ"})
+viewof ampE = Inputs.range([0, 10], {value: 1, step: 0.1, label: "Excitation strength"})
+viewof sigI = Inputs.range([0.1, 10], {value: 2, step: 0.1, label: "Inhibition width σᵢ"})
+viewof ampI = Inputs.range([0, 2], {value: 1, step: 0.05, label: "Inhibition strength"})
+
+gauss = (x, s) => Math.exp(-0.5 * x * x / (s * s)) / (Math.sqrt(2 * Math.PI) * s)
+ghat = (f, s) => Math.exp(-2 * Math.PI * Math.PI * s * s * f * f)
+xmax = 5 * Math.max(sigE, sigI)
+space = Array.from({length: 401}, (_, i) => {
+  const x = -xmax + 2 * xmax * i / 400;
+  const e = ampE * gauss(x, sigE), inh = -ampI * gauss(x, sigI);
+  return {x, Excitation: e, Inhibition: inh, "Difference of Gaussians": e + inh};
+})
+spectrum = Array.from({length: 401}, (_, i) => { const f = 2 * i / 400; return {f, k: Math.abs(ampE * ghat(f, sigE) - ampI * ghat(f, sigI))}; })
+peak = spectrum.reduce((a, b) => (b.k > a.k ? b : a))
+
+html`<div style="display:flex;flex-wrap:wrap;gap:1rem">
+${Plot.plot({
+  width: 370, height: 280, marginLeft: 40, style: {fontSize: "15px"},
+  x: {label: "space"}, y: {label: null, ticks: 0},
+  color: {legend: true, domain: ["Excitation", "Inhibition", "Difference of Gaussians"], range: ["#ff7f0e", "#1f77b4", "black"]},
+  marks: [Plot.ruleY([0], {stroke: "#999"}),
+    ...["Excitation", "Inhibition", "Difference of Gaussians"].map(k => Plot.line(space, {x: "x", y: k, stroke: () => k, strokeWidth: 2}))]
+})}
+${Plot.plot({
+  width: 370, height: 280, marginLeft: 50, style: {fontSize: "15px"},
+  x: {label: "spatial frequency (cycles / unit length)"},
+  y: {label: "|kernel spectrum|", domain: [0, Math.max(0.05, ampE, ampI)]},
+  marks: [Plot.line(spectrum, {x: "f", y: "k", stroke: "gray", strokeWidth: 2}),
+    Plot.ruleX([peak.f], {stroke: "#ff7f0e", strokeDasharray: "4 4"}),
+    Plot.text([peak], {x: "f", y: "k", text: d => `peak at f = ${d.f.toFixed(2)}`, dx: 8, dy: -8, textAnchor: "start"})]
+})}
+</div>`
+```
+
+The left plot shows the excitatory Gaussian in orange, the inhibitory one in
+blue, drawn negative, and their difference in black. The right plot is the
+magnitude of the kernel's Fourier transform, with the orange dashed line at
+its peak. With the default settings the peak sits at about 0.15 cycles per
+unit length, a wavelength of six to seven units, a few times the width of the
+inhibitory surround.
+
+A few things are worth trying before moving on. Make inhibition wider and
+the peak moves to lower frequencies: the stripes the network will produce get
+broader. Make excitation wider, closer to the inhibition width, and the peak
+gets lower and broader, since the two Gaussians cancel over a larger range of
+frequencies. Set the inhibition strength to zero and the peak moves to
+frequency zero, meaning the network would simply amplify uniform activity
+rather than any pattern. The Mexican hat shape, not just excitation, is what
+makes stripes.
+
+## Pattern formation in a recurrent network
+
+Now wrap 256 neurons around a ring, so that there are no edges to worry
+about, and connect each pair with a weight given by the kernel above. The
+firing rates $r$ evolve according to
+
+$$\tau \frac{dr}{dt} = -r + \left[\,W r + h\,\right]_+ .$$
+
+Each neuron relaxes towards its total input with time constant $\tau$. The
+input has two parts: the recurrent input $W r$ from the rest of the ring, and
+an external input $h$ that is drawn at random once per neuron and then held
+fixed. On top of that you can add noise that is redrawn at every time step.
+The brackets denote rectification, so rates cannot go negative. The width
+sliders set the two Gaussians of the kernel, in units of neurons along the
+ring.
+
+The gain slider is the one to watch. It scales the whole weight matrix so
+that its largest eigenvalue equals the number you set. Because the kernel
+depends only on distance, the eigenvectors of $W$ are sine waves around the
+ring, one for each spatial frequency, and the eigenvalues are the kernel's
+Fourier transform from the first part of the page. If the largest eigenvalue
+is below 1, every pattern decays faster than the recurrence can feed it, and
+the activity just reflects the random input. If it is above 1, the pattern
+at the favoured frequency grows on each pass through the network until the
+rectification stops it. That is the transition from a stable, input-driven
+network to one that generates its own pattern.
+
+```{ojs}
+//| echo: false
+viewof rnSigE = Inputs.range([1, 25], {value: 5, step: 0.5, label: "Excitation width"})
+viewof rnSigI = Inputs.range([1, 50], {value: 12, step: 0.5, label: "Inhibition width"})
+viewof rnGain = Inputs.range([0.2, 1.6], {value: 1.2, step: 0.02, label: "Gain (largest eigenvalue of W)"})
+viewof rnNoise = Inputs.range([0, 1], {value: 0.1, step: 0.02, label: "Input noise"})
+viewof rnPause = Inputs.toggle({label: "Pause"})
+viewof rnReset = Inputs.button("Reset")
+```
+
+```{ojs}
+//| echo: false
+rnN = 256
+rnKernel = {
+  const N = rnN, sE = rnSigE, sI = rnSigI;
+  const g = (d, s) => Math.exp(-0.5 * d * d / (s * s)) / s;
+  const k = new Float64Array(N);
+  for (let d = 0; d < N; d++) { const dd = Math.min(d, N - d); k[d] = g(dd, sE) - g(dd, sI); }
+  const ev = new Float64Array(N / 2 + 1);
+  for (let m = 0; m <= N / 2; m++) { let s = 0; for (let d = 0; d < N; d++) s += k[d] * Math.cos(2 * Math.PI * m * d / N); ev[m] = s; }
+  let lmax = -Infinity, mmax = 0; for (let m = 0; m <= N / 2; m++) if (ev[m] > lmax) { lmax = ev[m]; mmax = m; }
+  const scale = rnGain / lmax;
+  return {N, k: k.map(x => x * scale), ev: ev.map(x => x * scale), mmax};
+}
+rnState = {
+  rnReset;
+  const N = rnN, dt = 0.1, tau = 1;
+  const h = Float64Array.from({length: N}, () => 0.5 + 0.5 * Math.random());
+  let r = new Float64Array(N).fill(0.5), t = 0;
+  while (true) {
+    if (!viewof rnPause.value) {
+      const {k} = rnKernel; const noise = viewof rnNoise.value;
+      for (let step = 0; step < 5; step++) {
+        const rn = new Float64Array(N);
+        for (let i = 0; i < N; i++) {
+          let s = 0;
+          for (let j = 0; j < N; j++) { const d = (i - j + N) % N; s += k[d] * r[j]; }
+          rn[i] = r[i] + dt / tau * (-r[i] + Math.max(0, s + h[i] + noise * (Math.random() - 0.5) * 2));
+        }
+        r = rn; t += dt;
+      }
+    }
+    yield {r, t};
+  }
+}
+rnCanvas = mkCanvas(760, 400)
+```
+
+```{ojs}
+//| echo: false
+{
+  const {r, t} = rnState, {ev, mmax, N} = rnKernel, c = rnCanvas, fg = exFg();
+  const W = 760, H = 400; c.clearRect(0, 0, W, H); c.font = exFont;
+  const aP = {x0: 90, y0: 12, w: W - 110, h: 170};
+  const rmax = Math.max(1e-6, ...r);
+  axisBox(c, aP.x0, aP.y0, aP.w, aP.h);
+  c.fillStyle = "#1f77b4";
+  for (let i = 0; i < N; i++) { const bh = aP.h * r[i] / rmax; c.fillRect(aP.x0 + aP.w * i / N, aP.y0 + aP.h - bh, aP.w / N, bh); }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("activity", aP.x0 - 8, aP.y0 + aP.h / 2 + 5);
+  c.textAlign = "center"; c.fillText(`position on the ring · t = ${t.toFixed(0)} τ`, aP.x0 + aP.w / 2, aP.y0 + aP.h + 22);
+  const sP = {x0: 90, y0: 240, w: W - 110, h: 110};
+  const M = 40, emax = Math.max(1.6, ...ev), emin = Math.min(-0.5, ...ev);
+  const sy = v => sP.y0 + sP.h * (1 - (v - emin) / (emax - emin));
+  axisBox(c, sP.x0, sP.y0, sP.w, sP.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(sP.x0, sy(1)); c.lineTo(sP.x0 + sP.w, sy(1)); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = "#888"; c.beginPath(); c.moveTo(sP.x0, sy(0)); c.lineTo(sP.x0 + sP.w, sy(0)); c.stroke();
+  for (let m = 0; m <= M; m++) { c.fillStyle = m === mmax ? "#ff7f0e" : "gray"; c.beginPath(); c.arc(sP.x0 + sP.w * m / M, sy(ev[m]), 4, 0, 2 * Math.PI); c.fill(); }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("eigenvalue", sP.x0 - 8, sP.y0 + sP.h / 2 + 5); c.fillText("1", sP.x0 - 8, sy(1) + 5); c.fillText("0", sP.x0 - 8, sy(0) + 5);
+  c.textAlign = "center"; c.fillText(`spatial frequency (waves around the ring) · amplified most: ${mmax}`, sP.x0 + sP.w / 2, sP.y0 + sP.h + 22);
+  c.fillText("0", sP.x0, sP.y0 + sP.h + 42); c.fillText(M, sP.x0 + sP.w, sP.y0 + sP.h + 42);
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+The upper panel shows the activity of every neuron as a bar, laid out by
+position on the ring, with the clock in units of $\tau$ underneath. The
+lower panel shows the eigenvalues of $W$, one grey dot for each spatial
+frequency, counted in whole waves around the ring. This is the same curve as
+the kernel spectrum in the first part of the page, just sampled at the
+frequencies that fit on the ring and scaled by the gain. The orange dot is
+the largest eigenvalue, and the red dashed line marks the value 1, the
+boundary between decay and growth.
+
+With the default settings the gain is 1.2 and the orange dot sits above the
+line. After a moment the activity organises into a regular set of bumps, and
+if you count them you will find the number next to the orange dot. The
+random input is still there, which is why the bumps are not all the same
+height, but the spacing is set entirely by the kernel.
+
+## Things to try
+
+Pull the gain below 1 and press Reset. The bumps fade and what is left is a
+noisy copy of the random input: the network is now a filter that smooths its
+input a little, nothing more. Push the gain back above 1 and the pattern
+grows back, from whatever small ripples in the input happen to match the
+favoured frequency. Near the threshold the growth is slow and you can watch
+it happen.
+
+Make the inhibition wider. The orange dot moves left, to a lower frequency,
+and after a Reset the bumps are fewer and broader. Make excitation wider
+instead and the bumps get broader too, but the peak of the spectrum also
+gets flatter, so neighbouring frequencies compete and the pattern takes
+longer to settle.
+
+Turn the noise up. The pattern survives surprisingly well, because the
+network amplifies only the component of the noise at its favourite frequency
+and ignores the rest. This is the sense in which a recurrent network with a
+Mexican hat kernel imposes its own structure on whatever it is given, and
+why the same mechanism has been proposed for so many different periodic
+patterns in the brain.
+
+This page is based on the pattern-formation exercise in Dayan and Abbott
+(2001, chapter 7). The ring network with a distance-dependent kernel is the
+setting of Amari's (1977) analysis of neural fields, and the same
+architecture, with the ring standing for preferred orientation rather than
+position, is the ring model of orientation tuning of Ben-Yishai et al.
+(1995).
+
+## References
+
+Amari S (1977). Dynamics of pattern formation in lateral-inhibition type
+neural fields. *Biological Cybernetics* 27: 77–87.
+
+Ben-Yishai R, Bar-Or RL, Sompolinsky H (1995). Theory of orientation tuning
+in visual cortex. *Proceedings of the National Academy of Sciences* 92:
+3844–3848.
+
+Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
+Mathematical Modeling of Neural Systems*. MIT Press.
+
+Ermentrout GB, Cowan JD (1979). A mathematical theory of visual
+hallucination patterns. *Biological Cybernetics* 34: 137–150.
+
+Swindale NV (1980). A model for the formation of ocular dominance stripes.
+*Proceedings of the Royal Society B* 208: 243–264.
+
+Turing AM (1952). The chemical basis of morphogenesis. *Philosophical
+Transactions of the Royal Society B* 237: 37–72.

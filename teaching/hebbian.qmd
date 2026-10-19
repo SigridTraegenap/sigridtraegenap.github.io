@@ -1,13 +1,23 @@
 ---
 title: "Hebbian learning in the weight plane"
-description: "Plain Hebbian learning, saturation bounds and Oja's rule, animated as trajectories in the space of two synaptic weights."
+description: "Why plain Hebbian learning runs away, and two ways to stop it: hard bounds and Oja's rule, drawn as trajectories in the plane of two synaptic weights."
+aliases:
+  - /explorables/hebbian.html
 toc: true
 execute:
   enabled: false
 ---
 
-Three learning rules for a neuron with two inputs, watched in the plane of its two weights.
-Everything on this page runs in your browser; nothing to install. Change a slider while a simulation is running and it reacts immediately.
+"Cells that fire together wire together" is the shortest summary of Hebb's
+(1949) rule, and it is a good one. Taken literally, though, the rule has a problem:
+nothing in it ever makes a weight smaller. Weights only grow, and they grow
+faster the larger they already are. Every textbook on learning spends a
+chapter on ways to tame this, and this page shows two of them side by side.
+
+To keep things drawable, the neuron has only two inputs, so its two weights
+$w_1$ and $w_2$ form a plane and learning becomes a path through that plane.
+Everything runs in your browser. Pick a rule, click anywhere in the plane to
+choose a starting point, and watch where the weights go.
 
 ```{ojs}
 //| echo: false
@@ -22,23 +32,38 @@ mkCanvas = (W, H) => {
 axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
 ```
 
+## The three rules
 
-One neuron receives two inputs with activities $u_1, u_2$ through weights
-$w = (w_1, w_2)$. Averaged over many input patterns, learning is driven by the
-input correlation matrix $Q = \langle u u^{\mathsf T} \rangle$, here
-$Q = \begin{pmatrix} 1 & q \\ q & 1 \end{pmatrix}$, where $q$ is the
-correlation between the two inputs (the slider). $\tau$ sets the learning
-speed and $\alpha$ is the strength of the normalising term in Oja's rule.
-Three rules:
+A single neuron receives two inputs with activities $u_1$ and $u_2$ through
+weights $w = (w_1, w_2)$, and its output is $v = w^{\mathsf T} u$. The basic
+Hebbian rule says that each weight changes in proportion to the product of
+its input and the output, $\tau\, dw/dt = v\,u$. We are not interested in the
+jittery response to individual input patterns, only in the average drift of
+the weights over many patterns. Averaging replaces $v\,u$ by $Q\,w$, where
+$Q = \langle u u^{\mathsf T} \rangle$ is the correlation matrix of the inputs.
+For two inputs of equal strength it is
+
+$$Q = \begin{pmatrix} 1 & q \\ q & 1 \end{pmatrix},$$
+
+and the single number $q$, the correlation between the two inputs, is the
+slider you will use most. Positive $q$ means the inputs tend to be active
+together, negative $q$ means that one is active when the other is quiet. The
+three rules are then
 
 $$\text{Hebbian:}\quad \tau \frac{dw}{dt} = Q\,w$$
 
 $$\text{with bounds:}\quad \tau \frac{dw}{dt} = Q\,w, \qquad 0 \le w_i \le 1$$
 
-$$\text{Oja:}\quad \tau \frac{dw}{dt} = Q\,w - \alpha\,(w^{\mathsf T} Q\, w)\,w$$
+$$\text{Oja:}\quad \tau \frac{dw}{dt} = Q\,w - \alpha\,(w^{\mathsf T} Q\, w)\,w .$$
 
-Pick a rule, then click anywhere in the weight plane to choose an initial
-condition.
+The first is Hebb's rule as it stands. The second is the same rule with a
+fence around it: each weight is clipped to the interval $[0, 1]$, which is
+the simplest thing an implementation can do and roughly what a synapse that
+cannot become negative or arbitrarily strong would do. The third is Oja's
+(1982) rule, which subtracts a term proportional to the output's variance
+times the weight itself. The subtracted term grows faster than the Hebbian term, so it
+acts as a brake that kicks in once the weights are large. The parameter
+$\alpha$ sets how hard the brake is, and $\tau$ only sets the overall speed.
 
 ```{ojs}
 //| echo: false
@@ -148,18 +173,68 @@ hbTraj = {
 }
 ```
 
-**What you see.** Left: the weight plane, $w_1$ against $w_2$. The faint lines
-are trajectories from a grid of starting points, coloured by where they end
-after 100 steps. With bounds: blue ends at $(1,1)$, orange at $(0,1)$, green at
-$(1,0)$. With Oja's rule: blue ends at $(1,1)/\sqrt2$, orange at $(-1,1)/\sqrt2$,
-green at $(1,-1)/\sqrt2$. Grey means none of these, which for plain Hebbian
-learning is every trajectory, since they all run off to infinity. The thick
-line is your trajectory, starting at the open circle and ending at the filled
-dot, which takes the colour of its end state once it has arrived. Right: the
-same trajectory as $w_1$ (purple) and $w_2$ (teal) against time.
+## Reading the figure
 
-Try: plain Hebbian learning runs away along the leading eigenvector of $Q$,
-whichever way you start. With bounds the plane splits into basins of
-attraction. Oja's rule keeps $|w|$ finite and converges to a normalised
-eigenvector of $Q$. Change $q$ to see the basins move.
-From the Hebbian learning exercise in *Theoretical Neuroscience*.
+The square on the left is the weight plane, $w_1$ along the bottom and $w_2$
+up the side. The thick line is the trajectory from your starting point, which
+is marked by the open circle. It ends at the filled dot. Behind it, the faint
+lines are trajectories started from a grid of points, so you can see the
+overall flow of the rule at a glance. All of these are coloured by where they
+end up after 100 steps. For the bounded rule, blue means both weights
+saturated at 1, orange means $(0, 1)$ and green means $(1, 0)$. For Oja's
+rule the end points are unit vectors instead, blue for $(1,1)/\sqrt2$, orange
+for $(-1,1)/\sqrt2$ and green for $(1,-1)/\sqrt2$. Grey means none of the
+above. Plain Hebbian learning is grey everywhere, since nothing ever stops.
+
+The panel on the right shows the same trajectory as two curves against time,
+$w_1$ in purple and $w_2$ in teal. It is easier to see from this panel
+whether a weight has settled or is still moving.
+
+## Things to try
+
+Begin with the plain Hebbian rule and the default negative correlation. From
+any starting point the weights head off along a diagonal and leave the plot.
+Which diagonal depends on $q$: the weights grow fastest along the eigenvector
+of $Q$ with the largest eigenvalue, and that is $(1, 1)$ when the inputs are
+positively correlated and $(1, -1)$ when they are anticorrelated. Move $q$
+through zero and watch the flow swing from one diagonal to the other. At
+$q = 0$ both eigenvalues are equal and every direction grows at the same
+rate, so the trajectories are straight rays from the origin.
+
+Switch to the bounded rule. The runaway is gone, but something else has
+appeared: the plane is divided into regions, each draining into a different
+corner. A starting point that favours input 1 ends at $(1, 0)$, one that
+favours input 2 at $(0, 1)$, and with positive correlation most of the plane
+ends at $(1, 1)$. These regions are the basins of attraction of the three
+stable corners, and the bounds have turned a rule with no stable state into
+one that stores a decision about which input wins. Change $q$ and watch the
+boundaries between the basins move.
+
+Switch to Oja's rule. Now the trajectories bend towards a circle of radius
+$1/\sqrt{\alpha}$ and then slide along it to an eigenvector of $Q$. The rule
+does two things at once: it normalises the weight vector and it picks out the
+direction of largest input variance, which is the first principal component
+of the inputs. That is not a coincidence, it is the main reason Oja's rule is
+famous. Raise $\alpha$ and the circle shrinks. Set $q$ to zero and the
+trajectories still reach the circle, but stop wherever they land on it,
+since no direction is preferred.
+
+This page is based on the Hebbian learning exercise in Dayan and Abbott
+(2001, chapter 8). Miller and MacKay (1994) give a careful comparison of
+different ways of constraining Hebbian learning, including why subtractive
+and multiplicative normalisation lead to different outcomes, which is
+exactly the difference between the bounded rule and Oja's rule above.
+
+## References
+
+Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
+Mathematical Modeling of Neural Systems*. MIT Press.
+
+Hebb DO (1949). *The Organization of Behavior: A Neuropsychological Theory*.
+Wiley.
+
+Miller KD, MacKay DJC (1994). The role of constraints in Hebbian learning.
+*Neural Computation* 6: 100–126.
+
+Oja E (1982). A simplified neuron model as a principal component analyzer.
+*Journal of Mathematical Biology* 15: 267–273.
