@@ -1,6 +1,9 @@
 ---
-title: "Impressum"
+title: "Impressum und Datenschutz"
+toc: true
 ---
+
+## Impressum
 
 Angaben gemäß § 5 DDG
 
@@ -23,15 +26,126 @@ Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch k
 Inhalte kein Einfluss besteht. Für die Inhalte der verlinkten Seiten ist stets der
 jeweilige Anbieter oder Betreiber verantwortlich.
 
-**Datenschutz.** Diese Website wird über GitHub Pages gehostet. Beim Aufruf werden
-technisch notwendige Daten (z. B. IP-Adresse) durch GitHub verarbeitet; siehe die
-[Datenschutzerklärung von GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement).
-Diese Website setzt keine eigenen Cookies und nutzt keine Tracking-Dienste.
-
 **Gestaltung.** Das Design dieser Website basiert auf den About-Page-Vorlagen von
 [Quarto](https://quarto.org) ([Posit](https://posit.co)) und den
 [Bootswatch](https://bootswatch.com)-Themes Flatly und Darkly. Die Seite wurde mit
 Unterstützung von Claude Fable 5.1 erstellt.
 
+**Schriftart.** Die Seite verwendet die Schriftart Latin Modern Sans der
+[GUST e-Foundry](https://www.gust.org.pl/projects/e-foundry/latin-modern),
+lizenziert unter der [GUST Font License](https://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt).
+Die Schriftdateien werden von dieser Website selbst ausgeliefert.
+
 **Bildnachweis.** Website-Icon: [Color circle (RGB)](https://commons.wikimedia.org/wiki/File:Color_circle_(RGB).svg)
 von Crossover1370, Wikimedia Commons, Lizenz [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
+## Datenschutzerklärung
+
+### Das Wichtigste in Kürze
+
+Diese Website ist eine private, statische Seite ohne Benutzerkonten,
+Kontaktformular, Kommentarfunktion, Newsletter, Analyse-Tools oder Werbung.
+Ich erhebe selbst keine personenbezogenen Daten von Besucherinnen und
+Besuchern und setze keine Cookies. Beim Aufruf der Seite werden jedoch, wie
+bei jeder Website, technische Daten wie Ihre IP-Adresse an die Server
+übermittelt, die die Seite und einige ihrer Bestandteile ausliefern. Welche
+das sind und warum, steht unten.
+
+### Verantwortliche Stelle
+
+Verantwortlich für die Datenverarbeitung auf dieser Website im Sinne der
+Datenschutz-Grundverordnung (DSGVO) ist Sigrid Trägenap, Anschrift und
+E-Mail-Adresse wie im Impressum oben angegeben.
+
+### Hosting bei GitHub Pages
+
+Die Website wird über den Dienst GitHub Pages der GitHub, Inc., 88 Colin P.
+Kelly Jr. Street, San Francisco, CA 94107, USA, bereitgestellt. Beim Aufruf
+einer Seite verarbeitet GitHub die Daten, die Ihr Browser technisch
+notwendigerweise übermittelt, insbesondere Ihre IP-Adresse, Datum und Uhrzeit
+des Zugriffs, die aufgerufene Seite, die zuvor besuchte Seite (Referrer) sowie
+Browsertyp und Betriebssystem. GitHub speichert diese Daten in
+Server-Protokollen, um den Dienst bereitzustellen und abzusichern. Ich selbst
+habe keinen Zugriff auf diese Protokolle.
+
+Rechtsgrundlage ist mein berechtigtes Interesse an einer sicheren und
+effizienten Bereitstellung der Website (Art. 6 Abs. 1 lit. f DSGVO). GitHub ist
+nach dem EU-U.S. Data Privacy Framework zertifiziert, sodass die Übermittlung
+in die USA auf einem Angemessenheitsbeschluss der EU-Kommission beruht
+(Art. 45 DSGVO). Näheres in der
+[Datenschutzerklärung von GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement)
+und den
+[Hinweisen zu GitHub Pages](https://docs.github.com/pages/getting-started-with-github-pages/what-is-github-pages#data-collection).
+
+### Inhalte von Drittanbietern
+
+Einige Bestandteile der Seite werden nicht von GitHub, sondern von anderen
+Servern geladen. Auch dabei wird Ihre IP-Adresse an den jeweiligen Anbieter
+übermittelt, da Ihr Browser die Datei direkt dort anfordert. Es handelt sich
+um folgende Bestandteile:
+
+- **Formeldarstellung (MathJax).** Mathematische Formeln werden mit der
+  Bibliothek MathJax gesetzt, die vom Content Delivery Network jsDelivr
+  (Prospect One sp. z o.o., Kraków, Polen) geladen wird. Siehe die
+  [Datenschutzerklärung von jsDelivr](https://www.jsdelivr.com/terms/privacy-policy-jsdelivr-net).
+- **Browser-Kompatibilität (Polyfill).** Für ältere Browser wird eine kleine
+  Hilfsbibliothek vom Content Delivery Network cdnjs der Cloudflare, Inc., 101
+  Townsend Street, San Francisco, CA 94107, USA, geladen. Siehe die
+  [Datenschutzerklärung von Cloudflare](https://www.cloudflare.com/privacypolicy/).
+
+Rechtsgrundlage ist jeweils mein berechtigtes Interesse an einer korrekten
+und einheitlichen Darstellung der Seite (Art. 6 Abs. 1 lit. f DSGVO). Die
+Anbieter erhalten dabei keine Informationen darüber, wer Sie sind, sondern nur
+die technischen Daten der Anfrage. Die verwendete Schriftart wird von
+dieser Website selbst ausgeliefert und nicht von einem externen Server
+geladen.
+
+Die interaktiven Simulationen auf den Teaching-Seiten laufen vollständig in
+Ihrem Browser. Sie senden keine Daten an mich oder an Dritte.
+
+### Cookies und lokale Speicherung
+
+Diese Website setzt keine Cookies. Wenn Sie über das Symbol in der
+Navigationsleiste zwischen hellem und dunklem Design wechseln, merkt sich Ihr
+Browser diese Einstellung im sogenannten Local Storage. Diese Information
+verlässt Ihren Browser nicht und kann dort jederzeit über die
+Browsereinstellungen gelöscht werden.
+
+### Links zu anderen Websites
+
+Die Seite enthält Links zu externen Angeboten, etwa zu GitHub, Google
+Scholar, ORCID, Zenodo, Vimeo, YouTube und zu den Seiten von Verlagen und
+Instituten. Beim bloßen Anzeigen dieser Website werden keine Daten an diese
+Anbieter übermittelt. Erst wenn Sie einem Link folgen, gelten die
+Datenschutzbestimmungen des jeweiligen Anbieters. Videos sind nicht
+eingebettet, sondern nur verlinkt.
+
+### Kontakt per E-Mail
+
+Wenn Sie mir eine E-Mail schreiben, verarbeite ich Ihre Angaben (Ihre
+E-Mail-Adresse, Ihren Namen, soweit angegeben, und den Inhalt der Nachricht)
+ausschließlich zur Beantwortung Ihrer Anfrage. Rechtsgrundlage ist Art. 6 Abs.
+1 lit. f DSGVO, bei Anfragen zu einem Vertrag Art. 6 Abs. 1 lit. b DSGVO. Die
+Daten werden gelöscht, sobald die Korrespondenz abgeschlossen ist und keine
+gesetzlichen Aufbewahrungspflichten entgegenstehen.
+
+### Ihre Rechte
+
+Sie haben gegenüber mir das Recht auf Auskunft über die Sie betreffenden
+personenbezogenen Daten (Art. 15 DSGVO), auf Berichtigung (Art. 16), Löschung
+(Art. 17), Einschränkung der Verarbeitung (Art. 18) und Datenübertragbarkeit
+(Art. 20). Soweit eine Verarbeitung auf Art. 6 Abs. 1 lit. f DSGVO beruht,
+können Sie ihr aus Gründen, die sich aus Ihrer besonderen Situation ergeben,
+widersprechen (Art. 21 DSGVO). Da ich selbst keine Daten von Besucherinnen
+und Besuchern speichere, betreffen diese Rechte in der Praxis vor allem die
+E-Mail-Korrespondenz.
+
+Außerdem haben Sie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu
+beschweren. Die für mich zuständige Behörde ist der Hessische Beauftragte für
+Datenschutz und Informationsfreiheit, Gustav-Stresemann-Ring 1, 65189
+Wiesbaden, [datenschutz.hessen.de](https://datenschutz.hessen.de).
+
+### Änderungen
+
+Ich passe diese Erklärung an, wenn sich die Website oder die rechtlichen
+Anforderungen ändern. Stand: Oktober 2026.

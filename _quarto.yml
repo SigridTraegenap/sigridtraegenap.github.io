@@ -3,6 +3,7 @@ project:
   output-dir: _site
   resources:
     - CNAME
+    - assets/fonts/*
   render:
     - "*.qmd"
     - "!besides-science.qmd"
@@ -47,7 +48,7 @@ website:
   page-footer:
     center: |
       This site is currently under construction.<br>
-      © 2026 Sigrid Trägenap · [Impressum](/impressum.qmd)
+      © 2026 Sigrid Trägenap · [Impressum und Datenschutz](/impressum.qmd)
 
 format:
   html:
