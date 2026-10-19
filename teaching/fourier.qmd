@@ -20,7 +20,7 @@ slider.
 ```{ojs}
 //| echo: false
 // shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
-exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
 exFg = () => getComputedStyle(document.body).color
 mkCanvas = (W, H) => {
   const c = DOM.context2d(W, H);

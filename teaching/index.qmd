@@ -16,6 +16,8 @@ listing:
   fields: [title, description]
 ---
 
+For the thinking behind these pages, see [How I teach](philosophy.qmd).
+
 Most of my teaching material started out as Jupyter notebooks: exercises for
 the *Theoretical Neuroscience* lecture at Goethe University Frankfurt, and a
 webinar I gave for the German Neuroscience Olympiad in 2020. Notebooks are

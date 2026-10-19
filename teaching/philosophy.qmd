@@ -1,0 +1,135 @@
+---
+title: "How I teach"
+description: "Why I love teaching, what I think good science needs from a group, and how I run my time with students."
+toc: true
+---
+
+My first student was my brother. He was three, I was ten, and I had decided
+that he needed to understand how maths works. It went better than you would
+expect. He later skipped a year and sailed through school, so either the
+method worked or I made him stupidly smart, and I am not sure which. I
+learned something too: explaining a thing to someone who does not yet know
+it is the most fun you can have with an idea. I have not changed my mind
+since.
+
+In the years after that I taught maths tutorials, first for physicists and
+later for biochemists, gave guest lectures in machine learning and in
+*Theoretical Neuroscience*, ran the computational neuroscience seminar with
+its sessions on how to read a paper, how to write one, and how to design a
+figure, and supervised Bachelor's and Master's theses. The
+[interactive pages](index.qmd) on this site come from the same impulse.^[An
+impulse is, physically speaking, what it takes to overcome inertia. Inertia
+is also what my family name means, more or less, so I have had to deal with
+the pun for a while.] This page is about what I have come to believe along
+the way. Believe is a strong word. I use it because it best captures the
+state of my knowledge: firmly held, and incomplete.
+
+## Learning happens with your hands
+
+I am convinced that you learn something when you do it, not when you hear
+about it. For science that means, to me, doing the mathematics, even though
+I never formally studied it. You have to force yourself to play with a
+question, and playing means approaching it in every form it comes in: as an
+equation, as a picture, as a simulation, as a limiting case, as something you
+try to explain to someone else. Only then do you get to trust the answer,
+and even then only for now. The things I trust are the things I have taken
+apart myself, and I keep a list of the ones I have not.
+
+In practice this shapes how I write exercises. I compose them, in the way a
+musician composes a piece, with a theme, a build-up, and a place where the
+student has to carry the melody alone. The task is rarely "derive the
+result" by itself. It is "derive the result, then implement it, then find
+the parameter range where it stops being true." A simulation that produces
+the expected figure on the first try is a reason for concern, not
+celebration. Finding out why the integration step was too large, or why the
+noise term had the wrong scaling, is where the learning happens, and I try
+to leave room for that instead of handing out code that already works. A
+slider you can move while a model runs does the same job on a smaller
+scale, which is why these pages exist.
+
+## Mathematics as a language, not a hurdle
+
+Students arrive in theoretical neuroscience from biology, physics,
+psychology, computer science and medicine, and their comfort with
+mathematics varies enormously. I do not think the answer is to water the
+mathematics down. The answer is to always say what a symbol means in words,
+to connect every equation to a picture, and to be explicit about which
+steps are routine and which are the actual idea. An eigenvector is a
+direction the matrix does not rotate. A Fourier transform asks how much of
+each frequency is in a signal. Once that is in place, the algebra is
+bookkeeping, and most people can do bookkeeping once they are told that is
+all it is. I say this with some authority. My father is a bookkeeper in the
+literal sense, a *Steuerberater*, and there was a time when I thought I
+would become one too.
+
+In the same spirit, I try never to use an idea from a previous course
+without saying so. Being told "you have seen this before" when you have not
+is one of the fastest ways to lose someone.
+
+## Confusion is where the good things come from
+
+Behaviour is always multidimensional. The people I teach will confuse me,
+and I will confuse them, and I have stopped treating that as a failure of
+either side. Some friction is exactly what you want: it is the sign that two
+ways of thinking have actually met. The trick is to keep it at a useful
+level, enough that something new can come out of it, not so much that
+someone gives up. A good deal of teaching, as I now understand it, is
+tuning that level.
+
+## Diversity needs support, not just approval
+
+I believe that diverse groups do better science, and the previous section
+is part of why. People who think differently ask different questions,
+notice different things in the same data, and catch each other's blind
+spots. But wanting diversity is not the same as having it. A group that is
+open to everyone on paper and then runs on one unspoken set of habits, one
+way of speaking up in meetings, one idea of what a productive day looks
+like, will quietly lose the people it says it wants. Support has to be
+concrete: expectations written down, several ways to contribute and not
+just the loudest one, and the willingness to change how the group works
+when it is not working for someone.
+
+I say this partly from the inside. I consider myself very neurodiverse.
+What I lack in diversity of outer appearance I make up for in inner chaos,
+and I have spent a good part of my career working out which structures let
+me do my best work and which ones get in the way. That makes me quicker to
+notice when a student is struggling with the format rather than the
+content, and more willing to change the format.
+
+## Helping each other is the point
+
+Science is not a solo sport, whatever the authorship conventions suggest.
+The groups I have enjoyed most, and that produced the best work, were the
+ones where asking for help was normal and giving it was expected. I try to
+make that the default in anything I run: in exercises, where I would rather
+students solve a sheet together and understand it than alone and not; in
+the seminar, where feedback on a draft or a practice talk is something
+everyone gives and everyone receives; and in supervision, where I want to
+be asked early rather than late.
+
+## My time with you
+
+When I supervise someone, our meetings work like office hours. The time I
+have reserved is yours, and you can spend it on whatever is most useful to
+you right now: the derivation you are stuck on, the figure that will not
+come out right, the question of whether a PhD is the right next step, or
+something that has nothing to do with the project but is getting in the way
+of it. I will tell you at the start how much time I have that day, so that
+you can decide what to spend it on. And I will say so when I do not know
+the answer.
+
+One small print: I am not a licensed doctor or psychotherapist, so I can
+only give oral referrals. They are drawn from vast experience, some of it
+my own, and they come with a warm recommendation to also ask someone with
+an actual licence.
+
+## Outreach is teaching too
+
+Since 2019 I have helped organise the German Neuroscience Olympiad final in
+Frankfurt and run its computational tutorial, and for several years I was
+part of the team behind the Night of Science on the Riedberg campus.
+Teaching a sixteen-year-old why a neuron is a leaky bucket uses exactly the
+same muscles as teaching a master's student about pattern formation, just
+with less notation. If anything, the younger audience is less forgiving of
+hand-waving, and I have brought more than one explanation back from the
+Olympiad into my university teaching because it worked better there.

@@ -28,7 +28,7 @@ browser and updates while you move the sliders.
 ```{ojs}
 //| echo: false
 // shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
-exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
 exFg = () => getComputedStyle(document.body).color
 mkCanvas = (W, H) => {
   const c = DOM.context2d(W, H);
@@ -74,21 +74,22 @@ space = Array.from({length: 401}, (_, i) => {
   const e = ampE * gauss(x, sigE), inh = -ampI * gauss(x, sigI);
   return {x, Excitation: e, Inhibition: inh, "Difference of Gaussians": e + inh};
 })
-spectrum = Array.from({length: 401}, (_, i) => { const f = 2 * i / 400; return {f, k: Math.abs(ampE * ghat(f, sigE) - ampI * ghat(f, sigI))}; })
+spectrum = Array.from({length: 401}, (_, i) => { const f = i / 400; return {f, k: Math.abs(ampE * ghat(f, sigE) - ampI * ghat(f, sigI))}; })
 peak = spectrum.reduce((a, b) => (b.k > a.k ? b : a))
 
 html`<div style="display:flex;flex-wrap:wrap;gap:1rem">
 ${Plot.plot({
-  width: 370, height: 280, marginLeft: 40, style: {fontSize: "15px"},
-  x: {label: "space"}, y: {label: null, ticks: 0},
-  color: {legend: true, domain: ["Excitation", "Inhibition", "Difference of Gaussians"], range: ["#ff7f0e", "#1f77b4", "black"]},
+  width: 370, height: 300, marginLeft: 40, marginBottom: 60, style: {fontSize: exFont.size, fontFamily: exFont.family},
+  x: {label: "space", labelAnchor: "center", labelArrow: "none", labelOffset: 48},
+  y: {label: null, ticks: 0},
+  color: {legend: true, swatchSize: 18, style: {fontSize: exFont.size, fontFamily: exFont.family}, domain: ["Excitation", "Inhibition", "Difference of Gaussians"], range: ["#ff7f0e", "#1f77b4", "black"]},
   marks: [Plot.ruleY([0], {stroke: "#999"}),
     ...["Excitation", "Inhibition", "Difference of Gaussians"].map(k => Plot.line(space, {x: "x", y: k, stroke: () => k, strokeWidth: 2}))]
 })}
 ${Plot.plot({
-  width: 370, height: 280, marginLeft: 50, style: {fontSize: "15px"},
-  x: {label: "spatial frequency (cycles / unit length)"},
-  y: {label: "|kernel spectrum|", domain: [0, Math.max(0.05, ampE, ampI)]},
+  width: 370, height: 300, marginLeft: 55, marginBottom: 60, marginTop: 36, style: {fontSize: exFont.size, fontFamily: exFont.family},
+  x: {label: "spatial frequency (cycles / unit)", labelAnchor: "center", labelArrow: "none", labelOffset: 48},
+  y: {label: "|kernel spectrum|", labelArrow: "none", domain: [0, Math.max(0.05, ampE, ampI)]},
   marks: [Plot.line(spectrum, {x: "f", y: "k", stroke: "gray", strokeWidth: 2}),
     Plot.ruleX([peak.f], {stroke: "#ff7f0e", strokeDasharray: "4 4"}),
     Plot.text([peak], {x: "f", y: "k", text: d => `peak at f = ${d.f.toFixed(2)}`, dx: 8, dy: -8, textAnchor: "start"})]
@@ -96,8 +97,8 @@ ${Plot.plot({
 </div>`
 ```
 
-The left plot shows the excitatory Gaussian in orange, the inhibitory one in
-blue, drawn negative, and their difference in black. The right plot is the
+The first plot shows the excitatory Gaussian in orange, the inhibitory one in
+blue, drawn negative, and their difference in black. The second plot is the
 magnitude of the kernel's Fourier transform, with the orange dashed line at
 its peak. With the default settings the peak sits at about 0.15 cycles per
 unit length, a wavelength of six to seven units, a few times the width of the

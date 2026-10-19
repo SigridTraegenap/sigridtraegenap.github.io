@@ -21,7 +21,7 @@ figure updates as soon as you change a setting.
 ```{ojs}
 //| echo: false
 // shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
-exFont = "16px " + getComputedStyle(document.body).fontFamily
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
 exFg = () => getComputedStyle(document.body).color
 mkCanvas = (W, H) => {
   const c = DOM.context2d(W, H);
@@ -160,7 +160,7 @@ pcCanvas = mkCanvas(760, 580)
   // loadings table, full width below the scatter
   const tY = 470, colX = j => 250 + 125 * j;
   c.fillStyle = fg; c.textAlign = "left"; c.fillText("loadings: components of each eₖ", 90, tY);
-  c.font = "14px " + getComputedStyle(document.body).fontFamily;
+  c.font = (0.85 * parseFloat(exFont.size)) + "px " + exFont.family;
   feats.forEach((f, j) => { c.textAlign = "center"; c.fillText(f, colX(j), tY + 24); });
   values.forEach((_, k) => {
     c.textAlign = "left"; c.fillText(`PC ${k + 1}`, 90, tY + 46 + 20 * k);

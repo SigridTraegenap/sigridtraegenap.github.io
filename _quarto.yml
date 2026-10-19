@@ -26,6 +26,8 @@ website:
         text: Outreach
       - text: Teaching
         menu:
+          - href: teaching/philosophy.qmd
+            text: How I teach
           - href: teaching/index.qmd
             text: Overview
           - href: teaching/neuron.qmd
