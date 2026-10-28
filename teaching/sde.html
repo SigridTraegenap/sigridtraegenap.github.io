@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="How to add noise to a differential equation without angering the mathematicians: an ensemble of sample paths, the Euler–Maruyama scheme, and the odd rule that noise scales with the square root of the time step.">
+
+<title>Stochastic differential equations – Sigrid Trägenap</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-140d28bfd7b94e0e9f63cc3bc68ccc2b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Sigrid Trägenap</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../research.html"> 
+<span class="menu-text">Research Interests</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../publications.html"> 
+<span class="menu-text">Publications</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../outreach.html"> 
+<span class="menu-text">Outreach</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-teaching" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Teaching</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-teaching">    
+        <li>
+    <a class="dropdown-item" href="../teaching/philosophy.html">
+ <span class="dropdown-text">How I teach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/neuron.html">
+ <span class="dropdown-text">Integrate-and-fire neuron</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/pca.html">
+ <span class="dropdown-text">Principal component analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/fourier.html">
+ <span class="dropdown-text">Sampling and the Fourier transform</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/recurrent-networks.html">
+ <span class="dropdown-text">Recurrent networks</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hebbian.html">
+ <span class="dropdown-text">Hebbian learning</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/sde.html">
+ <span class="dropdown-text">Stochastic differential equations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/eigenmodes.html">
+ <span class="dropdown-text">Eigenmodes of a recurrent network</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/coupled-neurons.html">
+ <span class="dropdown-text">Two coupled neurons</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hodgkin-huxley.html">
+ <span class="dropdown-text">The Hodgkin–Huxley neuron</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/SigridTraegenap"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#from-a-spring-to-a-random-walk" id="toc-from-a-spring-to-a-random-walk" class="nav-link active" data-scroll-target="#from-a-spring-to-a-random-walk">From a spring to a random walk</a></li>
+  <li><a href="#solving-them-numerically" id="toc-solving-them-numerically" class="nav-link" data-scroll-target="#solving-them-numerically">Solving them numerically</a></li>
+  <li><a href="#reading-the-figure" id="toc-reading-the-figure" class="nav-link" data-scroll-target="#reading-the-figure">Reading the figure</a></li>
+  <li><a href="#things-to-try" id="toc-things-to-try" class="nav-link" data-scroll-target="#things-to-try">Things to try</a></li>
+  <li><a href="#numerical-details" id="toc-numerical-details" class="nav-link" data-scroll-target="#numerical-details">Numerical details</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Stochastic differential equations</h1>
+</div>
+
+<div>
+  <div class="description">
+    How to add noise to a differential equation without angering the mathematicians: an ensemble of sample paths, the Euler–Maruyama scheme, and the odd rule that noise scales with the square root of the time step.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Almost every model I work with has noise in it. Synaptic input arrives at irregular times, spontaneous activity in the cortex fluctuates, and even a tidy rate model gets a noise term the moment it is compared with data. The usual way to write this down is to take an ordinary differential equation and add a random forcing term. That looks harmless, and in practice it mostly is, but the step from “add noise” to “a stochastic differential equation” hides a few genuine surprises. In 2022 I gave a short talk about these at our lab’s coffee meeting under the title “How to avoid angering the mathematicians”. The first figure grows a bundle of sample paths while you watch, and the second lets you break the simulation on purpose by picking the wrong time step.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="24" data-source-offset="-92"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 23;"><span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>exFont <span class="op">=</span> ({<span class="dt">size</span><span class="op">:</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontSize</span><span class="op">,</span> <span class="dt">family</span><span class="op">:</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontFamily</span><span class="op">,</span> <span class="fu">toString</span>() { <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">size</span> <span class="op">+</span> <span class="st">" "</span> <span class="op">+</span> <span class="kw">this</span><span class="op">.</span><span class="at">family</span><span class="op">;</span> }})</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>exFg <span class="op">=</span> () <span class="kw">=&gt;</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">color</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>mkCanvas <span class="op">=</span> (W<span class="op">,</span> H) <span class="kw">=&gt;</span> {</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> c <span class="op">=</span> DOM<span class="op">.</span><span class="fu">context2d</span>(W<span class="op">,</span> H)<span class="op">;</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">width</span> <span class="op">=</span> <span class="st">"100%"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">maxWidth</span> <span class="op">=</span> W <span class="op">+</span> <span class="st">"px"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">height</span> <span class="op">=</span> <span class="st">"auto"</span><span class="op">;</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>axisBox <span class="op">=</span> (c<span class="op">,</span> x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h) <span class="kw">=&gt;</span> { c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">strokeRect</span>(x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h)<span class="op">;</span> }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<section id="from-a-spring-to-a-random-walk" class="level2">
+<h2 class="anchored" data-anchor-id="from-a-spring-to-a-random-walk">From a spring to a random walk</h2>
+<p>My talk started with a spring, because that is where the trouble starts. A mass on a damped spring, pushed by an external force <span class="math inline">\(w(t)\)</span>, obeys</p>
+<p><span class="math display">\[\frac{d^2x}{dt^2} + \gamma\,\frac{dx}{dt} + \nu^2 x = w(t),\]</span></p>
+<p>with <span class="math inline">\(x\)</span> the position, <span class="math inline">\(\gamma\)</span> the damping and <span class="math inline">\(\nu\)</span> the natural frequency. This is a second-order linear ordinary differential equation, and everything about it is well understood: it has exactly one solution for a given start, and you can find it by hand or with a standard numerical scheme such as Euler or Runge–Kutta. Now let the force be random. The natural choice is white noise, a process <span class="math inline">\(w(t)\)</span> that has zero mean, is Gaussian, and whose values at any two different times are independent. The spring is now a stochastic differential equation, and the textbook guarantees no longer apply.</p>
+<p>The reason is that white noise is a strange object. Independence at every pair of times means it is discontinuous everywhere, and it takes arbitrarily large values in any interval, however short. The theory of ordinary differential equations asks for a continuous right-hand side, so the usual existence and uniqueness theorem cannot even be stated, and the integral <span class="math inline">\(\int w(t)\,dt\)</span> that would give the solution does not exist as an ordinary integral because <span class="math inline">\(w\)</span> is unbounded. The way out is to stop talking about <span class="math inline">\(w\)</span> and talk instead about its running sum, Brownian motion <span class="math inline">\(\beta(t)\)</span>. Brownian motion is continuous, so integrals against its increments <span class="math inline">\(d\beta\)</span> can be made to work. Formally <span class="math inline">\(w = d\beta/dt\)</span>, but <span class="math inline">\(\beta\)</span> has no derivative anywhere, which is exactly why <span class="math inline">\(w\)</span> is so badly behaved. This is the origin of Itô calculus, and it is also why its chain rule has an extra term that the ordinary one does not: a tiny increment <span class="math inline">\(d\beta\)</span> is not negligible when squared, because <span class="math inline">\((d\beta)^2\)</span> behaves like <span class="math inline">\(dt\)</span>. All of this is why a mathematician winces when <span class="math inline">\(w(t)\)</span> is written into an equation as if it were an ordinary function. The mathematics allows the equation, as long as you say what you mean by the integral.</p>
+<p>The name “white noise”, by the way, comes from the spectrum. By the Wiener–Khinchin theorem (Wiener 1930; Khintchine 1934), the power spectrum of a stationary process is the Fourier transform of its autocorrelation, and the delta-shaped autocorrelation of <span class="math inline">\(w\)</span> transforms into a flat spectrum, all frequencies present in equal measure, as in white light. Brownian motion, the running sum of white noise, has a spectrum that falls as <span class="math inline">\(1/f^2\)</span> and is called brown noise, after the motion rather than the colour, and the <span class="math inline">\(1/f\)</span> spectrum in between is pink. That deserves a page of its own, and it is on the list.</p>
+<p>The two equations on this page are the ones you are most likely to meet. Written in the Itô form, they are</p>
+<p><span class="math display">\[\text{Brownian motion:}\qquad dx = D\, d\beta\]</span></p>
+<p><span class="math display">\[\text{Ornstein–Uhlenbeck:}\qquad dx = -\theta\, x\, dt + D\, d\beta .\]</span></p>
+<p>The first is a random walk: <span class="math inline">\(x\)</span> wanders with no preference for any value and spreads out forever, which is also the equation for the position of a diffusing particle. The second adds a spring that pulls <span class="math inline">\(x\)</span> back towards zero with rate <span class="math inline">\(\theta\)</span>, so the wandering is kept in check. The Ornstein–Uhlenbeck process (Uhlenbeck and Ornstein 1930) was invented for the velocity of a Brownian particle, and it is the standard model for anything that fluctuates around a set point, from membrane potentials to interest rates. The third option in the figure is the noisy spring itself, with <span class="math inline">\(\nu = 2\)</span> fixed and the slider setting the damping <span class="math inline">\(\gamma\)</span>. Written as a first-order system in position and velocity it is</p>
+<p><span class="math display">\[\text{Noisy spring:}\qquad dx = v\, dt, \qquad dv = (-\gamma\, v - \nu^2 x)\, dt + D\, d\beta .\]</span></p>
+<p>Because these equations are linear, their solutions can be described completely. The whole ensemble of possible paths is Gaussian at every time, with a mean that follows the noise-free equation and a variance that grows in a known way. Starting from <span class="math inline">\(x_0\)</span>, Brownian motion has mean <span class="math inline">\(x_0\)</span> and variance <span class="math inline">\(D^2 t\)</span>, so its spread grows without limit as <span class="math inline">\(\sqrt{t}\)</span>. The Ornstein–Uhlenbeck process has mean <span class="math inline">\(x_0 e^{-\theta t}\)</span> and variance <span class="math inline">\(\frac{D^2}{2\theta}\left(1 - e^{-2\theta t}\right)\)</span>, which settles at <span class="math inline">\(D^2/(2\theta)\)</span>. The first figure draws these formulas over the simulated ensemble, so you can check them.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="110" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 109;"><span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a>viewof sdModel <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(<span class="kw">new</span> <span class="bu">Map</span>([[<span class="st">"Brownian motion"</span><span class="op">,</span> <span class="st">"bm"</span>]<span class="op">,</span> [<span class="st">"Ornstein–Uhlenbeck"</span><span class="op">,</span> <span class="st">"ou"</span>]<span class="op">,</span> [<span class="st">"Noisy spring"</span><span class="op">,</span> <span class="st">"spring"</span>]])<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="st">"ou"</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Model"</span>})</span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>viewof sdTheta <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.1</span><span class="op">,</span> <span class="dv">3</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"θ (pull towards 0; damping γ for the spring)"</span>})</span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>viewof sdD <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">2</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.05</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"D (noise strength)"</span>})</span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>viewof sdPause <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Pause"</span>})</span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>viewof sdReset <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">button</span>(<span class="st">"Restart"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="119" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 118;"><span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>sdRandn <span class="op">=</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> u <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> v <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (u <span class="op">===</span> <span class="dv">0</span>) u <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>()<span class="op">;</span></span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (v <span class="op">===</span> <span class="dv">0</span>) v <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>()<span class="op">;</span></span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="op">-</span><span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">log</span>(u)) <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(<span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> v)<span class="op">;</span></span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a>sdPar <span class="op">=</span> ({<span class="dt">T</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">dt</span><span class="op">:</span> <span class="fl">0.01</span><span class="op">,</span> <span class="dt">N</span><span class="op">:</span> <span class="dv">300</span><span class="op">,</span> <span class="dt">show</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">x0</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span> <span class="dt">nu</span><span class="op">:</span> <span class="dv">2</span>})</span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a>sdState <span class="op">=</span> {</span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a>  sdReset<span class="op">;</span></span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> model <span class="op">=</span> sdModel<span class="op">,</span> theta <span class="op">=</span> sdTheta<span class="op">,</span> D <span class="op">=</span> sdD<span class="op">;</span></span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> {T<span class="op">,</span> dt<span class="op">,</span> N<span class="op">,</span> show<span class="op">,</span> x0<span class="op">,</span> nu} <span class="op">=</span> sdPar<span class="op">,</span> n <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(T <span class="op">/</span> dt) <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> x <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(N)<span class="op">.</span><span class="fu">fill</span>(x0)<span class="op">,</span> v <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(N)<span class="op">;</span></span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> traces <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> show}<span class="op">,</span> () <span class="kw">=&gt;</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n)<span class="op">.</span><span class="fu">fill</span>(x0))<span class="op">;</span></span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> mean <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n)<span class="op">.</span><span class="fu">fill</span>(x0)<span class="op">,</span> sd <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n)<span class="op">;</span></span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> sq <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(dt)<span class="op">;</span></span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (<span class="kw">true</span>) {</span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>viewof sdPause<span class="op">.</span><span class="at">value</span> <span class="op">&amp;&amp;</span> k <span class="op">&lt;</span> n <span class="op">-</span> <span class="dv">1</span>) {</span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> s <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> s <span class="op">&lt;</span> <span class="dv">5</span> <span class="op">&amp;&amp;</span> k <span class="op">&lt;</span> n <span class="op">-</span> <span class="dv">1</span><span class="op">;</span> s<span class="op">++</span>) {</span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a>        k<span class="op">++;</span></span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> sum <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> sum2 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a>          <span class="kw">const</span> db <span class="op">=</span> <span class="fu">sdRandn</span>() <span class="op">*</span> sq<span class="op">;</span></span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> (model <span class="op">===</span> <span class="st">"bm"</span>) x[i] <span class="op">+=</span> D <span class="op">*</span> db<span class="op">;</span></span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a>          <span class="cf">else</span> <span class="cf">if</span> (model <span class="op">===</span> <span class="st">"ou"</span>) x[i] <span class="op">+=</span> <span class="op">-</span>theta <span class="op">*</span> x[i] <span class="op">*</span> dt <span class="op">+</span> D <span class="op">*</span> db<span class="op">;</span></span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>          <span class="cf">else</span> { <span class="kw">const</span> a <span class="op">=</span> <span class="op">-</span>theta <span class="op">*</span> v[i] <span class="op">-</span> nu <span class="op">*</span> nu <span class="op">*</span> x[i]<span class="op">;</span> x[i] <span class="op">+=</span> v[i] <span class="op">*</span> dt<span class="op">;</span> v[i] <span class="op">+=</span> a <span class="op">*</span> dt <span class="op">+</span> D <span class="op">*</span> db<span class="op">;</span> }</span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>          sum <span class="op">+=</span> x[i]<span class="op">;</span> sum2 <span class="op">+=</span> x[i] <span class="op">*</span> x[i]<span class="op">;</span></span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> show<span class="op">;</span> j<span class="op">++</span>) traces[j][k] <span class="op">=</span> x[j]<span class="op">;</span></span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a>        mean[k] <span class="op">=</span> sum <span class="op">/</span> N<span class="op">;</span> sd[k] <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="dv">0</span><span class="op">,</span> sum2 <span class="op">/</span> N <span class="op">-</span> mean[k] <span class="op">*</span> mean[k]))<span class="op">;</span></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> {x<span class="op">,</span> traces<span class="op">,</span> mean<span class="op">,</span> sd<span class="op">,</span> k<span class="op">,</span> <span class="dt">t</span><span class="op">:</span> k <span class="op">*</span> dt<span class="op">,</span> model<span class="op">,</span> theta<span class="op">,</span> D}<span class="op">;</span></span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a>sdTheory <span class="op">=</span> (model<span class="op">,</span> theta<span class="op">,</span> D<span class="op">,</span> t<span class="op">,</span> x0) <span class="kw">=&gt;</span> {</span>
+<span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (model <span class="op">===</span> <span class="st">"bm"</span>) <span class="cf">return</span> {<span class="dt">m</span><span class="op">:</span> x0<span class="op">,</span> <span class="dt">s</span><span class="op">:</span> D <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(t)}<span class="op">;</span></span>
+<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (model <span class="op">===</span> <span class="st">"ou"</span>) <span class="cf">return</span> {<span class="dt">m</span><span class="op">:</span> x0 <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">exp</span>(<span class="op">-</span>theta <span class="op">*</span> t)<span class="op">,</span> <span class="dt">s</span><span class="op">:</span> D <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>((<span class="dv">1</span> <span class="op">-</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">exp</span>(<span class="op">-</span><span class="dv">2</span> <span class="op">*</span> theta <span class="op">*</span> t)) <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> theta))}<span class="op">;</span></span>
+<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a>sdCanvas <span class="op">=</span> <span class="fu">mkCanvas</span>(<span class="dv">760</span><span class="op">,</span> <span class="dv">370</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="163" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 162;"><span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> st <span class="op">=</span> sdState<span class="op">,</span> c <span class="op">=</span> sdCanvas<span class="op">,</span> fg <span class="op">=</span> <span class="fu">exFg</span>()<span class="op">,</span> W <span class="op">=</span> <span class="dv">760</span><span class="op">,</span> H <span class="op">=</span> <span class="dv">370</span><span class="op">;</span></span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> {T<span class="op">,</span> dt<span class="op">,</span> N<span class="op">,</span> x0} <span class="op">=</span> sdPar<span class="op">,</span> ymax <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> P <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">56</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">500</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">270</span>}<span class="op">,</span> R <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">590</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">150</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">270</span>}<span class="op">;</span></span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> sx <span class="op">=</span> t <span class="kw">=&gt;</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span> <span class="op">*</span> t <span class="op">/</span> T<span class="op">,</span> sy <span class="op">=</span> v <span class="kw">=&gt;</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (v <span class="op">+</span> ymax) <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> ymax))<span class="op">;</span></span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">clearRect</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> W<span class="op">,</span> H)<span class="op">;</span> c<span class="op">.</span><span class="at">font</span> <span class="op">=</span> exFont<span class="op">;</span></span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a>  <span class="co">// left: sample paths with ensemble band</span></span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span><span class="op">,</span> P<span class="op">.</span><span class="at">w</span><span class="op">,</span> P<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">rect</span>(P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span><span class="op">,</span> P<span class="op">.</span><span class="at">w</span><span class="op">,</span> P<span class="op">.</span><span class="at">h</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">clip</span>()<span class="op">;</span></span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">3</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> <span class="st">"rgba(31,119,180,0.18)"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> st<span class="op">.</span><span class="at">k</span><span class="op">;</span> i<span class="op">++</span>) c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i <span class="op">*</span> dt)<span class="op">,</span> <span class="fu">sy</span>(st<span class="op">.</span><span class="at">mean</span>[i] <span class="op">+</span> st<span class="op">.</span><span class="at">sd</span>[i]))<span class="op">;</span></span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> st<span class="op">.</span><span class="at">k</span><span class="op">;</span> i <span class="op">&gt;=</span> <span class="dv">0</span><span class="op">;</span> i<span class="op">--</span>) c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i <span class="op">*</span> dt)<span class="op">,</span> <span class="fu">sy</span>(st<span class="op">.</span><span class="at">mean</span>[i] <span class="op">-</span> st<span class="op">.</span><span class="at">sd</span>[i]))<span class="op">;</span></span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">closePath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span></span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#ff7f0e"</span><span class="op">;</span> c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> <span class="fl">0.6</span><span class="op">;</span></span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> tr <span class="kw">of</span> st<span class="op">.</span><span class="at">traces</span>) { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> st<span class="op">.</span><span class="at">k</span><span class="op">;</span> i<span class="op">++</span>) i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i <span class="op">*</span> dt)<span class="op">,</span> <span class="fu">sy</span>(tr[i])) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">sx</span>(<span class="dv">0</span>)<span class="op">,</span> <span class="fu">sy</span>(tr[<span class="dv">0</span>]))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> }</span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">2.5</span><span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#1f77b4"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> st<span class="op">.</span><span class="at">k</span><span class="op">;</span> i<span class="op">++</span>) i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i <span class="op">*</span> dt)<span class="op">,</span> <span class="fu">sy</span>(st<span class="op">.</span><span class="at">mean</span>[i])) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">sx</span>(<span class="dv">0</span>)<span class="op">,</span> <span class="fu">sy</span>(st<span class="op">.</span><span class="at">mean</span>[<span class="dv">0</span>]))<span class="op">;</span></span>
+<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> th <span class="op">=</span> <span class="fu">sdTheory</span>(st<span class="op">.</span><span class="at">model</span><span class="op">,</span> st<span class="op">.</span><span class="at">theta</span><span class="op">,</span> st<span class="op">.</span><span class="at">D</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> x0)<span class="op">;</span></span>
+<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (th) {</span>
+<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">1.5</span><span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">6</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span></span>
+<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> sgn <span class="kw">of</span> [<span class="dv">1</span><span class="op">,</span> <span class="op">-</span><span class="dv">1</span>]) { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> st<span class="op">.</span><span class="at">k</span><span class="op">;</span> i<span class="op">++</span>) { <span class="kw">const</span> q <span class="op">=</span> <span class="fu">sdTheory</span>(st<span class="op">.</span><span class="at">model</span><span class="op">,</span> st<span class="op">.</span><span class="at">theta</span><span class="op">,</span> st<span class="op">.</span><span class="at">D</span><span class="op">,</span> i <span class="op">*</span> dt<span class="op">,</span> x0)<span class="op">;</span> i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i <span class="op">*</span> dt)<span class="op">,</span> <span class="fu">sy</span>(q<span class="op">.</span><span class="at">m</span> <span class="op">+</span> sgn <span class="op">*</span> q<span class="op">.</span><span class="at">s</span>)) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">sx</span>(<span class="dv">0</span>)<span class="op">,</span> <span class="fu">sy</span>(q<span class="op">.</span><span class="at">m</span>))<span class="op">;</span> } c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> }</span>
+<span id="cb4-186"><a href="#cb4-186" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb4-187"><a href="#cb4-187" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-188"><a href="#cb4-188" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-189"><a href="#cb4-189" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span></span>
+<span id="cb4-190"><a href="#cb4-190" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"time t"</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> <span class="fu">sx</span>(<span class="dv">0</span>)<span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(T<span class="op">,</span> <span class="fu">sx</span>(T)<span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span></span>
+<span id="cb4-191"><a href="#cb4-191" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"x"</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">12</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span> <span class="op">-</span> <span class="dv">16</span>)<span class="op">;</span></span>
+<span id="cb4-192"><a href="#cb4-192" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> yv <span class="kw">of</span> [<span class="op">-</span>ymax<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> ymax]) c<span class="op">.</span><span class="fu">fillText</span>(yv<span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">sy</span>(yv) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"left"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`t = </span><span class="sc">${</span>st<span class="op">.</span><span class="at">t</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> <span class="dv">8</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a>  <span class="co">// right: histogram of x across the ensemble at time t, with the predicted Gaussian</span></span>
+<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> R<span class="op">.</span><span class="at">x0</span><span class="op">,</span> R<span class="op">.</span><span class="at">y0</span><span class="op">,</span> R<span class="op">.</span><span class="at">w</span><span class="op">,</span> R<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> nb <span class="op">=</span> <span class="dv">40</span><span class="op">,</span> bins <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(nb)<span class="op">,</span> bw <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> ymax <span class="op">/</span> nb<span class="op">;</span></span>
+<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) { <span class="kw">const</span> b <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">floor</span>((st<span class="op">.</span><span class="at">x</span>[i] <span class="op">+</span> ymax) <span class="op">/</span> bw)<span class="op">;</span> <span class="cf">if</span> (b <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> b <span class="op">&lt;</span> nb) bins[b]<span class="op">++;</span> }</span>
+<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> dens <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>(bins<span class="op">,</span> b <span class="kw">=&gt;</span> b <span class="op">/</span> (N <span class="op">*</span> bw))<span class="op">;</span></span>
+<span id="cb4-199"><a href="#cb4-199" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> m <span class="op">=</span> st<span class="op">.</span><span class="at">mean</span>[st<span class="op">.</span><span class="at">k</span>]<span class="op">,</span> s <span class="op">=</span> st<span class="op">.</span><span class="at">sd</span>[st<span class="op">.</span><span class="at">k</span>]<span class="op">;</span></span>
+<span id="cb4-200"><a href="#cb4-200" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> q <span class="op">=</span> th <span class="op">?</span> <span class="fu">sdTheory</span>(st<span class="op">.</span><span class="at">model</span><span class="op">,</span> st<span class="op">.</span><span class="at">theta</span><span class="op">,</span> st<span class="op">.</span><span class="at">D</span><span class="op">,</span> st<span class="op">.</span><span class="at">t</span><span class="op">,</span> x0) <span class="op">:</span> {m<span class="op">,</span> s}<span class="op">;</span></span>
+<span id="cb4-201"><a href="#cb4-201" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> peak <span class="op">=</span> <span class="fl">1.15</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="op">...</span>dens<span class="op">,</span> q<span class="op">.</span><span class="at">s</span> <span class="op">&gt;</span> <span class="fl">1e-3</span> <span class="op">?</span> <span class="dv">1</span> <span class="op">/</span> (q<span class="op">.</span><span class="at">s</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)) <span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="fl">0.05</span>)<span class="op">;</span></span>
+<span id="cb4-202"><a href="#cb4-202" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> rx <span class="op">=</span> d <span class="kw">=&gt;</span> R<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> R<span class="op">.</span><span class="at">w</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(<span class="dv">1</span><span class="op">,</span> d <span class="op">/</span> peak)<span class="op">;</span></span>
+<span id="cb4-203"><a href="#cb4-203" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> <span class="st">"rgba(255,127,14,0.55)"</span><span class="op">;</span></span>
+<span id="cb4-204"><a href="#cb4-204" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> b <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> b <span class="op">&lt;</span> nb<span class="op">;</span> b<span class="op">++</span>) { <span class="kw">const</span> lo <span class="op">=</span> <span class="op">-</span>ymax <span class="op">+</span> b <span class="op">*</span> bw<span class="op">;</span> c<span class="op">.</span><span class="fu">fillRect</span>(R<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">sy</span>(lo <span class="op">+</span> bw)<span class="op">,</span> <span class="fu">rx</span>(dens[b]) <span class="op">-</span> R<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">sy</span>(lo) <span class="op">-</span> <span class="fu">sy</span>(lo <span class="op">+</span> bw))<span class="op">;</span> }</span>
+<span id="cb4-205"><a href="#cb4-205" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (q<span class="op">.</span><span class="at">s</span> <span class="op">&gt;</span> <span class="fl">1e-3</span>) {</span>
+<span id="cb4-206"><a href="#cb4-206" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">rect</span>(R<span class="op">.</span><span class="at">x0</span><span class="op">,</span> R<span class="op">.</span><span class="at">y0</span><span class="op">,</span> R<span class="op">.</span><span class="at">w</span><span class="op">,</span> R<span class="op">.</span><span class="at">h</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">clip</span>()<span class="op">;</span></span>
+<span id="cb4-207"><a href="#cb4-207" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">1.5</span><span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">6</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-208"><a href="#cb4-208" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> <span class="dv">100</span><span class="op">;</span> i<span class="op">++</span>) { <span class="kw">const</span> yv <span class="op">=</span> <span class="op">-</span>ymax <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> ymax <span class="op">*</span> i <span class="op">/</span> <span class="dv">100</span><span class="op">,</span> d <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">exp</span>(<span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> ((yv <span class="op">-</span> q<span class="op">.</span><span class="at">m</span>) <span class="op">/</span> q<span class="op">.</span><span class="at">s</span>) <span class="op">**</span> <span class="dv">2</span>) <span class="op">/</span> (q<span class="op">.</span><span class="at">s</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>))<span class="op">;</span> i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">rx</span>(d)<span class="op">,</span> <span class="fu">sy</span>(yv)) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">rx</span>(d)<span class="op">,</span> <span class="fu">sy</span>(yv))<span class="op">;</span> }</span>
+<span id="cb4-209"><a href="#cb4-209" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-210"><a href="#cb4-210" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-211"><a href="#cb4-211" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"x at time t"</span><span class="op">,</span> R<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> R<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> R<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> R<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span></span>
+<span id="cb4-212"><a href="#cb4-212" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"left"</span><span class="op">;</span></span>
+<span id="cb4-213"><a href="#cb4-213" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`mean </span><span class="sc">${</span>m<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> R<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> <span class="dv">6</span><span class="op">,</span> R<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb4-214"><a href="#cb4-214" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`std </span><span class="sc">${</span>s<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> R<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> <span class="dv">6</span><span class="op">,</span> R<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">38</span>)<span class="op">;</span></span>
+<span id="cb4-215"><a href="#cb4-215" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (th) c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`formula </span><span class="sc">${</span>q<span class="op">.</span><span class="at">s</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> R<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> <span class="dv">6</span><span class="op">,</span> R<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">56</span>)<span class="op">;</span></span>
+<span id="cb4-216"><a href="#cb4-216" aria-hidden="true" tabindex="-1"></a>  <span class="co">// legend below the axes</span></span>
+<span id="cb4-217"><a href="#cb4-217" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> lx <span class="op">=</span> P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> ly <span class="op">=</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">50</span><span class="op">;</span></span>
+<span id="cb4-218"><a href="#cb4-218" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> [txt<span class="op">,</span> col] <span class="kw">of</span> [[<span class="st">"orange: sample paths"</span><span class="op">,</span> <span class="st">"#ff7f0e"</span>]<span class="op">,</span> [<span class="st">"blue: ensemble mean"</span><span class="op">,</span> <span class="st">"#1f77b4"</span>]<span class="op">,</span> [<span class="st">"band: mean ± 1 std"</span><span class="op">,</span> <span class="st">"#1f77b4"</span>]<span class="op">,</span> [<span class="st">"dashed: formula"</span><span class="op">,</span> fg]]) {</span>
+<span id="cb4-219"><a href="#cb4-219" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> col<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(txt<span class="op">,</span> lx<span class="op">,</span> ly)<span class="op">;</span> lx <span class="op">+=</span> c<span class="op">.</span><span class="fu">measureText</span>(txt)<span class="op">.</span><span class="at">width</span> <span class="op">+</span> <span class="dv">16</span><span class="op">;</span></span>
+<span id="cb4-220"><a href="#cb4-220" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-221"><a href="#cb4-221" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">;</span></span>
+<span id="cb4-222"><a href="#cb4-222" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</section>
+<section id="solving-them-numerically" class="level2">
+<h2 class="anchored" data-anchor-id="solving-them-numerically">Solving them numerically</h2>
+<p>Most of the time nobody solves these equations by hand. The simplest scheme is Euler–Maruyama, which is the Euler method with one change. For an equation <span class="math inline">\(dx = f(x)\,dt + L(x)\,d\beta\)</span> it reads</p>
+<p><span class="math display">\[x_{k+1} = x_k + f(x_k)\,\Delta t + L(x_k)\,\Delta\beta_k, \qquad
+\Delta\beta_k \sim \mathcal N(0, \Delta t),\]</span></p>
+<p>so each step adds a Gaussian random number with variance <span class="math inline">\(\Delta t\)</span>, or equivalently a standard normal number multiplied by <span class="math inline">\(\sqrt{\Delta t}\)</span>. That square root is the whole point. If you treat the noise like any other term and multiply it by <span class="math inline">\(\Delta t\)</span>, the random part shrinks faster than the deterministic part as the step gets smaller, and in the limit it vanishes. Put differently, multiplying the noise by <span class="math inline">\(\Delta t\)</span> is the same as running Euler–Maruyama with a noise strength <span class="math inline">\(D\sqrt{\Delta t}\)</span>: the scheme is internally consistent, but it solves a different equation, and which one depends on the time step. The second figure shows this directly. Higher-order schemes exist, Milstein being the most common, but for the models on this page Euler–Maruyama with a small step is all you need.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb5" data-startfrom="251" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 250;"><span id="cb5-251"><a href="#cb5-251" aria-hidden="true" tabindex="-1"></a>viewof sdDt <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>([<span class="dv">5</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="fl">0.5</span><span class="op">,</span> <span class="fl">0.2</span><span class="op">,</span> <span class="fl">0.1</span><span class="op">,</span> <span class="fl">0.05</span><span class="op">,</span> <span class="fl">0.02</span><span class="op">,</span> <span class="fl">0.01</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Δt"</span><span class="op">,</span> <span class="dt">format</span><span class="op">:</span> d <span class="kw">=&gt;</span> <span class="bu">String</span>(d)})</span>
+<span id="cb5-252"><a href="#cb5-252" aria-hidden="true" tabindex="-1"></a>viewof sdRedraw <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">button</span>(<span class="st">"New noise"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-5-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-5-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb6" data-startfrom="257" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 256;"><span id="cb6-257"><a href="#cb6-257" aria-hidden="true" tabindex="-1"></a>sdDtSteps <span class="op">=</span> [<span class="dv">5</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="fl">0.5</span><span class="op">,</span> <span class="fl">0.2</span><span class="op">,</span> <span class="fl">0.1</span><span class="op">,</span> <span class="fl">0.05</span><span class="op">,</span> <span class="fl">0.02</span><span class="op">,</span> <span class="fl">0.01</span>]</span>
+<span id="cb6-258"><a href="#cb6-258" aria-hidden="true" tabindex="-1"></a>sdDtSpread <span class="op">=</span> (dt<span class="op">,</span> scale<span class="op">,</span> N<span class="op">,</span> T<span class="op">,</span> D) <span class="kw">=&gt;</span> {</span>
+<span id="cb6-259"><a href="#cb6-259" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> n <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(T <span class="op">/</span> dt)<span class="op">;</span> <span class="kw">let</span> sum2 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-260"><a href="#cb6-260" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) { <span class="kw">let</span> x <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> k <span class="op">&lt;</span> n<span class="op">;</span> k<span class="op">++</span>) x <span class="op">+=</span> D <span class="op">*</span> <span class="fu">sdRandn</span>() <span class="op">*</span> scale<span class="op">;</span> sum2 <span class="op">+=</span> x <span class="op">*</span> x<span class="op">;</span> }</span>
+<span id="cb6-261"><a href="#cb6-261" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(sum2 <span class="op">/</span> N)<span class="op">;</span></span>
+<span id="cb6-262"><a href="#cb6-262" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-263"><a href="#cb6-263" aria-hidden="true" tabindex="-1"></a>sdDtSweep <span class="op">=</span> {</span>
+<span id="cb6-264"><a href="#cb6-264" aria-hidden="true" tabindex="-1"></a>  sdRedraw<span class="op">;</span></span>
+<span id="cb6-265"><a href="#cb6-265" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> T <span class="op">=</span> <span class="dv">10</span><span class="op">,</span> D <span class="op">=</span> <span class="dv">1</span><span class="op">,</span> N <span class="op">=</span> <span class="dv">500</span><span class="op">;</span></span>
+<span id="cb6-266"><a href="#cb6-266" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> sdDtSteps<span class="op">.</span><span class="fu">map</span>(dt <span class="kw">=&gt;</span> ({dt<span class="op">,</span> <span class="dt">sqrt</span><span class="op">:</span> <span class="fu">sdDtSpread</span>(dt<span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(dt)<span class="op">,</span> N<span class="op">,</span> T<span class="op">,</span> D)<span class="op">,</span> <span class="dt">lin</span><span class="op">:</span> <span class="fu">sdDtSpread</span>(dt<span class="op">,</span> dt<span class="op">,</span> N<span class="op">,</span> T<span class="op">,</span> D)}))<span class="op">;</span></span>
+<span id="cb6-267"><a href="#cb6-267" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-268"><a href="#cb6-268" aria-hidden="true" tabindex="-1"></a>sdDtRun <span class="op">=</span> {</span>
+<span id="cb6-269"><a href="#cb6-269" aria-hidden="true" tabindex="-1"></a>  sdRedraw<span class="op">;</span></span>
+<span id="cb6-270"><a href="#cb6-270" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> T <span class="op">=</span> <span class="dv">10</span><span class="op">,</span> D <span class="op">=</span> <span class="dv">1</span><span class="op">,</span> N <span class="op">=</span> <span class="dv">500</span><span class="op">,</span> show <span class="op">=</span> <span class="dv">15</span><span class="op">,</span> dt <span class="op">=</span> sdDt<span class="op">,</span> n <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(T <span class="op">/</span> dt)<span class="op">;</span></span>
+<span id="cb6-271"><a href="#cb6-271" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> out <span class="op">=</span> {}<span class="op">;</span></span>
+<span id="cb6-272"><a href="#cb6-272" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> [key<span class="op">,</span> scale] <span class="kw">of</span> [[<span class="st">"sqrt"</span><span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(dt)]<span class="op">,</span> [<span class="st">"lin"</span><span class="op">,</span> dt]]) {</span>
+<span id="cb6-273"><a href="#cb6-273" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> paths <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> show}<span class="op">,</span> () <span class="kw">=&gt;</span> [<span class="dv">0</span>])<span class="op">;</span></span>
+<span id="cb6-274"><a href="#cb6-274" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> sum2 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-275"><a href="#cb6-275" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb6-276"><a href="#cb6-276" aria-hidden="true" tabindex="-1"></a>      <span class="kw">let</span> x <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-277"><a href="#cb6-277" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> k <span class="op">&lt;</span> n<span class="op">;</span> k<span class="op">++</span>) { x <span class="op">+=</span> D <span class="op">*</span> <span class="fu">sdRandn</span>() <span class="op">*</span> scale<span class="op">;</span> <span class="cf">if</span> (i <span class="op">&lt;</span> show) paths[i]<span class="op">.</span><span class="fu">push</span>(x)<span class="op">;</span> }</span>
+<span id="cb6-278"><a href="#cb6-278" aria-hidden="true" tabindex="-1"></a>      sum2 <span class="op">+=</span> x <span class="op">*</span> x<span class="op">;</span></span>
+<span id="cb6-279"><a href="#cb6-279" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-280"><a href="#cb6-280" aria-hidden="true" tabindex="-1"></a>    out[key] <span class="op">=</span> {paths<span class="op">,</span> <span class="dt">std</span><span class="op">:</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(sum2 <span class="op">/</span> N)}<span class="op">;</span></span>
+<span id="cb6-281"><a href="#cb6-281" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-282"><a href="#cb6-282" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {<span class="op">...</span>out<span class="op">,</span> dt<span class="op">,</span> T<span class="op">,</span> D<span class="op">,</span> <span class="dt">exact</span><span class="op">:</span> D <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(T)}<span class="op">;</span></span>
+<span id="cb6-283"><a href="#cb6-283" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-284"><a href="#cb6-284" aria-hidden="true" tabindex="-1"></a>sdDtCanvas <span class="op">=</span> <span class="fu">mkCanvas</span>(<span class="dv">760</span><span class="op">,</span> <span class="dv">352</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-6-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-6-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-6-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-6-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-6-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb7" data-startfrom="288" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 287;"><span id="cb7-288"><a href="#cb7-288" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb7-289"><a href="#cb7-289" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> r <span class="op">=</span> sdDtRun<span class="op">,</span> sw <span class="op">=</span> sdDtSweep<span class="op">,</span> c <span class="op">=</span> sdDtCanvas<span class="op">,</span> fg <span class="op">=</span> <span class="fu">exFg</span>()<span class="op">,</span> W <span class="op">=</span> <span class="dv">760</span><span class="op">,</span> H <span class="op">=</span> <span class="dv">352</span><span class="op">,</span> ymax <span class="op">=</span> <span class="dv">8</span><span class="op">;</span></span>
+<span id="cb7-290"><a href="#cb7-290" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> blue <span class="op">=</span> <span class="st">"#1f77b4"</span><span class="op">,</span> orange <span class="op">=</span> <span class="st">"#ff7f0e"</span><span class="op">;</span></span>
+<span id="cb7-291"><a href="#cb7-291" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">clearRect</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> W<span class="op">,</span> H)<span class="op">;</span> c<span class="op">.</span><span class="at">font</span> <span class="op">=</span> exFont<span class="op">;</span></span>
+<span id="cb7-292"><a href="#cb7-292" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> panels <span class="op">=</span> [</span>
+<span id="cb7-293"><a href="#cb7-293" aria-hidden="true" tabindex="-1"></a>    {<span class="dt">key</span><span class="op">:</span> <span class="st">"sqrt"</span><span class="op">,</span> <span class="dt">x0</span><span class="op">:</span> <span class="dv">56</span><span class="op">,</span> <span class="dt">title</span><span class="op">:</span> <span class="st">"noise × √Δt (Euler–Maruyama)"</span><span class="op">,</span> <span class="dt">col</span><span class="op">:</span> blue}<span class="op">,</span></span>
+<span id="cb7-294"><a href="#cb7-294" aria-hidden="true" tabindex="-1"></a>    {<span class="dt">key</span><span class="op">:</span> <span class="st">"lin"</span><span class="op">,</span> <span class="dt">x0</span><span class="op">:</span> <span class="dv">300</span><span class="op">,</span> <span class="dt">title</span><span class="op">:</span> <span class="st">"noise × Δt (naive Euler)"</span><span class="op">,</span> <span class="dt">col</span><span class="op">:</span> orange}</span>
+<span id="cb7-295"><a href="#cb7-295" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">;</span></span>
+<span id="cb7-296"><a href="#cb7-296" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> p <span class="kw">of</span> panels) {</span>
+<span id="cb7-297"><a href="#cb7-297" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> P <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> p<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">230</span>}<span class="op">,</span> run <span class="op">=</span> r[p<span class="op">.</span><span class="at">key</span>]<span class="op">,</span> n <span class="op">=</span> run<span class="op">.</span><span class="at">paths</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb7-298"><a href="#cb7-298" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> sx <span class="op">=</span> i <span class="kw">=&gt;</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span> <span class="op">*</span> i <span class="op">/</span> n<span class="op">,</span> sy <span class="op">=</span> v <span class="kw">=&gt;</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (v <span class="op">+</span> ymax) <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> ymax))<span class="op">;</span></span>
+<span id="cb7-299"><a href="#cb7-299" aria-hidden="true" tabindex="-1"></a>    <span class="fu">axisBox</span>(c<span class="op">,</span> P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span><span class="op">,</span> P<span class="op">.</span><span class="at">w</span><span class="op">,</span> P<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb7-300"><a href="#cb7-300" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">rect</span>(P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span><span class="op">,</span> P<span class="op">.</span><span class="at">w</span><span class="op">,</span> P<span class="op">.</span><span class="at">h</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">clip</span>()<span class="op">;</span></span>
+<span id="cb7-301"><a href="#cb7-301" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">3</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb7-302"><a href="#cb7-302" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> p<span class="op">.</span><span class="at">col</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> <span class="fl">0.7</span><span class="op">;</span></span>
+<span id="cb7-303"><a href="#cb7-303" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> path <span class="kw">of</span> run<span class="op">.</span><span class="at">paths</span>) { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> path<span class="op">.</span><span class="fu">forEach</span>((v<span class="op">,</span> i) <span class="kw">=&gt;</span> i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">sx</span>(i)<span class="op">,</span> <span class="fu">sy</span>(v)) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">sx</span>(<span class="dv">0</span>)<span class="op">,</span> <span class="fu">sy</span>(v)))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> }</span>
+<span id="cb7-304"><a href="#cb7-304" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">1.5</span><span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">6</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span></span>
+<span id="cb7-305"><a href="#cb7-305" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> sgn <span class="kw">of</span> [<span class="dv">1</span><span class="op">,</span> <span class="op">-</span><span class="dv">1</span>]) { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> <span class="dv">50</span><span class="op">;</span> i<span class="op">++</span>) { <span class="kw">const</span> t <span class="op">=</span> r<span class="op">.</span><span class="at">T</span> <span class="op">*</span> i <span class="op">/</span> <span class="dv">50</span><span class="op">;</span> i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span> <span class="op">*</span> i <span class="op">/</span> <span class="dv">50</span><span class="op">,</span> <span class="fu">sy</span>(sgn <span class="op">*</span> r<span class="op">.</span><span class="at">D</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(t))) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">sy</span>(<span class="dv">0</span>))<span class="op">;</span> } c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> }</span>
+<span id="cb7-306"><a href="#cb7-306" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb7-307"><a href="#cb7-307" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span></span>
+<span id="cb7-308"><a href="#cb7-308" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"time t"</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(r<span class="op">.</span><span class="at">T</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span></span>
+<span id="cb7-309"><a href="#cb7-309" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> p<span class="op">.</span><span class="at">col</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(p<span class="op">.</span><span class="at">title</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">48</span>)<span class="op">;</span></span>
+<span id="cb7-310"><a href="#cb7-310" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`spread at t = </span><span class="sc">${</span>r<span class="op">.</span><span class="at">T</span><span class="sc">}</span><span class="vs">: </span><span class="sc">${</span>run<span class="op">.</span><span class="at">std</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> P<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> P<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> P<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">70</span>)<span class="op">;</span></span>
+<span id="cb7-311"><a href="#cb7-311" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-312"><a href="#cb7-312" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> <span class="cf">for</span> (<span class="kw">const</span> yv <span class="kw">of</span> [<span class="op">-</span>ymax<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> ymax]) c<span class="op">.</span><span class="fu">fillText</span>(yv<span class="op">,</span> <span class="dv">56</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="dv">14</span> <span class="op">+</span> <span class="dv">230</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (yv <span class="op">+</span> ymax) <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> ymax)) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb7-313"><a href="#cb7-313" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"x"</span><span class="op">,</span> <span class="dv">56</span> <span class="op">-</span> <span class="dv">12</span><span class="op">,</span> <span class="dv">14</span> <span class="op">+</span> <span class="dv">115</span> <span class="op">-</span> <span class="dv">16</span>)<span class="op">;</span></span>
+<span id="cb7-314"><a href="#cb7-314" aria-hidden="true" tabindex="-1"></a>  <span class="co">// convergence panel: spread at t = T against Δt for both schemes</span></span>
+<span id="cb7-315"><a href="#cb7-315" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> Cv <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">560</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">184</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">230</span>}<span class="op">,</span> smax <span class="op">=</span> <span class="dv">8</span><span class="op">;</span></span>
+<span id="cb7-316"><a href="#cb7-316" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> lx <span class="op">=</span> dt <span class="kw">=&gt;</span> Cv<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">w</span> <span class="op">*</span> (<span class="bu">Math</span><span class="op">.</span><span class="fu">log10</span>(dt) <span class="op">+</span> <span class="dv">2</span>) <span class="op">/</span> <span class="dv">3</span><span class="op">,</span> ly <span class="op">=</span> sd <span class="kw">=&gt;</span> Cv<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> sd <span class="op">/</span> smax)<span class="op">;</span></span>
+<span id="cb7-317"><a href="#cb7-317" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> Cv<span class="op">.</span><span class="at">x0</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">y0</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">w</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb7-318"><a href="#cb7-318" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">1.5</span><span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">6</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(Cv<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">ly</span>(r<span class="op">.</span><span class="at">exact</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(Cv<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">ly</span>(r<span class="op">.</span><span class="at">exact</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb7-319"><a href="#cb7-319" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> [key<span class="op">,</span> col] <span class="kw">of</span> [[<span class="st">"sqrt"</span><span class="op">,</span> blue]<span class="op">,</span> [<span class="st">"lin"</span><span class="op">,</span> orange]]) {</span>
+<span id="cb7-320"><a href="#cb7-320" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> col<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> sw<span class="op">.</span><span class="fu">forEach</span>((q<span class="op">,</span> i) <span class="kw">=&gt;</span> i <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">lx</span>(q<span class="op">.</span><span class="at">dt</span>)<span class="op">,</span> <span class="fu">ly</span>(q[key])) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">lx</span>(q<span class="op">.</span><span class="at">dt</span>)<span class="op">,</span> <span class="fu">ly</span>(q[key])))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb7-321"><a href="#cb7-321" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> col<span class="op">;</span> <span class="cf">for</span> (<span class="kw">const</span> q <span class="kw">of</span> sw) { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">arc</span>(<span class="fu">lx</span>(q<span class="op">.</span><span class="at">dt</span>)<span class="op">,</span> <span class="fu">ly</span>(q[key])<span class="op">,</span> q<span class="op">.</span><span class="at">dt</span> <span class="op">===</span> r<span class="op">.</span><span class="at">dt</span> <span class="op">?</span> <span class="dv">6</span> <span class="op">:</span> <span class="fl">3.5</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> }</span>
+<span id="cb7-322"><a href="#cb7-322" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-323"><a href="#cb7-323" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span></span>
+<span id="cb7-324"><a href="#cb7-324" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"Δt (log scale)"</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">26</span>)<span class="op">;</span></span>
+<span id="cb7-325"><a href="#cb7-325" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> d <span class="kw">of</span> [<span class="fl">0.01</span><span class="op">,</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">10</span>]) c<span class="op">.</span><span class="fu">fillText</span>(<span class="bu">String</span>(d)<span class="op">,</span> <span class="fu">lx</span>(d)<span class="op">,</span> Cv<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">46</span>)<span class="op">;</span></span>
+<span id="cb7-326"><a href="#cb7-326" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`spread at t = </span><span class="sc">${</span>r<span class="op">.</span><span class="at">T</span><span class="sc">}</span><span class="vs">`</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Cv<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">70</span>)<span class="op">;</span></span>
+<span id="cb7-327"><a href="#cb7-327" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">ly</span>(<span class="dv">0</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(smax<span class="op">,</span> Cv<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">ly</span>(smax) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`√</span><span class="sc">${</span>r<span class="op">.</span><span class="at">T</span><span class="sc">}</span><span class="vs">`</span><span class="op">,</span> Cv<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">ly</span>(r<span class="op">.</span><span class="at">exact</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb7-328"><a href="#cb7-328" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"left"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"dashed: exact spread √t"</span><span class="op">,</span> <span class="dv">56</span><span class="op">,</span> H <span class="op">-</span> <span class="dv">10</span>)<span class="op">;</span></span>
+<span id="cb7-329"><a href="#cb7-329" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">;</span></span>
+<span id="cb7-330"><a href="#cb7-330" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-7" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</section>
+<section id="reading-the-figure" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-figure">Reading the figure</h2>
+<p>In the first figure, the panel on the left shows twelve sample paths in orange, all started at <span class="math inline">\(x_0 = 2\)</span> and simulated with Euler–Maruyama at <span class="math inline">\(\Delta t = 0.01\)</span>. Behind them, the blue line is the mean of a larger ensemble of 300 paths and the blue band is that ensemble’s mean plus and minus one standard deviation, as the legend under the panel says. The dashed black lines are the formulas for the Brownian and Ornstein–Uhlenbeck cases, mean plus and minus one standard deviation, so when the simulation is right the band and the dashed lines should agree up to sampling noise. The noisy spring has no dashed lines; its ensemble statistics would need a longer formula, and the band speaks for itself.</p>
+<p>The panel on the right is a histogram of where the 300 paths are at the current moment, turned on its side so that it shares the vertical axis with the paths. The dashed curve is the Gaussian predicted by the formulas, or, for the spring, the Gaussian with the ensemble’s own mean and standard deviation. The three numbers above it are the ensemble mean, the ensemble standard deviation and the predicted standard deviation. The histogram is rescaled to fit its panel, so compare widths along the vertical axis, not bar lengths. Changing a slider or the model restarts the simulation from <span class="math inline">\(t = 0\)</span>.</p>
+<p>The second figure runs the same random walk, <span class="math inline">\(dx = d\beta\)</span> with <span class="math inline">\(D = 1\)</span>, twice with the time step you choose. On the left each step adds a standard normal number times <span class="math inline">\(\sqrt{\Delta t}\)</span>, on the right the same number times <span class="math inline">\(\Delta t\)</span>. The dashed lines in both panels are the same thing, the exact spread <span class="math inline">\(\sqrt{t}\)</span> of the equation being solved, and the number under each panel is the measured standard deviation of 500 paths at <span class="math inline">\(t = 10\)</span>. The third panel collects that number for every available time step, blue for Euler–Maruyama and orange for naive Euler, against the exact value <span class="math inline">\(\sqrt{10}
+\approx 3.16\)</span> as a dashed line, with the current time step drawn larger.</p>
+</section>
+<section id="things-to-try" class="level2">
+<h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
+<p>Start with the Ornstein–Uhlenbeck process at the default values. The mean decays from 2 towards 0 with time constant <span class="math inline">\(1/\theta\)</span>, and the band widens until it reaches a standard deviation of <span class="math inline">\(D/\sqrt{2\theta}\)</span>, which is 0.71 for the defaults. Once the mean has settled, the histogram on the right stops changing shape even though every individual path keeps moving. That is the stationary distribution, and it is what people mean when they say that an Ornstein–Uhlenbeck process “has” a variance. Raise <span class="math inline">\(\theta\)</span> and the band narrows and settles faster. Lower it and the process starts to look like Brownian motion for a while before the pull makes itself felt.</p>
+<p>Switch to Brownian motion. Now nothing pulls <span class="math inline">\(x\)</span> back, the mean stays at 2 and the band keeps growing as <span class="math inline">\(\sqrt t\)</span>, reaching a standard deviation of <span class="math inline">\(D\sqrt{10} \approx 3.2\)</span> for <span class="math inline">\(D = 1\)</span> at the end of the run. The histogram just keeps flattening. Set <span class="math inline">\(D\)</span> to 2 and watch how many paths leave the plot: the standard deviation at <span class="math inline">\(t = 10\)</span> is now 6.3, well beyond the axis.</p>
+<p>Switch to the noisy spring. With <span class="math inline">\(\gamma = 1\)</span> the mean oscillates a few times before it dies away, and the band is narrower than for the Ornstein–Uhlenbeck process at the same <span class="math inline">\(D\)</span>, because the noise drives the velocity rather than the position and the spring filters it. Set the damping to 0.1 and the paths ring at the natural frequency for the whole run, still roughly in step with each other, while the mean decays only slowly and the band widens a little with every swing. Ten time units is too short to see where this ends up, but the trend is the point: the noise slowly knocks the paths out of phase with one another, so over a long enough run the mean fades away while every single path keeps oscillating. The ensemble mean is then a poor description of any member of the ensemble, which is worth remembering whenever a model is compared with trial-averaged data.</p>
+<p>In the second figure, begin with <span class="math inline">\(\Delta t = 1\)</span>. The two path panels are indistinguishable, because <span class="math inline">\(\sqrt{1} = 1\)</span>, and the two dots in the third panel coincide on the dashed line. Go the other way first, to <span class="math inline">\(\Delta t = 2\)</span> and then 5. With only five steps in the whole run the paths are crude in both panels, but the blue spread stays near 3.2 while the orange one climbs to 4.5 and then 7.1: a coarse step overstates the noise in the naive scheme just as a fine step understates it. Now reduce the step. The left panel stays the same apart from looking smoother, and its spread stays near 3.2 at every step: the blue dots sit on the line. The right panel shrinks. Its paths still spread as <span class="math inline">\(\sqrt t\)</span>, since it is a random walk like any other, only one with a weaker noise, and the spread at <span class="math inline">\(t = 10\)</span> drops to 1.0 at <span class="math inline">\(\Delta t = 0.1\)</span> and 0.32 at <span class="math inline">\(\Delta t = 0.01\)</span>. The orange dots fall away from the line as <span class="math inline">\(\sqrt{\Delta t}\)</span>. A numerical scheme is supposed to give an answer that stops depending on <span class="math inline">\(\Delta t\)</span> once the step is small enough, and the naive one never does. In the limit of a vanishing step its noise would disappear altogether. This is the practical face of everything in the section on white noise. A random force that leaves a finite mark in a finite time must have an infinite amplitude in the limit, and the <span class="math inline">\(\sqrt{\Delta t}\)</span> in the Euler–Maruyama scheme is the bookkeeping that makes that work on a computer. If a simulation of a noisy model gives results that change when you refine the time step, this is the first thing to check.</p>
+<p>This page follows my 2022 coffee-meeting talk, which drew mostly on the lecture notes by Särkkä (2012), since published as a book (Särkkä and Solin 2019). Higham (2001) is the friendliest introduction to the numerical side and the source of the Euler–Maruyama figure in the talk. A disclaimer is in order: I once tried studying mathematics alongside biophysics and gave it up in favour of the physics part of my degree, so the mathematicians in the title may be angered by this page after all. If you are one of them, Särkkä and Solin (2019) has the proper version.</p>
+</section>
+<section id="numerical-details" class="level2">
+<h2 class="anchored" data-anchor-id="numerical-details">Numerical details</h2>
+<p>Both figures use the Euler–Maruyama scheme exactly as written above, with standard normal numbers from the Box–Muller transform. The first figure integrates 300 paths with <span class="math inline">\(\Delta t = 0.01\)</span> from <span class="math inline">\(x_0 = 2\)</span> (and <span class="math inline">\(v_0 = 0\)</span> for the spring) to <span class="math inline">\(T = 10\)</span>, draws 12 of them, and computes the mean and standard deviation across all 300 at every step; the spring uses <span class="math inline">\(\nu = 2\)</span>. The second figure integrates 500 paths of <span class="math inline">\(dx = d\beta\)</span> with <span class="math inline">\(D = 1\)</span> to <span class="math inline">\(T = 10\)</span> at the chosen <span class="math inline">\(\Delta t\)</span> and draws 15 of them; the convergence panel repeats the 500-path run for each of the nine available time steps with both schemes. The naive Euler scheme, with the noise increment multiplied by <span class="math inline">\(\Delta t\)</span> instead of <span class="math inline">\(\sqrt{\Delta t}\)</span>, is used nowhere except in the right panel of that figure, where it is the point.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Higham DJ (2001). An algorithmic introduction to numerical simulation of stochastic differential equations. <em>SIAM Review</em> 43: 525–546. <a href="https://doi.org/10.1137/S0036144500378302">DOI</a> · <a href="https://inc.ucsd.edu/mplab/75/media//sde.pdf">PDF</a></p>
+<p>Itô K (1944). Stochastic integral. <em>Proceedings of the Imperial Academy</em> 20: 519–524.</p>
+<p>Khintchine A (1934). Korrelationstheorie der stationären stochastischen Prozesse. <em>Mathematische Annalen</em> 109: 604–615. <a href="https://doi.org/10.1007/BF01449156">DOI</a></p>
+<p>Särkkä S (2012). <em>Applied Stochastic Differential Equations</em>, lecture notes, Aalto University. <a href="https://users.aalto.fi/~ssarkka/course_s2012/pdf/sde_course_booklet_2012.pdf">PDF</a></p>
+<p>Särkkä S, Solin A (2019). <em>Applied Stochastic Differential Equations</em>. Cambridge University Press. <a href="https://doi.org/10.1017/9781108186735">DOI</a></p>
+<p>Uhlenbeck GE, Ornstein LS (1930). On the theory of the Brownian motion. <em>Physical Review</em> 36: 823–841. <a href="https://doi.org/10.1103/PhysRev.36.823">DOI</a></p>
+<p>Vatiwutipong P, Phewchean N (2019). Alternative way to derive the distribution of the multivariate Ornstein–Uhlenbeck process. <em>Advances in Difference Equations</em> 2019: 276. <a href="https://doi.org/10.1186/s13662-019-2214-1">DOI</a> · <a href="https://advancesindifferenceequations.springeropen.com/track/pdf/10.1186/s13662-019-2214-1.pdf">PDF</a></p>
+<p>Wiener N (1930). Generalized harmonic analysis. <em>Acta Mathematica</em> 55: 117–258.</p>
+<p>Lecture notes on stochastic systems, Institute for Dynamic Systems and Control, ETH Zürich. <a href="https://ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/Lectures/Stochastic-Systems/SDE.pdf">PDF</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ii8vIHNoYXJlZCBoZWxwZXJzOiBvbmUgcGVyc2lzdGVudCBjYW52YXMgcGVyIGV4cGxvcmFibGUsIHRleHQtc2l6ZWQgZm9udHMsIHJlc3BvbnNpdmUgd2lkdGhcbmV4Rm9udCA9ICh7c2l6ZTogZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5ib2R5KS5mb250U2l6ZSwgZmFtaWx5OiBnZXRDb21wdXRlZFN0eWxlKGRvY3VtZW50LmJvZHkpLmZvbnRGYW1pbHksIHRvU3RyaW5nKCkgeyByZXR1cm4gdGhpcy5zaXplICsgXCIgXCIgKyB0aGlzLmZhbWlseTsgfX0pXG5leEZnID0gKCkgPT4gZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5ib2R5KS5jb2xvclxubWtDYW52YXMgPSAoVywgSCkgPT4ge1xuICBjb25zdCBjID0gRE9NLmNvbnRleHQyZChXLCBIKTtcbiAgYy5jYW52YXMuc3R5bGUud2lkdGggPSBcIjEwMCVcIjsgYy5jYW52YXMuc3R5bGUubWF4V2lkdGggPSBXICsgXCJweFwiOyBjLmNhbnZhcy5zdHlsZS5oZWlnaHQgPSBcImF1dG9cIjtcbiAgcmV0dXJuIGM7XG59XG5heGlzQm94ID0gKGMsIHgsIHksIHcsIGgpID0+IHsgYy5zdHJva2VTdHlsZSA9IFwiIzk5OVwiOyBjLmxpbmVXaWR0aCA9IDE7IGMuc3Ryb2tlUmVjdCh4LCB5LCB3LCBoKTsgfVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0yIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoidmlld29mIHNkTW9kZWwgPSBJbnB1dHMucmFkaW8obmV3IE1hcChbW1wiQnJvd25pYW4gbW90aW9uXCIsIFwiYm1cIl0sIFtcIk9ybnN0ZWlu4oCTVWhsZW5iZWNrXCIsIFwib3VcIl0sIFtcIk5vaXN5IHNwcmluZ1wiLCBcInNwcmluZ1wiXV0pLCB7dmFsdWU6IFwib3VcIiwgbGFiZWw6IFwiTW9kZWxcIn0pXG52aWV3b2Ygc2RUaGV0YSA9IElucHV0cy5yYW5nZShbMC4xLCAzXSwge3ZhbHVlOiAxLCBzdGVwOiAwLjEsIGxhYmVsOiBcIs64IChwdWxsIHRvd2FyZHMgMDsgZGFtcGluZyDOsyBmb3IgdGhlIHNwcmluZylcIn0pXG52aWV3b2Ygc2REID0gSW5wdXRzLnJhbmdlKFswLCAyXSwge3ZhbHVlOiAxLCBzdGVwOiAwLjA1LCBsYWJlbDogXCJEIChub2lzZSBzdHJlbmd0aClcIn0pXG52aWV3b2Ygc2RQYXVzZSA9IElucHV0cy50b2dnbGUoe2xhYmVsOiBcIlBhdXNlXCJ9KVxudmlld29mIHNkUmVzZXQgPSBJbnB1dHMuYnV0dG9uKFwiUmVzdGFydFwiKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0zIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoic2RSYW5kbiA9ICgpID0+IHtcbiAgbGV0IHUgPSAwLCB2ID0gMDtcbiAgd2hpbGUgKHUgPT09IDApIHUgPSBNYXRoLnJhbmRvbSgpO1xuICB3aGlsZSAodiA9PT0gMCkgdiA9IE1hdGgucmFuZG9tKCk7XG4gIHJldHVybiBNYXRoLnNxcnQoLTIgKiBNYXRoLmxvZyh1KSkgKiBNYXRoLmNvcygyICogTWF0aC5QSSAqIHYpO1xufVxuc2RQYXIgPSAoe1Q6IDEwLCBkdDogMC4wMSwgTjogMzAwLCBzaG93OiAxMiwgeDA6IDIsIG51OiAyfSlcbnNkU3RhdGUgPSB7XG4gIHNkUmVzZXQ7XG4gIGNvbnN0IG1vZGVsID0gc2RNb2RlbCwgdGhldGEgPSBzZFRoZXRhLCBEID0gc2REO1xuICBjb25zdCB7VCwgZHQsIE4sIHNob3csIHgwLCBudX0gPSBzZFBhciwgbiA9IE1hdGgucm91bmQoVCAvIGR0KSArIDE7XG4gIGNvbnN0IHggPSBuZXcgRmxvYXQzMkFycmF5KE4pLmZpbGwoeDApLCB2ID0gbmV3IEZsb2F0MzJBcnJheShOKTtcbiAgY29uc3QgdHJhY2VzID0gQXJyYXkuZnJvbSh7bGVuZ3RoOiBzaG93fSwgKCkgPT4gbmV3IEZsb2F0MzJBcnJheShuKS5maWxsKHgwKSk7XG4gIGNvbnN0IG1lYW4gPSBuZXcgRmxvYXQzMkFycmF5KG4pLmZpbGwoeDApLCBzZCA9IG5ldyBGbG9hdDMyQXJyYXkobik7XG4gIGxldCBrID0gMDtcbiAgY29uc3Qgc3EgPSBNYXRoLnNxcnQoZHQpO1xuICB3aGlsZSAodHJ1ZSkge1xuICAgIGlmICghdmlld29mIHNkUGF1c2UudmFsdWUgJiYgayA8IG4gLSAxKSB7XG4gICAgICBmb3IgKGxldCBzID0gMDsgcyA8IDUgJiYgayA8IG4gLSAxOyBzKyspIHtcbiAgICAgICAgaysrO1xuICAgICAgICBsZXQgc3VtID0gMCwgc3VtMiA9IDA7XG4gICAgICAgIGZvciAobGV0IGkgPSAwOyBpIDwgTjsgaSsrKSB7XG4gICAgICAgICAgY29uc3QgZGIgPSBzZFJhbmRuKCkgKiBzcTtcbiAgICAgICAgICBpZiAobW9kZWwgPT09IFwiYm1cIikgeFtpXSArPSBEICogZGI7XG4gICAgICAgICAgZWxzZSBpZiAobW9kZWwgPT09IFwib3VcIikgeFtpXSArPSAtdGhldGEgKiB4W2ldICogZHQgKyBEICogZGI7XG4gICAgICAgICAgZWxzZSB7IGNvbnN0IGEgPSAtdGhldGEgKiB2W2ldIC0gbnUgKiBudSAqIHhbaV07IHhbaV0gKz0gdltpXSAqIGR0OyB2W2ldICs9IGEgKiBkdCArIEQgKiBkYjsgfVxuICAgICAgICAgIHN1bSArPSB4W2ldOyBzdW0yICs9IHhbaV0gKiB4W2ldO1xuICAgICAgICB9XG4gICAgICAgIGZvciAobGV0IGogPSAwOyBqIDwgc2hvdzsgaisrKSB0cmFjZXNbal1ba10gPSB4W2pdO1xuICAgICAgICBtZWFuW2tdID0gc3VtIC8gTjsgc2Rba10gPSBNYXRoLnNxcnQoTWF0aC5tYXgoMCwgc3VtMiAvIE4gLSBtZWFuW2tdICogbWVhbltrXSkpO1xuICAgICAgfVxuICAgIH1cbiAgICB5aWVsZCB7eCwgdHJhY2VzLCBtZWFuLCBzZCwgaywgdDogayAqIGR0LCBtb2RlbCwgdGhldGEsIER9O1xuICB9XG59XG5zZFRoZW9yeSA9IChtb2RlbCwgdGhldGEsIEQsIHQsIHgwKSA9PiB7XG4gIGlmIChtb2RlbCA9PT0gXCJibVwiKSByZXR1cm4ge206IHgwLCBzOiBEICogTWF0aC5zcXJ0KHQpfTtcbiAgaWYgKG1vZGVsID09PSBcIm91XCIpIHJldHVybiB7bTogeDAgKiBNYXRoLmV4cCgtdGhldGEgKiB0KSwgczogRCAqIE1hdGguc3FydCgoMSAtIE1hdGguZXhwKC0yICogdGhldGEgKiB0KSkgLyAoMiAqIHRoZXRhKSl9O1xuICByZXR1cm4gbnVsbDtcbn1cbnNkQ2FudmFzID0gbWtDYW52YXMoNzYwLCAzNzApXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTQiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJ7XG4gIGNvbnN0IHN0ID0gc2RTdGF0ZSwgYyA9IHNkQ2FudmFzLCBmZyA9IGV4RmcoKSwgVyA9IDc2MCwgSCA9IDM3MDtcbiAgY29uc3Qge1QsIGR0LCBOLCB4MH0gPSBzZFBhciwgeW1heCA9IDU7XG4gIGNvbnN0IFAgPSB7eDA6IDU2LCB5MDogMTQsIHc6IDUwMCwgaDogMjcwfSwgUiA9IHt4MDogNTkwLCB5MDogMTQsIHc6IDE1MCwgaDogMjcwfTtcbiAgY29uc3Qgc3ggPSB0ID0+IFAueDAgKyBQLncgKiB0IC8gVCwgc3kgPSB2ID0+IFAueTAgKyBQLmggKiAoMSAtICh2ICsgeW1heCkgLyAoMiAqIHltYXgpKTtcbiAgYy5jbGVhclJlY3QoMCwgMCwgVywgSCk7IGMuZm9udCA9IGV4Rm9udDtcbiAgLy8gbGVmdDogc2FtcGxlIHBhdGhzIHdpdGggZW5zZW1ibGUgYmFuZFxuICBheGlzQm94KGMsIFAueDAsIFAueTAsIFAudywgUC5oKTtcbiAgYy5zYXZlKCk7IGMuYmVnaW5QYXRoKCk7IGMucmVjdChQLngwLCBQLnkwLCBQLncsIFAuaCk7IGMuY2xpcCgpO1xuICBjLnN0cm9rZVN0eWxlID0gXCIjOTk5XCI7IGMuc2V0TGluZURhc2goWzMsIDRdKTsgYy5iZWdpblBhdGgoKTsgYy5tb3ZlVG8oUC54MCwgc3koMCkpOyBjLmxpbmVUbyhQLngwICsgUC53LCBzeSgwKSk7IGMuc3Ryb2tlKCk7IGMuc2V0TGluZURhc2goW10pO1xuICBjLmZpbGxTdHlsZSA9IFwicmdiYSgzMSwxMTksMTgwLDAuMTgpXCI7IGMuYmVnaW5QYXRoKCk7XG4gIGZvciAobGV0IGkgPSAwOyBpIDw9IHN0Lms7IGkrKykgYy5saW5lVG8oc3goaSAqIGR0KSwgc3koc3QubWVhbltpXSArIHN0LnNkW2ldKSk7XG4gIGZvciAobGV0IGkgPSBzdC5rOyBpID49IDA7IGktLSkgYy5saW5lVG8oc3goaSAqIGR0KSwgc3koc3QubWVhbltpXSAtIHN0LnNkW2ldKSk7XG4gIGMuY2xvc2VQYXRoKCk7IGMuZmlsbCgpO1xuICBjLmxpbmVXaWR0aCA9IDE7IGMuc3Ryb2tlU3R5bGUgPSBcIiNmZjdmMGVcIjsgYy5nbG9iYWxBbHBoYSA9IDAuNjtcbiAgZm9yIChjb25zdCB0ciBvZiBzdC50cmFjZXMpIHsgYy5iZWdpblBhdGgoKTsgZm9yIChsZXQgaSA9IDA7IGkgPD0gc3QuazsgaSsrKSBpID8gYy5saW5lVG8oc3goaSAqIGR0KSwgc3kodHJbaV0pKSA6IGMubW92ZVRvKHN4KDApLCBzeSh0clswXSkpOyBjLnN0cm9rZSgpOyB9XG4gIGMuZ2xvYmFsQWxwaGEgPSAxOyBjLmxpbmVXaWR0aCA9IDIuNTsgYy5zdHJva2VTdHlsZSA9IFwiIzFmNzdiNFwiOyBjLmJlZ2luUGF0aCgpO1xuICBmb3IgKGxldCBpID0gMDsgaSA8PSBzdC5rOyBpKyspIGkgPyBjLmxpbmVUbyhzeChpICogZHQpLCBzeShzdC5tZWFuW2ldKSkgOiBjLm1vdmVUbyhzeCgwKSwgc3koc3QubWVhblswXSkpO1xuICBjLnN0cm9rZSgpO1xuICBjb25zdCB0aCA9IHNkVGhlb3J5KHN0Lm1vZGVsLCBzdC50aGV0YSwgc3QuRCwgMCwgeDApO1xuICBpZiAodGgpIHtcbiAgICBjLnN0cm9rZVN0eWxlID0gZmc7IGMubGluZVdpZHRoID0gMS41OyBjLnNldExpbmVEYXNoKFs2LCA0XSk7XG4gICAgZm9yIChjb25zdCBzZ24gb2YgWzEsIC0xXSkgeyBjLmJlZ2luUGF0aCgpOyBmb3IgKGxldCBpID0gMDsgaSA8PSBzdC5rOyBpKyspIHsgY29uc3QgcSA9IHNkVGhlb3J5KHN0Lm1vZGVsLCBzdC50aGV0YSwgc3QuRCwgaSAqIGR0LCB4MCk7IGkgPyBjLmxpbmVUbyhzeChpICogZHQpLCBzeShxLm0gKyBzZ24gKiBxLnMpKSA6IGMubW92ZVRvKHN4KDApLCBzeShxLm0pKTsgfSBjLnN0cm9rZSgpOyB9XG4gICAgYy5zZXRMaW5lRGFzaChbXSk7XG4gIH1cbiAgYy5yZXN0b3JlKCk7XG4gIGMuZmlsbFN0eWxlID0gZmc7IGMudGV4dEFsaWduID0gXCJjZW50ZXJcIjtcbiAgYy5maWxsVGV4dChcInRpbWUgdFwiLCBQLngwICsgUC53IC8gMiwgUC55MCArIFAuaCArIDI2KTsgYy5maWxsVGV4dChcIjBcIiwgc3goMCksIFAueTAgKyBQLmggKyAyNik7IGMuZmlsbFRleHQoVCwgc3goVCksIFAueTAgKyBQLmggKyAyNik7XG4gIGMudGV4dEFsaWduID0gXCJyaWdodFwiOyBjLmZpbGxUZXh0KFwieFwiLCBQLngwIC0gMTIsIFAueTAgKyBQLmggLyAyIC0gMTYpO1xuICBmb3IgKGNvbnN0IHl2IG9mIFsteW1heCwgMCwgeW1heF0pIGMuZmlsbFRleHQoeXYsIFAueDAgLSA4LCBzeSh5dikgKyA1KTtcbiAgYy50ZXh0QWxpZ24gPSBcImxlZnRcIjsgYy5maWxsVGV4dChgdCA9ICR7c3QudC50b0ZpeGVkKDEpfWAsIFAueDAgKyA4LCBQLnkwICsgMjApO1xuICAvLyByaWdodDogaGlzdG9ncmFtIG9mIHggYWNyb3NzIHRoZSBlbnNlbWJsZSBhdCB0aW1lIHQsIHdpdGggdGhlIHByZWRpY3RlZCBHYXVzc2lhblxuICBheGlzQm94KGMsIFIueDAsIFIueTAsIFIudywgUi5oKTtcbiAgY29uc3QgbmIgPSA0MCwgYmlucyA9IG5ldyBGbG9hdDMyQXJyYXkobmIpLCBidyA9IDIgKiB5bWF4IC8gbmI7XG4gIGZvciAobGV0IGkgPSAwOyBpIDwgTjsgaSsrKSB7IGNvbnN0IGIgPSBNYXRoLmZsb29yKChzdC54W2ldICsgeW1heCkgLyBidyk7IGlmIChiID49IDAgJiYgYiA8IG5iKSBiaW5zW2JdKys7IH1cbiAgY29uc3QgZGVucyA9IEFycmF5LmZyb20oYmlucywgYiA9PiBiIC8gKE4gKiBidykpO1xuICBjb25zdCBtID0gc3QubWVhbltzdC5rXSwgcyA9IHN0LnNkW3N0LmtdO1xuICBjb25zdCBxID0gdGggPyBzZFRoZW9yeShzdC5tb2RlbCwgc3QudGhldGEsIHN0LkQsIHN0LnQsIHgwKSA6IHttLCBzfTtcbiAgY29uc3QgcGVhayA9IDEuMTUgKiBNYXRoLm1heCguLi5kZW5zLCBxLnMgPiAxZS0zID8gMSAvIChxLnMgKiBNYXRoLnNxcnQoMiAqIE1hdGguUEkpKSA6IDAsIDAuMDUpO1xuICBjb25zdCByeCA9IGQgPT4gUi54MCArIFIudyAqIE1hdGgubWluKDEsIGQgLyBwZWFrKTtcbiAgYy5maWxsU3R5bGUgPSBcInJnYmEoMjU1LDEyNywxNCwwLjU1KVwiO1xuICBmb3IgKGxldCBiID0gMDsgYiA8IG5iOyBiKyspIHsgY29uc3QgbG8gPSAteW1heCArIGIgKiBidzsgYy5maWxsUmVjdChSLngwLCBzeShsbyArIGJ3KSwgcngoZGVuc1tiXSkgLSBSLngwLCBzeShsbykgLSBzeShsbyArIGJ3KSk7IH1cbiAgaWYgKHEucyA+IDFlLTMpIHtcbiAgICBjLnNhdmUoKTsgYy5iZWdpblBhdGgoKTsgYy5yZWN0KFIueDAsIFIueTAsIFIudywgUi5oKTsgYy5jbGlwKCk7XG4gICAgYy5zdHJva2VTdHlsZSA9IGZnOyBjLmxpbmVXaWR0aCA9IDEuNTsgYy5zZXRMaW5lRGFzaChbNiwgNF0pOyBjLmJlZ2luUGF0aCgpO1xuICAgIGZvciAobGV0IGkgPSAwOyBpIDw9IDEwMDsgaSsrKSB7IGNvbnN0IHl2ID0gLXltYXggKyAyICogeW1heCAqIGkgLyAxMDAsIGQgPSBNYXRoLmV4cCgtMC41ICogKCh5diAtIHEubSkgLyBxLnMpICoqIDIpIC8gKHEucyAqIE1hdGguc3FydCgyICogTWF0aC5QSSkpOyBpID8gYy5saW5lVG8ocngoZCksIHN5KHl2KSkgOiBjLm1vdmVUbyhyeChkKSwgc3koeXYpKTsgfVxuICAgIGMuc3Ryb2tlKCk7IGMuc2V0TGluZURhc2goW10pOyBjLnJlc3RvcmUoKTtcbiAgfVxuICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoXCJ4IGF0IHRpbWUgdFwiLCBSLngwICsgUi53IC8gMiwgUi55MCArIFIuaCArIDI2KTtcbiAgYy50ZXh0QWxpZ24gPSBcImxlZnRcIjtcbiAgYy5maWxsVGV4dChgbWVhbiAke20udG9GaXhlZCgyKX1gLCBSLngwICsgNiwgUi55MCArIDIwKTtcbiAgYy5maWxsVGV4dChgc3RkICR7cy50b0ZpeGVkKDIpfWAsIFIueDAgKyA2LCBSLnkwICsgMzgpO1xuICBpZiAodGgpIGMuZmlsbFRleHQoYGZvcm11bGEgJHtxLnMudG9GaXhlZCgyKX1gLCBSLngwICsgNiwgUi55MCArIDU2KTtcbiAgLy8gbGVnZW5kIGJlbG93IHRoZSBheGVzXG4gIGxldCBseCA9IFAueDAsIGx5ID0gUC55MCArIFAuaCArIDUwO1xuICBmb3IgKGNvbnN0IFt0eHQsIGNvbF0gb2YgW1tcIm9yYW5nZTogc2FtcGxlIHBhdGhzXCIsIFwiI2ZmN2YwZVwiXSwgW1wiYmx1ZTogZW5zZW1ibGUgbWVhblwiLCBcIiMxZjc3YjRcIl0sIFtcImJhbmQ6IG1lYW4gwrEgMSBzdGRcIiwgXCIjMWY3N2I0XCJdLCBbXCJkYXNoZWQ6IGZvcm11bGFcIiwgZmddXSkge1xuICAgIGMuZmlsbFN0eWxlID0gY29sOyBjLmZpbGxUZXh0KHR4dCwgbHgsIGx5KTsgbHggKz0gYy5tZWFzdXJlVGV4dCh0eHQpLndpZHRoICsgMTY7XG4gIH1cbiAgcmV0dXJuIGMuY2FudmFzO1xufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC01IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoidmlld29mIHNkRHQgPSBJbnB1dHMucmFkaW8oWzUsIDIsIDEsIDAuNSwgMC4yLCAwLjEsIDAuMDUsIDAuMDIsIDAuMDFdLCB7dmFsdWU6IDAuMSwgbGFiZWw6IFwizpR0XCIsIGZvcm1hdDogZCA9PiBTdHJpbmcoZCl9KVxudmlld29mIHNkUmVkcmF3ID0gSW5wdXRzLmJ1dHRvbihcIk5ldyBub2lzZVwiKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC02IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoic2REdFN0ZXBzID0gWzUsIDIsIDEsIDAuNSwgMC4yLCAwLjEsIDAuMDUsIDAuMDIsIDAuMDFdXG5zZER0U3ByZWFkID0gKGR0LCBzY2FsZSwgTiwgVCwgRCkgPT4ge1xuICBjb25zdCBuID0gTWF0aC5yb3VuZChUIC8gZHQpOyBsZXQgc3VtMiA9IDA7XG4gIGZvciAobGV0IGkgPSAwOyBpIDwgTjsgaSsrKSB7IGxldCB4ID0gMDsgZm9yIChsZXQgayA9IDA7IGsgPCBuOyBrKyspIHggKz0gRCAqIHNkUmFuZG4oKSAqIHNjYWxlOyBzdW0yICs9IHggKiB4OyB9XG4gIHJldHVybiBNYXRoLnNxcnQoc3VtMiAvIE4pO1xufVxuc2REdFN3ZWVwID0ge1xuICBzZFJlZHJhdztcbiAgY29uc3QgVCA9IDEwLCBEID0gMSwgTiA9IDUwMDtcbiAgcmV0dXJuIHNkRHRTdGVwcy5tYXAoZHQgPT4gKHtkdCwgc3FydDogc2REdFNwcmVhZChkdCwgTWF0aC5zcXJ0KGR0KSwgTiwgVCwgRCksIGxpbjogc2REdFNwcmVhZChkdCwgZHQsIE4sIFQsIEQpfSkpO1xufVxuc2REdFJ1biA9IHtcbiAgc2RSZWRyYXc7XG4gIGNvbnN0IFQgPSAxMCwgRCA9IDEsIE4gPSA1MDAsIHNob3cgPSAxNSwgZHQgPSBzZER0LCBuID0gTWF0aC5yb3VuZChUIC8gZHQpO1xuICBjb25zdCBvdXQgPSB7fTtcbiAgZm9yIChjb25zdCBba2V5LCBzY2FsZV0gb2YgW1tcInNxcnRcIiwgTWF0aC5zcXJ0KGR0KV0sIFtcImxpblwiLCBkdF1dKSB7XG4gICAgY29uc3QgcGF0aHMgPSBBcnJheS5mcm9tKHtsZW5ndGg6IHNob3d9LCAoKSA9PiBbMF0pO1xuICAgIGxldCBzdW0yID0gMDtcbiAgICBmb3IgKGxldCBpID0gMDsgaSA8IE47IGkrKykge1xuICAgICAgbGV0IHggPSAwO1xuICAgICAgZm9yIChsZXQgayA9IDA7IGsgPCBuOyBrKyspIHsgeCArPSBEICogc2RSYW5kbigpICogc2NhbGU7IGlmIChpIDwgc2hvdykgcGF0aHNbaV0ucHVzaCh4KTsgfVxuICAgICAgc3VtMiArPSB4ICogeDtcbiAgICB9XG4gICAgb3V0W2tleV0gPSB7cGF0aHMsIHN0ZDogTWF0aC5zcXJ0KHN1bTIgLyBOKX07XG4gIH1cbiAgcmV0dXJuIHsuLi5vdXQsIGR0LCBULCBELCBleGFjdDogRCAqIE1hdGguc3FydChUKX07XG59XG5zZER0Q2FudmFzID0gbWtDYW52YXMoNzYwLCAzNTIpXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTciLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJ7XG4gIGNvbnN0IHIgPSBzZER0UnVuLCBzdyA9IHNkRHRTd2VlcCwgYyA9IHNkRHRDYW52YXMsIGZnID0gZXhGZygpLCBXID0gNzYwLCBIID0gMzUyLCB5bWF4ID0gODtcbiAgY29uc3QgYmx1ZSA9IFwiIzFmNzdiNFwiLCBvcmFuZ2UgPSBcIiNmZjdmMGVcIjtcbiAgYy5jbGVhclJlY3QoMCwgMCwgVywgSCk7IGMuZm9udCA9IGV4Rm9udDtcbiAgY29uc3QgcGFuZWxzID0gW1xuICAgIHtrZXk6IFwic3FydFwiLCB4MDogNTYsIHRpdGxlOiBcIm5vaXNlIMOXIOKIms6UdCAoRXVsZXLigJNNYXJ1eWFtYSlcIiwgY29sOiBibHVlfSxcbiAgICB7a2V5OiBcImxpblwiLCB4MDogMzAwLCB0aXRsZTogXCJub2lzZSDDlyDOlHQgKG5haXZlIEV1bGVyKVwiLCBjb2w6IG9yYW5nZX1cbiAgXTtcbiAgZm9yIChjb25zdCBwIG9mIHBhbmVscykge1xuICAgIGNvbnN0IFAgPSB7eDA6IHAueDAsIHkwOiAxNCwgdzogMjAwLCBoOiAyMzB9LCBydW4gPSByW3Aua2V5XSwgbiA9IHJ1bi5wYXRoc1swXS5sZW5ndGggLSAxO1xuICAgIGNvbnN0IHN4ID0gaSA9PiBQLngwICsgUC53ICogaSAvIG4sIHN5ID0gdiA9PiBQLnkwICsgUC5oICogKDEgLSAodiArIHltYXgpIC8gKDIgKiB5bWF4KSk7XG4gICAgYXhpc0JveChjLCBQLngwLCBQLnkwLCBQLncsIFAuaCk7XG4gICAgYy5zYXZlKCk7IGMuYmVnaW5QYXRoKCk7IGMucmVjdChQLngwLCBQLnkwLCBQLncsIFAuaCk7IGMuY2xpcCgpO1xuICAgIGMuc3Ryb2tlU3R5bGUgPSBcIiM5OTlcIjsgYy5zZXRMaW5lRGFzaChbMywgNF0pOyBjLmJlZ2luUGF0aCgpOyBjLm1vdmVUbyhQLngwLCBzeSgwKSk7IGMubGluZVRvKFAueDAgKyBQLncsIHN5KDApKTsgYy5zdHJva2UoKTsgYy5zZXRMaW5lRGFzaChbXSk7XG4gICAgYy5zdHJva2VTdHlsZSA9IHAuY29sOyBjLmxpbmVXaWR0aCA9IDE7IGMuZ2xvYmFsQWxwaGEgPSAwLjc7XG4gICAgZm9yIChjb25zdCBwYXRoIG9mIHJ1bi5wYXRocykgeyBjLmJlZ2luUGF0aCgpOyBwYXRoLmZvckVhY2goKHYsIGkpID0+IGkgPyBjLmxpbmVUbyhzeChpKSwgc3kodikpIDogYy5tb3ZlVG8oc3goMCksIHN5KHYpKSk7IGMuc3Ryb2tlKCk7IH1cbiAgICBjLmdsb2JhbEFscGhhID0gMTsgYy5zdHJva2VTdHlsZSA9IGZnOyBjLmxpbmVXaWR0aCA9IDEuNTsgYy5zZXRMaW5lRGFzaChbNiwgNF0pO1xuICAgIGZvciAoY29uc3Qgc2duIG9mIFsxLCAtMV0pIHsgYy5iZWdpblBhdGgoKTsgZm9yIChsZXQgaSA9IDA7IGkgPD0gNTA7IGkrKykgeyBjb25zdCB0ID0gci5UICogaSAvIDUwOyBpID8gYy5saW5lVG8oUC54MCArIFAudyAqIGkgLyA1MCwgc3koc2duICogci5EICogTWF0aC5zcXJ0KHQpKSkgOiBjLm1vdmVUbyhQLngwLCBzeSgwKSk7IH0gYy5zdHJva2UoKTsgfVxuICAgIGMuc2V0TGluZURhc2goW10pOyBjLnJlc3RvcmUoKTtcbiAgICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7XG4gICAgYy5maWxsVGV4dChcInRpbWUgdFwiLCBQLngwICsgUC53IC8gMiwgUC55MCArIFAuaCArIDI2KTsgYy5maWxsVGV4dChcIjBcIiwgUC54MCwgUC55MCArIFAuaCArIDI2KTsgYy5maWxsVGV4dChyLlQsIFAueDAgKyBQLncsIFAueTAgKyBQLmggKyAyNik7XG4gICAgYy5maWxsU3R5bGUgPSBwLmNvbDsgYy5maWxsVGV4dChwLnRpdGxlLCBQLngwICsgUC53IC8gMiwgUC55MCArIFAuaCArIDQ4KTtcbiAgICBjLmZpbGxTdHlsZSA9IGZnOyBjLmZpbGxUZXh0KGBzcHJlYWQgYXQgdCA9ICR7ci5UfTogJHtydW4uc3RkLnRvRml4ZWQoMil9YCwgUC54MCArIFAudyAvIDIsIFAueTAgKyBQLmggKyA3MCk7XG4gIH1cbiAgYy50ZXh0QWxpZ24gPSBcInJpZ2h0XCI7IGMuZmlsbFN0eWxlID0gZmc7IGZvciAoY29uc3QgeXYgb2YgWy15bWF4LCAwLCB5bWF4XSkgYy5maWxsVGV4dCh5diwgNTYgLSA4LCAxNCArIDIzMCAqICgxIC0gKHl2ICsgeW1heCkgLyAoMiAqIHltYXgpKSArIDUpO1xuICBjLmZpbGxUZXh0KFwieFwiLCA1NiAtIDEyLCAxNCArIDExNSAtIDE2KTtcbiAgLy8gY29udmVyZ2VuY2UgcGFuZWw6IHNwcmVhZCBhdCB0ID0gVCBhZ2FpbnN0IM6UdCBmb3IgYm90aCBzY2hlbWVzXG4gIGNvbnN0IEN2ID0ge3gwOiA1NjAsIHkwOiAxNCwgdzogMTg0LCBoOiAyMzB9LCBzbWF4ID0gODtcbiAgY29uc3QgbHggPSBkdCA9PiBDdi54MCArIEN2LncgKiAoTWF0aC5sb2cxMChkdCkgKyAyKSAvIDMsIGx5ID0gc2QgPT4gQ3YueTAgKyBDdi5oICogKDEgLSBzZCAvIHNtYXgpO1xuICBheGlzQm94KGMsIEN2LngwLCBDdi55MCwgQ3YudywgQ3YuaCk7XG4gIGMuc3Ryb2tlU3R5bGUgPSBmZzsgYy5saW5lV2lkdGggPSAxLjU7IGMuc2V0TGluZURhc2goWzYsIDRdKTsgYy5iZWdpblBhdGgoKTsgYy5tb3ZlVG8oQ3YueDAsIGx5KHIuZXhhY3QpKTsgYy5saW5lVG8oQ3YueDAgKyBDdi53LCBseShyLmV4YWN0KSk7IGMuc3Ryb2tlKCk7IGMuc2V0TGluZURhc2goW10pO1xuICBmb3IgKGNvbnN0IFtrZXksIGNvbF0gb2YgW1tcInNxcnRcIiwgYmx1ZV0sIFtcImxpblwiLCBvcmFuZ2VdXSkge1xuICAgIGMuc3Ryb2tlU3R5bGUgPSBjb2w7IGMubGluZVdpZHRoID0gMTsgYy5iZWdpblBhdGgoKTsgc3cuZm9yRWFjaCgocSwgaSkgPT4gaSA/IGMubGluZVRvKGx4KHEuZHQpLCBseShxW2tleV0pKSA6IGMubW92ZVRvKGx4KHEuZHQpLCBseShxW2tleV0pKSk7IGMuc3Ryb2tlKCk7XG4gICAgYy5maWxsU3R5bGUgPSBjb2w7IGZvciAoY29uc3QgcSBvZiBzdykgeyBjLmJlZ2luUGF0aCgpOyBjLmFyYyhseChxLmR0KSwgbHkocVtrZXldKSwgcS5kdCA9PT0gci5kdCA/IDYgOiAzLjUsIDAsIDIgKiBNYXRoLlBJKTsgYy5maWxsKCk7IH1cbiAgfVxuICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7XG4gIGMuZmlsbFRleHQoXCLOlHQgKGxvZyBzY2FsZSlcIiwgQ3YueDAgKyBDdi53IC8gMiwgQ3YueTAgKyBDdi5oICsgMjYpO1xuICBmb3IgKGNvbnN0IGQgb2YgWzAuMDEsIDAuMSwgMSwgMTBdKSBjLmZpbGxUZXh0KFN0cmluZyhkKSwgbHgoZCksIEN2LnkwICsgQ3YuaCArIDQ2KTtcbiAgYy5maWxsVGV4dChgc3ByZWFkIGF0IHQgPSAke3IuVH1gLCBDdi54MCArIEN2LncgLyAyLCBDdi55MCArIEN2LmggKyA3MCk7XG4gIGMudGV4dEFsaWduID0gXCJyaWdodFwiOyBjLmZpbGxUZXh0KFwiMFwiLCBDdi54MCAtIDYsIGx5KDApICsgNSk7IGMuZmlsbFRleHQoc21heCwgQ3YueDAgLSA2LCBseShzbWF4KSArIDUpOyBjLmZpbGxUZXh0KGDiiJoke3IuVH1gLCBDdi54MCAtIDYsIGx5KHIuZXhhY3QpICsgNSk7XG4gIGMudGV4dEFsaWduID0gXCJsZWZ0XCI7IGMuZmlsbFRleHQoXCJkYXNoZWQ6IGV4YWN0IHNwcmVhZCDiiJp0XCIsIDU2LCBIIC0gMTApO1xuICByZXR1cm4gYy5jYW52YXM7XG59XG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ3NkTW9kZWwnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnc2RUaGV0YScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdzZEQnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnc2RQYXVzZScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdzZFJlc2V0JykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ3NkRHQnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnc2RSZWRyYXcnKSJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../teaching";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/traegenap\.org");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This site is currently under construction.<br> © 2026 Sigrid Trägenap · <a href="../impressum.html">Impressum und Datenschutz</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -84,9 +84,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-86312c41d8c8d97270542994db1177a1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-140d28bfd7b94e0e9f63cc3bc68ccc2b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -381,6 +381,22 @@ window.Quarto = {
     <a class="dropdown-item" href="../teaching/hebbian.html">
  <span class="dropdown-text">Hebbian learning</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/sde.html">
+ <span class="dropdown-text">Stochastic differential equations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/eigenmodes.html">
+ <span class="dropdown-text">Eigenmodes of a recurrent network</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/coupled-neurons.html">
+ <span class="dropdown-text">Two coupled neurons</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hodgkin-huxley.html">
+ <span class="dropdown-text">The Hodgkin–Huxley neuron</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -493,7 +509,7 @@ window.Quarto = {
 <p>is a <span class="math inline">\(4 \times 4\)</span> table whose diagonal holds the variance of each measurement and whose off-diagonal entries say how strongly two measurements vary together. PCA, which goes back to Pearson (1901) and Hotelling (1933), asks a simple question of this matrix: along which direction in the four-dimensional measurement space is the spread of the data largest? The answer is the eigenvector of <span class="math inline">\(C\)</span> with the largest eigenvalue,</p>
 <p><span class="math display">\[C\, e_k = \lambda_k e_k ,\]</span></p>
 <p>and the eigenvalue <span class="math inline">\(\lambda_k\)</span> is exactly the variance of the data along <span class="math inline">\(e_k\)</span>. The second principal component is the direction of largest spread among all directions perpendicular to the first, and so on. Because the eigenvalues add up to the total variance, the fraction <span class="math inline">\(\lambda_k / \sum_j \lambda_j\)</span> tells you how much of the data’s variability each component accounts for. If the first two fractions are large, a plot along those two directions shows you most of what there is to see.</p>
-<p>One detail matters more than it looks: whether you standardise. The measurements all happen to be in centimetres here, but petal length ranges over about six centimetres while sepal width ranges over barely two. Variance grows with the square of the range, so without any correction the first component is mostly petal length, simply because that number is the biggest. Dividing each column by its standard deviation puts all four measurements on an equal footing. Whether that is the right thing to do depends on the data. If the measurements have different units, you almost always want it.</p>
+<p>Whether you standardise the variables matters a great deal. The measurements all happen to be in centimetres here, but petal length ranges over about six centimetres while sepal width ranges over barely two. Variance grows with the square of the range, so without any correction the first component is mostly petal length, simply because that number is the biggest. Dividing each column by its standard deviation puts all four measurements on an equal footing. Whether that is the right thing to do depends on the data. If the measurements have different units, you almost always want it.</p>
 <div class="cell">
 <details class="code-fold hidden">
 <summary>Code</summary>
@@ -673,14 +689,14 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
 <p>Switch standardisation off and watch the loadings table. The first component is now almost entirely petal length, and the explained-variance share of PC 1 goes up, not because the structure got cleaner but because one variable with a large range now dominates. Then put petal length and sepal width on the two axes, with standardisation still off, and look at where the red line points.</p>
 <p>Put the third and fourth components on the axes. There is almost nothing left to see, which is what a small eigenvalue means in practice: those directions are mostly measurement noise and natural variation within a species.</p>
-<p>This page is based on the dimensionality-reduction exercise in Dayan and Abbott (2001). For how the same method is used on neural population recordings, where the “measurements” are the firing rates of many neurons, Cunningham and Yu (2014) is a good starting point.</p>
+<p>This page is based on the dimensionality-reduction exercise in Dayan and Abbott (2001). For how the same method is used on neural population recordings, where the “measurements” are the firing rates of many neurons, Cunningham and Yu (2014) is a good starting point. For a first encounter with PCA, the <a href="https://stats.stackexchange.com/questions/2691/making-sense-of-principal-component-analysis-eigenvectors-eigenvalues">Stack Exchange answer</a> that explains it over a family dinner is hard to beat.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
-<p>Cunningham JP, Yu BM (2014). Dimensionality reduction for large-scale neural recordings. <em>Nature Neuroscience</em> 17: 1500–1509.</p>
+<p>Cunningham JP, Yu BM (2014). Dimensionality reduction for large-scale neural recordings. <em>Nature Neuroscience</em> 17: 1500–1509. <a href="https://doi.org/10.1038/nn.3776">DOI</a></p>
 <p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
-<p>Fisher RA (1936). The use of multiple measurements in taxonomic problems. <em>Annals of Eugenics</em> 7: 179–188.</p>
-<p>Hotelling H (1933). Analysis of a complex of statistical variables into principal components. <em>Journal of Educational Psychology</em> 24: 417–441.</p>
+<p>Fisher RA (1936). The use of multiple measurements in taxonomic problems. <em>Annals of Eugenics</em> 7: 179–188. <a href="https://doi.org/10.1111/j.1469-1809.1936.tb02137.x">DOI</a></p>
+<p>Hotelling H (1933). Analysis of a complex of statistical variables into principal components. <em>Journal of Educational Psychology</em> 24: 417–441 and 498–520.</p>
 <p>Pearson K (1901). On lines and planes of closest fit to systems of points in space. <em>Philosophical Magazine</em> 2: 559–572.</p>
 
 

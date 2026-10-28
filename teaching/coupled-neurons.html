@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Two spiking neurons wired to each other through synapses: why mutual inhibition makes them fire together, mutual excitation makes them alternate, and the synaptic time constant decides which.">
+
+<title>Two coupled neurons – Sigrid Trägenap</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-140d28bfd7b94e0e9f63cc3bc68ccc2b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Sigrid Trägenap</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../research.html"> 
+<span class="menu-text">Research Interests</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../publications.html"> 
+<span class="menu-text">Publications</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../outreach.html"> 
+<span class="menu-text">Outreach</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-teaching" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Teaching</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-teaching">    
+        <li>
+    <a class="dropdown-item" href="../teaching/philosophy.html">
+ <span class="dropdown-text">How I teach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/neuron.html">
+ <span class="dropdown-text">Integrate-and-fire neuron</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/pca.html">
+ <span class="dropdown-text">Principal component analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/fourier.html">
+ <span class="dropdown-text">Sampling and the Fourier transform</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/recurrent-networks.html">
+ <span class="dropdown-text">Recurrent networks</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hebbian.html">
+ <span class="dropdown-text">Hebbian learning</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/sde.html">
+ <span class="dropdown-text">Stochastic differential equations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/eigenmodes.html">
+ <span class="dropdown-text">Eigenmodes of a recurrent network</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/coupled-neurons.html">
+ <span class="dropdown-text">Two coupled neurons</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hodgkin-huxley.html">
+ <span class="dropdown-text">The Hodgkin–Huxley neuron</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/SigridTraegenap"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-model" id="toc-the-model" class="nav-link active" data-scroll-target="#the-model">The model</a></li>
+  <li><a href="#reading-the-figure" id="toc-reading-the-figure" class="nav-link" data-scroll-target="#reading-the-figure">Reading the figure</a></li>
+  <li><a href="#things-to-try" id="toc-things-to-try" class="nav-link" data-scroll-target="#things-to-try">Things to try</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Two coupled neurons</h1>
+</div>
+
+<div>
+  <div class="description">
+    Two spiking neurons wired to each other through synapses: why mutual inhibition makes them fire together, mutual excitation makes them alternate, and the synaptic time constant decides which.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Neurons in the cortex often fire in step with one another. Rhythms in the gamma range, roughly 30 to 90 cycles per second (Buzsáki and Wang 2012), are the best-known example, and they are a property of groups of cells, not of any single one. The first guess about how neurons come to fire together is that they excite each other. For these fast rhythms the guess turns out to be wrong, or at least incomplete: in the models that reproduce gamma, the inhibitory interneurons do the synchronising, and the excitatory connections, if anything, pull the rhythm apart (Whittington, Traub and Jefferys 1995; Buzsáki and Wang 2012). The smallest circuit that shows why has just two neurons, and it was one of the exercises in the <em>Theoretical Neuroscience</em> lecture at Goethe University Frankfurt, where I was a teaching assistant. The exercise goes back to the courses of Thomas Burwick at the same university, which I took as a student.</p>
+<p>Everything runs in your browser. Pick a type for each neuron, set the two coupling strengths, and watch the diagram, the two voltage traces, and the phase between the two neurons update together.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="30" data-source-offset="-92"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 29;"><span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>exFont <span class="op">=</span> ({<span class="dt">size</span><span class="op">:</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontSize</span><span class="op">,</span> <span class="dt">family</span><span class="op">:</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontFamily</span><span class="op">,</span> <span class="fu">toString</span>() { <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">size</span> <span class="op">+</span> <span class="st">" "</span> <span class="op">+</span> <span class="kw">this</span><span class="op">.</span><span class="at">family</span><span class="op">;</span> }})</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>exFg <span class="op">=</span> () <span class="kw">=&gt;</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">color</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>mkCanvas <span class="op">=</span> (W<span class="op">,</span> H) <span class="kw">=&gt;</span> {</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> c <span class="op">=</span> DOM<span class="op">.</span><span class="fu">context2d</span>(W<span class="op">,</span> H)<span class="op">;</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">width</span> <span class="op">=</span> <span class="st">"100%"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">maxWidth</span> <span class="op">=</span> W <span class="op">+</span> <span class="st">"px"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">height</span> <span class="op">=</span> <span class="st">"auto"</span><span class="op">;</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>axisBox <span class="op">=</span> (c<span class="op">,</span> x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h) <span class="kw">=&gt;</span> { c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">strokeRect</span>(x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h)<span class="op">;</span> }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<section id="the-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-model">The model</h2>
+<p>Each neuron is the <a href="../teaching/neuron.html">leaky integrate-and-fire model</a> from the first page, with the same numbers as in Dayan and Abbott (2001, section 5.8): resting potential <span class="math inline">\(E_L = -70\)</span> mV, membrane time constant <span class="math inline">\(\tau_m = 10\)</span> ms, a spike when the voltage reaches <span class="math inline">\(-54\)</span> mV, and a reset to <span class="math inline">\(-80\)</span> mV afterwards. Both neurons receive the same constant drive <span class="math inline">\(R_m I_e\)</span>, strong enough to make each of them fire on its own. What is new is the synapse. A spike in neuron <span class="math inline">\(j\)</span> opens channels in neuron <span class="math inline">\(i\)</span>, and the current through them depends on neuron <span class="math inline">\(i\)</span>’s own voltage:</p>
+<p><span class="math display">\[\tau_m \frac{dV_i}{dt} = E_L - V_i - g_{ji}\, P_j\, (V_i - E_{ji}) + R_m I_e .\]</span></p>
+<p>Here <span class="math inline">\(P_j\)</span> is the fraction of open channels at the synapse made by neuron <span class="math inline">\(j\)</span>, <span class="math inline">\(g_{ji}\)</span> is the strength of that synapse, and <span class="math inline">\(E_{ji}\)</span> is its reversal potential. The reversal potential is what makes a synapse excitatory or inhibitory. With <span class="math inline">\(E = 0\)</span> mV the current always pushes the voltage up towards threshold. With <span class="math inline">\(E = -80\)</span> mV it pushes it down, towards the reset. A neuron that makes excitatory synapses is drawn as a triangle, after the pyramidal cells of the cortex, and an inhibitory one as a circle, after the interneurons. The strengths are dimensionless, in units where <span class="math inline">\(g = 1\)</span> means the synaptic conductance at its peak equals the leak conductance.</p>
+<p>After a spike, <span class="math inline">\(P\)</span> rises over a few milliseconds and then decays, with both phases governed by one synaptic time constant <span class="math inline">\(\tau_s\)</span>:</p>
+<p><span class="math display">\[\tau_s \frac{dP}{dt} = e\, P_{\max}\, z\, (1 - P) - P, \qquad
+\tau_s \frac{dz}{dt} = -z ,\]</span></p>
+<p>where <span class="math inline">\(z\)</span> is set to 1 at every presynaptic spike and <span class="math inline">\(P_{\max} = 0.5\)</span>. The peak of <span class="math inline">\(P\)</span> comes about <span class="math inline">\(\tau_s\)</span> after the spike, which is the realistic shape. The time constant turns out to matter as much as the sign.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="75" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 74;"><span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>viewof cnType1 <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(<span class="kw">new</span> <span class="bu">Map</span>([[<span class="st">"excitatory"</span><span class="op">,</span> <span class="dv">0</span>]<span class="op">,</span> [<span class="st">"inhibitory"</span><span class="op">,</span> <span class="op">-</span><span class="dv">80</span>]])<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="op">-</span><span class="dv">80</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Neuron 1 (purple) makes synapses that are"</span>})</span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>viewof cnType2 <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(<span class="kw">new</span> <span class="bu">Map</span>([[<span class="st">"excitatory"</span><span class="op">,</span> <span class="dv">0</span>]<span class="op">,</span> [<span class="st">"inhibitory"</span><span class="op">,</span> <span class="op">-</span><span class="dv">80</span>]])<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="op">-</span><span class="dv">80</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Neuron 2 (teal) makes synapses that are"</span>})</span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>viewof cnG12 <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="fl">0.6</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">0.2</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.02</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Strength 1 → 2"</span>})</span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>viewof cnG21 <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="fl">0.6</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">0.2</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.02</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Strength 2 → 1"</span>})</span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>viewof cnTauS <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">1</span><span class="op">,</span> <span class="dv">30</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Synaptic time constant τₛ (ms)"</span>})</span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a>viewof cnDrive <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">17</span><span class="op">,</span> <span class="dv">40</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">25</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Drive RₘIₑ (mV)"</span>})</span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>viewof cnSpeed <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(<span class="kw">new</span> <span class="bu">Map</span>([[<span class="st">"slow"</span><span class="op">,</span> <span class="dv">30</span>]<span class="op">,</span> [<span class="st">"normal"</span><span class="op">,</span> <span class="dv">65</span>]<span class="op">,</span> [<span class="st">"fast"</span><span class="op">,</span> <span class="dv">260</span>]])<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">30</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Speed"</span>})</span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>viewof cnPause <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Pause"</span>})</span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>viewof cnReset <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">button</span>(<span class="st">"Reset with new random starting voltages"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-7" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-8" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-9" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="88" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 87;"><span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>cnState <span class="op">=</span> {</span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>  cnReset<span class="op">;</span></span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> dt <span class="op">=</span> <span class="fl">0.05</span><span class="op">,</span> EL <span class="op">=</span> <span class="op">-</span><span class="dv">70</span><span class="op">,</span> Vth <span class="op">=</span> <span class="op">-</span><span class="dv">54</span><span class="op">,</span> Vr <span class="op">=</span> <span class="op">-</span><span class="dv">80</span><span class="op">,</span> taum <span class="op">=</span> <span class="dv">10</span><span class="op">,</span> Pmax <span class="op">=</span> <span class="fl">0.5</span><span class="op">;</span></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> win <span class="op">=</span> <span class="dv">200</span><span class="op">,</span> n <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(win <span class="op">/</span> dt)<span class="op">,</span> phaseWin <span class="op">=</span> <span class="dv">5000</span><span class="op">;</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> V <span class="op">=</span> [Vr <span class="op">+</span> (Vth <span class="op">-</span> Vr) <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>()<span class="op">,</span> Vr <span class="op">+</span> (Vth <span class="op">-</span> Vr) <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>()]<span class="op">;</span></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> P <span class="op">=</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>]<span class="op">,</span> z <span class="op">=</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> trace <span class="op">=</span> [<span class="kw">new</span> <span class="bu">Float32Array</span>(n)<span class="op">.</span><span class="fu">fill</span>(V[<span class="dv">0</span>])<span class="op">,</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n)<span class="op">.</span><span class="fu">fill</span>(V[<span class="dv">1</span>])]<span class="op">;</span></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> spikes <span class="op">=</span> [[]<span class="op">,</span> []]<span class="op">,</span> phases <span class="op">=</span> []<span class="op">;</span></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> t <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> lastRate <span class="op">=</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>]<span class="op">,</span> nextRateAt <span class="op">=</span> <span class="dv">1000</span><span class="op">,</span> idx <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (<span class="kw">true</span>) {</span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>viewof cnPause<span class="op">.</span><span class="at">value</span>) {</span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> <span class="cn">E</span> <span class="op">=</span> [viewof cnType1<span class="op">.</span><span class="at">value</span><span class="op">,</span> viewof cnType2<span class="op">.</span><span class="at">value</span>]<span class="op">;</span>           <span class="co">// reversal of synapses made by 1 and by 2</span></span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> g <span class="op">=</span> [viewof cnG21<span class="op">.</span><span class="at">value</span><span class="op">,</span> viewof cnG12<span class="op">.</span><span class="at">value</span>]<span class="op">;</span>               <span class="co">// g[i] = strength of the synapse onto neuron i</span></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> taus <span class="op">=</span> viewof cnTauS<span class="op">.</span><span class="at">value</span><span class="op">,</span> RI <span class="op">=</span> viewof cnDrive<span class="op">.</span><span class="at">value</span><span class="op">;</span></span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> stepsPerFrame <span class="op">=</span> viewof cnSpeed<span class="op">.</span><span class="at">value</span><span class="op">;</span></span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> s <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> s <span class="op">&lt;</span> stepsPerFrame<span class="op">;</span> s<span class="op">++</span>) {</span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> (idx <span class="op">+</span> <span class="dv">1</span>) <span class="op">%</span> n<span class="op">;</span></span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> dV <span class="op">=</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">2</span><span class="op">;</span> i<span class="op">++</span>) { <span class="kw">const</span> j <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> i<span class="op">;</span> dV[i] <span class="op">=</span> (EL <span class="op">-</span> V[i] <span class="op">-</span> g[i] <span class="op">*</span> P[j] <span class="op">*</span> (V[i] <span class="op">-</span> <span class="cn">E</span>[j]) <span class="op">+</span> RI) <span class="op">/</span> taum<span class="op">;</span> }</span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">2</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>          P[i] <span class="op">+=</span> dt <span class="op">*</span> (<span class="bu">Math</span><span class="op">.</span><span class="cn">E</span> <span class="op">*</span> Pmax <span class="op">*</span> z[i] <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> P[i]) <span class="op">-</span> P[i]) <span class="op">/</span> taus<span class="op">;</span></span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>          z[i] <span class="op">+=</span> dt <span class="op">*</span> (<span class="op">-</span>z[i] <span class="op">/</span> taus)<span class="op">;</span></span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">2</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>          <span class="kw">const</span> Vn <span class="op">=</span> V[i] <span class="op">+</span> dt <span class="op">*</span> dV[i]<span class="op">;</span></span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> (Vn <span class="op">&gt;=</span> Vth) {</span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>            <span class="kw">const</span> frac <span class="op">=</span> (Vth <span class="op">-</span> V[i]) <span class="op">/</span> (Vn <span class="op">-</span> V[i])<span class="op">,</span> ts <span class="op">=</span> t <span class="op">+</span> frac <span class="op">*</span> dt<span class="op">;</span></span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a>            V[i] <span class="op">=</span> Vr <span class="op">+</span> (<span class="dv">1</span> <span class="op">-</span> frac) <span class="op">*</span> dt <span class="op">*</span> dV[i]<span class="op">;</span> z[i] <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> spikes[i]<span class="op">.</span><span class="fu">push</span>(ts)<span class="op">;</span></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>            trace[i][idx] <span class="op">=</span> <span class="dv">20</span><span class="op">;</span></span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (i <span class="op">===</span> <span class="dv">1</span>) {</span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>              <span class="kw">const</span> s1 <span class="op">=</span> spikes[<span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>              <span class="cf">if</span> (s1<span class="op">.</span><span class="at">length</span> <span class="op">&gt;=</span> <span class="dv">2</span> <span class="op">&amp;&amp;</span> ts <span class="op">&gt;=</span> s1[s1<span class="op">.</span><span class="at">length</span> <span class="op">-</span> <span class="dv">1</span>]) { <span class="kw">const</span> a <span class="op">=</span> s1[s1<span class="op">.</span><span class="at">length</span> <span class="op">-</span> <span class="dv">1</span>]<span class="op">,</span> b <span class="op">=</span> s1[s1<span class="op">.</span><span class="at">length</span> <span class="op">-</span> <span class="dv">2</span>]<span class="op">;</span> phases<span class="op">.</span><span class="fu">push</span>([ts<span class="op">,</span> (ts <span class="op">-</span> a) <span class="op">/</span> (a <span class="op">-</span> b)])<span class="op">;</span> }</span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>          } <span class="cf">else</span> { V[i] <span class="op">=</span> Vn<span class="op">;</span> trace[i][idx] <span class="op">=</span> V[i]<span class="op">;</span> }</span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>          <span class="cf">while</span> (spikes[i]<span class="op">.</span><span class="at">length</span> <span class="op">&amp;&amp;</span> spikes[i][<span class="dv">0</span>] <span class="op">&lt;</span> t <span class="op">-</span> phaseWin) spikes[i]<span class="op">.</span><span class="fu">shift</span>()<span class="op">;</span></span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> (phases<span class="op">.</span><span class="at">length</span> <span class="op">&amp;&amp;</span> phases[<span class="dv">0</span>][<span class="dv">0</span>] <span class="op">&lt;</span> t <span class="op">-</span> phaseWin) phases<span class="op">.</span><span class="fu">shift</span>()<span class="op">;</span></span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a>        t <span class="op">+=</span> dt<span class="op">;</span></span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (t <span class="op">&gt;=</span> nextRateAt) { <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">2</span><span class="op">;</span> i<span class="op">++</span>) lastRate[i] <span class="op">=</span> spikes[i]<span class="op">.</span><span class="fu">filter</span>(x <span class="kw">=&gt;</span> x <span class="op">&gt;</span> t <span class="op">-</span> <span class="dv">1000</span>)<span class="op">.</span><span class="at">length</span><span class="op">;</span> nextRateAt <span class="op">=</span> t <span class="op">+</span> <span class="dv">1000</span><span class="op">;</span> }</span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> {V<span class="op">,</span> P<span class="op">,</span> trace<span class="op">,</span> idx<span class="op">,</span> spikes<span class="op">,</span> phases<span class="op">,</span> t<span class="op">,</span> win<span class="op">,</span> phaseWin<span class="op">,</span> lastRate<span class="op">,</span> <span class="dt">E</span><span class="op">:</span> [viewof cnType1<span class="op">.</span><span class="at">value</span><span class="op">,</span> viewof cnType2<span class="op">.</span><span class="at">value</span>]<span class="op">,</span> <span class="dt">g</span><span class="op">:</span> [viewof cnG12<span class="op">.</span><span class="at">value</span><span class="op">,</span> viewof cnG21<span class="op">.</span><span class="at">value</span>]}<span class="op">;</span></span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>cnCanvas <span class="op">=</span> <span class="fu">mkCanvas</span>(<span class="dv">760</span><span class="op">,</span> <span class="dv">320</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="136" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 135;"><span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> st <span class="op">=</span> cnState<span class="op">,</span> c <span class="op">=</span> cnCanvas<span class="op">,</span> fg <span class="op">=</span> <span class="fu">exFg</span>()<span class="op">,</span> W <span class="op">=</span> <span class="dv">760</span><span class="op">,</span> H <span class="op">=</span> <span class="dv">320</span><span class="op">;</span></span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> col <span class="op">=</span> [<span class="st">"#9467bd"</span><span class="op">,</span> <span class="st">"#17becf"</span>]<span class="op">,</span> red <span class="op">=</span> <span class="st">"#d62728"</span><span class="op">,</span> blue <span class="op">=</span> <span class="st">"#1f77b4"</span><span class="op">;</span></span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> Vth <span class="op">=</span> <span class="op">-</span><span class="dv">54</span><span class="op">,</span> Vr <span class="op">=</span> <span class="op">-</span><span class="dv">80</span><span class="op">;</span></span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">clearRect</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> W<span class="op">,</span> H)<span class="op">;</span> c<span class="op">.</span><span class="at">font</span> <span class="op">=</span> exFont<span class="op">;</span></span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>  <span class="co">// circuit diagram, left</span></span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> D <span class="op">=</span> {<span class="dt">cx</span><span class="op">:</span> <span class="dv">95</span><span class="op">,</span> <span class="dt">y1</span><span class="op">:</span> <span class="dv">58</span><span class="op">,</span> <span class="dt">y2</span><span class="op">:</span> <span class="dv">196</span><span class="op">,</span> <span class="dt">r</span><span class="op">:</span> <span class="dv">24</span>}<span class="op">;</span></span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> drawNeuron <span class="op">=</span> (i<span class="op">,</span> y) <span class="kw">=&gt;</span> {</span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> exc <span class="op">=</span> st<span class="op">.</span><span class="at">E</span>[i] <span class="op">===</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">2.5</span><span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> col[i]<span class="op">;</span></span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> i <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="st">"rgba(148,103,189,0.25)"</span> <span class="op">:</span> <span class="st">"rgba(23,190,207,0.25)"</span><span class="op">;</span></span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (exc) { c<span class="op">.</span><span class="fu">moveTo</span>(D<span class="op">.</span><span class="at">cx</span><span class="op">,</span> y <span class="op">-</span> D<span class="op">.</span><span class="at">r</span> <span class="op">*</span> <span class="fl">1.1</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(D<span class="op">.</span><span class="at">cx</span> <span class="op">+</span> D<span class="op">.</span><span class="at">r</span> <span class="op">*</span> <span class="fl">1.1</span><span class="op">,</span> y <span class="op">+</span> D<span class="op">.</span><span class="at">r</span> <span class="op">*</span> <span class="fl">0.8</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(D<span class="op">.</span><span class="at">cx</span> <span class="op">-</span> D<span class="op">.</span><span class="at">r</span> <span class="op">*</span> <span class="fl">1.1</span><span class="op">,</span> y <span class="op">+</span> D<span class="op">.</span><span class="at">r</span> <span class="op">*</span> <span class="fl">0.8</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">closePath</span>()<span class="op">;</span> }</span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> c<span class="op">.</span><span class="fu">arc</span>(D<span class="op">.</span><span class="at">cx</span><span class="op">,</span> y<span class="op">,</span> D<span class="op">.</span><span class="at">r</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span></span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`</span><span class="sc">${</span>i <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="vs">`</span><span class="op">,</span> D<span class="op">.</span><span class="at">cx</span><span class="op">,</span> y <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">fillText</span>(exc <span class="op">?</span> <span class="st">"excitatory"</span> <span class="op">:</span> <span class="st">"inhibitory"</span><span class="op">,</span> D<span class="op">.</span><span class="at">cx</span><span class="op">,</span> y <span class="op">+</span> (i <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="op">-</span>D<span class="op">.</span><span class="at">r</span> <span class="op">-</span> <span class="dv">12</span> <span class="op">:</span> D<span class="op">.</span><span class="at">r</span> <span class="op">+</span> <span class="dv">22</span>))<span class="op">;</span></span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a>  <span class="co">// connections: 1 → 2 on the right, 2 → 1 on the left; thickness ∝ strength; red = excitatory, blue = inhibitory</span></span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> drawSyn <span class="op">=</span> (<span class="im">from</span><span class="op">,</span> to<span class="op">,</span> side) <span class="kw">=&gt;</span> {</span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> gS <span class="op">=</span> st<span class="op">.</span><span class="at">g</span>[<span class="im">from</span> <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> <span class="op">:</span> <span class="dv">1</span>]<span class="op">,</span> exc <span class="op">=</span> st<span class="op">.</span><span class="at">E</span>[<span class="im">from</span>] <span class="op">===</span> <span class="dv">0</span><span class="op">,</span> colr <span class="op">=</span> exc <span class="op">?</span> red <span class="op">:</span> blue<span class="op">;</span></span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> yA <span class="op">=</span> <span class="im">from</span> <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> D<span class="op">.</span><span class="at">y1</span> <span class="op">+</span> D<span class="op">.</span><span class="at">r</span> <span class="op">:</span> D<span class="op">.</span><span class="at">y2</span> <span class="op">-</span> D<span class="op">.</span><span class="at">r</span><span class="op">,</span> yB <span class="op">=</span> to <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> D<span class="op">.</span><span class="at">y1</span> <span class="op">+</span> D<span class="op">.</span><span class="at">r</span> <span class="op">+</span> <span class="dv">4</span> <span class="op">:</span> D<span class="op">.</span><span class="at">y2</span> <span class="op">-</span> D<span class="op">.</span><span class="at">r</span> <span class="op">-</span> <span class="dv">4</span><span class="op">;</span></span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> x <span class="op">=</span> D<span class="op">.</span><span class="at">cx</span> <span class="op">+</span> side <span class="op">*</span> <span class="dv">18</span><span class="op">,</span> xc <span class="op">=</span> D<span class="op">.</span><span class="at">cx</span> <span class="op">+</span> side <span class="op">*</span> <span class="dv">62</span><span class="op">;</span></span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> colr<span class="op">;</span> c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> colr<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="fl">0.5</span><span class="op">,</span> <span class="dv">12</span> <span class="op">*</span> gS)<span class="op">;</span></span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> gS <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="fl">0.25</span> <span class="op">:</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(x<span class="op">,</span> yA)<span class="op">;</span> c<span class="op">.</span><span class="fu">bezierCurveTo</span>(xc<span class="op">,</span> yA<span class="op">,</span> xc<span class="op">,</span> yB<span class="op">,</span> x<span class="op">,</span> yB)<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ending: arrowhead for excitatory, filled dot for inhibitory</span></span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> dir <span class="op">=</span> to <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="op">-</span><span class="dv">1</span> <span class="op">:</span> <span class="dv">1</span><span class="op">,</span> tipY <span class="op">=</span> yB <span class="op">+</span> dir <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (exc) { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(x<span class="op">,</span> tipY <span class="op">+</span> dir <span class="op">*</span> <span class="dv">8</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(x <span class="op">-</span> <span class="dv">7</span><span class="op">,</span> tipY <span class="op">-</span> dir <span class="op">*</span> <span class="dv">4</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(x <span class="op">+</span> <span class="dv">7</span><span class="op">,</span> tipY <span class="op">-</span> dir <span class="op">*</span> <span class="dv">4</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">closePath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> }</span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">arc</span>(x<span class="op">,</span> tipY <span class="op">+</span> dir <span class="op">*</span> <span class="dv">3</span><span class="op">,</span> <span class="dv">6</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> }</span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drawSyn</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span> <span class="fu">drawSyn</span>(<span class="dv">1</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="op">-</span><span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drawNeuron</span>(<span class="dv">0</span><span class="op">,</span> D<span class="op">.</span><span class="at">y1</span>)<span class="op">;</span> <span class="fu">drawNeuron</span>(<span class="dv">1</span><span class="op">,</span> D<span class="op">.</span><span class="at">y2</span>)<span class="op">;</span></span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`1→2: </span><span class="sc">${</span>st<span class="op">.</span><span class="at">g</span>[<span class="dv">0</span>]<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">   2→1: </span><span class="sc">${</span>st<span class="op">.</span><span class="at">g</span>[<span class="dv">1</span>]<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> D<span class="op">.</span><span class="at">cx</span><span class="op">,</span> D<span class="op">.</span><span class="at">y2</span> <span class="op">+</span> D<span class="op">.</span><span class="at">r</span> <span class="op">+</span> <span class="dv">48</span>)<span class="op">;</span></span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>  <span class="co">// voltage traces, middle</span></span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> T <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">240</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">240</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">220</span>}<span class="op">,</span> n <span class="op">=</span> st<span class="op">.</span><span class="at">trace</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> tx <span class="op">=</span> i <span class="kw">=&gt;</span> T<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">w</span> <span class="op">*</span> i <span class="op">/</span> (n <span class="op">-</span> <span class="dv">1</span>)<span class="op">,</span> ty <span class="op">=</span> v <span class="kw">=&gt;</span> T<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (v <span class="op">+</span> <span class="dv">85</span>) <span class="op">/</span> (<span class="dv">105</span>))<span class="op">;</span></span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> T<span class="op">.</span><span class="at">x0</span><span class="op">,</span> T<span class="op">.</span><span class="at">y0</span><span class="op">,</span> T<span class="op">.</span><span class="at">w</span><span class="op">,</span> T<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">4</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(T<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">ty</span>(Vth))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(T<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">ty</span>(Vth))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>  <span class="co">// oscilloscope sweep: the trace stays in place and is overwritten at the cursor</span></span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> i <span class="kw">of</span> [<span class="dv">1</span><span class="op">,</span> <span class="dv">0</span>]) {</span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> col[i]<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">1.5</span><span class="op">;</span></span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> [a<span class="op">,</span> b] <span class="kw">of</span> [[<span class="dv">0</span><span class="op">,</span> st<span class="op">.</span><span class="at">idx</span>]<span class="op">,</span> [st<span class="op">.</span><span class="at">idx</span> <span class="op">+</span> <span class="dv">1</span><span class="op">,</span> n <span class="op">-</span> <span class="dv">1</span>]]) {</span>
+<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (b <span class="op">&lt;=</span> a) <span class="cf">continue</span><span class="op">;</span></span>
+<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a>      c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> k <span class="op">=</span> a<span class="op">;</span> k <span class="op">&lt;=</span> b<span class="op">;</span> k<span class="op">++</span>) k <span class="op">===</span> a <span class="op">?</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">tx</span>(k)<span class="op">,</span> <span class="fu">ty</span>(st<span class="op">.</span><span class="at">trace</span>[i][k])) <span class="op">:</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">tx</span>(k)<span class="op">,</span> <span class="fu">ty</span>(st<span class="op">.</span><span class="at">trace</span>[i][k]))<span class="op">;</span></span>
+<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a>      c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-186"><a href="#cb4-186" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#bbb"</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">tx</span>(st<span class="op">.</span><span class="at">idx</span>)<span class="op">,</span> T<span class="op">.</span><span class="at">y0</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">tx</span>(st<span class="op">.</span><span class="at">idx</span>)<span class="op">,</span> T<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">h</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-187"><a href="#cb4-187" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"V (mV)"</span><span class="op">,</span> T<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> T<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-188"><a href="#cb4-188" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(Vth<span class="op">,</span> T<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">ty</span>(Vth) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(Vr<span class="op">,</span> T<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">ty</span>(Vr) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"20"</span><span class="op">,</span> T<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">ty</span>(<span class="dv">20</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-189"><a href="#cb4-189" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`</span><span class="sc">${</span>st<span class="op">.</span><span class="at">win</span><span class="sc">}</span><span class="vs"> ms sweep · t = </span><span class="sc">${</span>(st<span class="op">.</span><span class="at">t</span> <span class="op">/</span> <span class="dv">1000</span>)<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs"> s`</span><span class="op">,</span> T<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> T<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span></span>
+<span id="cb4-190"><a href="#cb4-190" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"left"</span><span class="op">;</span> c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> col[<span class="dv">0</span>]<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`neuron 1: </span><span class="sc">${</span>st<span class="op">.</span><span class="at">lastRate</span>[<span class="dv">0</span>]<span class="sc">}</span><span class="vs"> spikes/s`</span><span class="op">,</span> T<span class="op">.</span><span class="at">x0</span><span class="op">,</span> T<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">46</span>)<span class="op">;</span></span>
+<span id="cb4-191"><a href="#cb4-191" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> col[<span class="dv">1</span>]<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`neuron 2: </span><span class="sc">${</span>st<span class="op">.</span><span class="at">lastRate</span>[<span class="dv">1</span>]<span class="sc">}</span><span class="vs"> spikes/s`</span><span class="op">,</span> T<span class="op">.</span><span class="at">x0</span><span class="op">,</span> T<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> T<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">66</span>)<span class="op">;</span></span>
+<span id="cb4-192"><a href="#cb4-192" aria-hidden="true" tabindex="-1"></a>  <span class="co">// phase difference, right</span></span>
+<span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> Ph <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">535</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">215</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">215</span>}<span class="op">;</span></span>
+<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> px <span class="op">=</span> tt <span class="kw">=&gt;</span> Ph<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">w</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (st<span class="op">.</span><span class="at">t</span> <span class="op">-</span> tt) <span class="op">/</span> st<span class="op">.</span><span class="at">phaseWin</span>)<span class="op">,</span> py <span class="op">=</span> f <span class="kw">=&gt;</span> Ph<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> f)<span class="op">;</span></span>
+<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> Ph<span class="op">.</span><span class="at">x0</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">y0</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">w</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">4</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(Ph<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">py</span>(<span class="fl">0.5</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(Ph<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">py</span>(<span class="fl">0.5</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span></span>
+<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> [tt<span class="op">,</span> f] <span class="kw">of</span> st<span class="op">.</span><span class="at">phases</span>) { <span class="cf">if</span> (f <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> f <span class="op">&lt;=</span> <span class="dv">1</span>) { c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">arc</span>(<span class="fu">px</span>(tt)<span class="op">,</span> <span class="fu">py</span>(f)<span class="op">,</span> <span class="fl">2.2</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> } }</span>
+<span id="cb4-199"><a href="#cb4-199" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"1"</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">py</span>(<span class="dv">1</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"½"</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">py</span>(<span class="fl">0.5</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">py</span>(<span class="dv">0</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-200"><a href="#cb4-200" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`time, last </span><span class="sc">${</span>st<span class="op">.</span><span class="at">phaseWin</span> <span class="op">/</span> <span class="dv">1000</span><span class="sc">}</span><span class="vs"> s`</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span></span>
+<span id="cb4-201"><a href="#cb4-201" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0: with 1's spike · ½: halfway"</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">44</span>)<span class="op">;</span></span>
+<span id="cb4-202"><a href="#cb4-202" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">translate</span>(Ph<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">36</span><span class="op">,</span> Ph<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> Ph<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">rotate</span>(<span class="op">-</span><span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"spike phase of neuron 2"</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-203"><a href="#cb4-203" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">;</span></span>
+<span id="cb4-204"><a href="#cb4-204" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</section>
+<section id="reading-the-figure" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-figure">Reading the figure</h2>
+<p>The diagram on the left is the circuit. Neuron 1 is at the top and neuron 2 at the bottom, each drawn as a triangle if it makes excitatory synapses and as a circle if it makes inhibitory ones. The connection from 1 to 2 runs down the right side and the one from 2 to 1 up the left side. Each is red for excitatory and blue for inhibitory, ends in an arrowhead or a dot accordingly, and its thickness follows the strength slider. The two numbers under the diagram repeat the strengths.</p>
+<p>The middle panel shows 200 milliseconds of both membrane potentials, neuron 1 in purple and neuron 2 in teal, with spikes drawn as vertical strokes to 20 mV. It works like an oscilloscope: the trace stays where it is and a grey cursor sweeps across, overwriting it, so your eye can rest on the part that has already been drawn. The dashed line is the threshold. The two numbers below are the firing rates, updated once per simulated second.</p>
+<p>The panel on the right is the one to watch. Every time neuron 2 fires, a dot records when in neuron 1’s cycle it did so: 0 means at the same moment as neuron 1’s last spike, ½ means exactly halfway between two spikes of neuron 1, and values near 1 mean just before neuron 1’s next spike. If the two neurons fire in synchrony the dots sit at 0 or 1, which are the same thing. If they alternate, the dots sit at ½. The panel scrolls over the last five seconds, so you can see the phase settle from wherever the random start put it. At the slow setting a 200 ms sweep takes a second or two of real time; normal is about twice as fast and fast about eight times, which is useful for the phase panel, where it can take several simulated seconds for the dots to settle. Pause freezes everything.</p>
+</section>
+<section id="things-to-try" class="level2">
+<h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
+<p>Start with the defaults: two inhibitory neurons, both strengths 0.2, and a synaptic time constant of 10 ms. After the random start, the dots in the phase panel drift to 0 or 1 within a second or two of simulated time, which is quicker to watch at the fast setting, and the traces fall on top of each other. Two neurons that do nothing but inhibit each other fire in perfect synchrony. The mechanism is in the traces: when one neuron fires, the other receives an inhibitory current that delays its next spike, and the delay is longer the closer to threshold the receiver was. The neuron that was ahead is held back more than the one that was behind, and the gap closes.</p>
+<p>Make both neurons excitatory. Now the dots settle near ½, typically between 0.4 and 0.6: the neurons alternate. The argument runs the other way round. Excitation shortly after a neuron’s own spike, when it sits at the reset, does little, while excitation close to threshold triggers a spike immediately. The neuron that is behind is advanced more than the one ahead, and the gap opens until the two are as far apart as they can be. Van Vreeswijk, Abbott and Ermentrout (1994) made this precise, and their title says it all: when inhibition, not excitation, synchronises neural firing.</p>
+<p>The synaptic time constant decides which of these two stories holds. Go back to two inhibitory neurons and set <span class="math inline">\(\tau_s\)</span> to 3 ms. The dots move to ½: fast inhibition makes the neurons alternate, not synchronise. The reason is that the argument above assumed the inhibition is still present when the receiving neuron gets close to threshold, which requires the synapse to outlast a good part of the period. At 3 ms it has worn off before it can do its job. In the gamma models cited at the top, the inhibitory synapses have time constants around 10 ms, and the oscillation period is set by this number, which is why the rhythm sits where it does.</p>
+<p>Try a mixed pair, one excitatory and one inhibitory, with equal strengths. After a second of drifting the dots settle at a fixed phase between the two extremes, and the two neurons fire at the same rate even though one is being excited and the other inhibited. This pair is the smallest version of the pyramidal-interneuron loop that generates gamma in the cortex. Make the excitatory synapse stronger than the inhibitory one and the lock breaks in an instructive way: the inhibitory neuron, which is being excited, fires two or three times per cycle of its partner, and the dots fall into several bands instead of one.</p>
+<p>Then set one of the strengths to zero. With a one-way connection the receiver speeds up or slows down, depending on the sign, but at these strengths it does not lock to the sender: the dots form diagonal bands that drift through the panel, which is what two independent oscillators with slightly different periods look like. Locking needs the influence to go both ways, or a much stronger synapse. Finally, go back to the two inhibitory neurons and raise the drive to 40 mV. The rates roughly double, to about 130 spikes per second, and the pair still locks, but no longer in exact synchrony: the dots settle a little below 1, with one neuron leading the other by a few percent of the cycle. The period is now short compared with <span class="math inline">\(\tau_s\)</span>, and the lock is on its way to breaking. Shorten <span class="math inline">\(\tau_s\)</span> at this drive and it does.</p>
+<p>This page follows the exercise on synaptic coupling in Dayan and Abbott (2001, chapter 5), which in turn is based on van Vreeswijk et al.&nbsp;(1994).</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Buzsáki G, Wang XJ (2012). Mechanisms of gamma oscillations. <em>Annual Review of Neuroscience</em> 35: 203–225. <a href="https://doi.org/10.1146/annurev-neuro-062111-150444">DOI</a></p>
+<p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
+<p>Van Vreeswijk C, Abbott LF, Ermentrout GB (1994). When inhibition not excitation synchronizes neural firing. <em>Journal of Computational Neuroscience</em> 1: 313–321. <a href="https://doi.org/10.1007/BF00961879">DOI</a></p>
+<p>Whittington MA, Traub RD, Jefferys JGR (1995). Synchronized oscillations in interneuron networks driven by metabotropic glutamate receptor activation. <em>Nature</em> 373: 612–615. <a href="https://doi.org/10.1038/373612a0">DOI</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ii8vIHNoYXJlZCBoZWxwZXJzOiBvbmUgcGVyc2lzdGVudCBjYW52YXMgcGVyIGV4cGxvcmFibGUsIHRleHQtc2l6ZWQgZm9udHMsIHJlc3BvbnNpdmUgd2lkdGhcbmV4Rm9udCA9ICh7c2l6ZTogZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5ib2R5KS5mb250U2l6ZSwgZmFtaWx5OiBnZXRDb21wdXRlZFN0eWxlKGRvY3VtZW50LmJvZHkpLmZvbnRGYW1pbHksIHRvU3RyaW5nKCkgeyByZXR1cm4gdGhpcy5zaXplICsgXCIgXCIgKyB0aGlzLmZhbWlseTsgfX0pXG5leEZnID0gKCkgPT4gZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5ib2R5KS5jb2xvclxubWtDYW52YXMgPSAoVywgSCkgPT4ge1xuICBjb25zdCBjID0gRE9NLmNvbnRleHQyZChXLCBIKTtcbiAgYy5jYW52YXMuc3R5bGUud2lkdGggPSBcIjEwMCVcIjsgYy5jYW52YXMuc3R5bGUubWF4V2lkdGggPSBXICsgXCJweFwiOyBjLmNhbnZhcy5zdHlsZS5oZWlnaHQgPSBcImF1dG9cIjtcbiAgcmV0dXJuIGM7XG59XG5heGlzQm94ID0gKGMsIHgsIHksIHcsIGgpID0+IHsgYy5zdHJva2VTdHlsZSA9IFwiIzk5OVwiOyBjLmxpbmVXaWR0aCA9IDE7IGMuc3Ryb2tlUmVjdCh4LCB5LCB3LCBoKTsgfVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0yIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoidmlld29mIGNuVHlwZTEgPSBJbnB1dHMucmFkaW8obmV3IE1hcChbW1wiZXhjaXRhdG9yeVwiLCAwXSwgW1wiaW5oaWJpdG9yeVwiLCAtODBdXSksIHt2YWx1ZTogLTgwLCBsYWJlbDogXCJOZXVyb24gMSAocHVycGxlKSBtYWtlcyBzeW5hcHNlcyB0aGF0IGFyZVwifSlcbnZpZXdvZiBjblR5cGUyID0gSW5wdXRzLnJhZGlvKG5ldyBNYXAoW1tcImV4Y2l0YXRvcnlcIiwgMF0sIFtcImluaGliaXRvcnlcIiwgLTgwXV0pLCB7dmFsdWU6IC04MCwgbGFiZWw6IFwiTmV1cm9uIDIgKHRlYWwpIG1ha2VzIHN5bmFwc2VzIHRoYXQgYXJlXCJ9KVxudmlld29mIGNuRzEyID0gSW5wdXRzLnJhbmdlKFswLCAwLjZdLCB7dmFsdWU6IDAuMiwgc3RlcDogMC4wMiwgbGFiZWw6IFwiU3RyZW5ndGggMSDihpIgMlwifSlcbnZpZXdvZiBjbkcyMSA9IElucHV0cy5yYW5nZShbMCwgMC42XSwge3ZhbHVlOiAwLjIsIHN0ZXA6IDAuMDIsIGxhYmVsOiBcIlN0cmVuZ3RoIDIg4oaSIDFcIn0pXG52aWV3b2YgY25UYXVTID0gSW5wdXRzLnJhbmdlKFsxLCAzMF0sIHt2YWx1ZTogMTAsIHN0ZXA6IDEsIGxhYmVsOiBcIlN5bmFwdGljIHRpbWUgY29uc3RhbnQgz4TigpsgKG1zKVwifSlcbnZpZXdvZiBjbkRyaXZlID0gSW5wdXRzLnJhbmdlKFsxNywgNDBdLCB7dmFsdWU6IDI1LCBzdGVwOiAxLCBsYWJlbDogXCJEcml2ZSBS4oKYSeKCkSAobVYpXCJ9KVxudmlld29mIGNuU3BlZWQgPSBJbnB1dHMucmFkaW8obmV3IE1hcChbW1wic2xvd1wiLCAzMF0sIFtcIm5vcm1hbFwiLCA2NV0sIFtcImZhc3RcIiwgMjYwXV0pLCB7dmFsdWU6IDMwLCBsYWJlbDogXCJTcGVlZFwifSlcbnZpZXdvZiBjblBhdXNlID0gSW5wdXRzLnRvZ2dsZSh7bGFiZWw6IFwiUGF1c2VcIn0pXG52aWV3b2YgY25SZXNldCA9IElucHV0cy5idXR0b24oXCJSZXNldCB3aXRoIG5ldyByYW5kb20gc3RhcnRpbmcgdm9sdGFnZXNcIilcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMyIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImNuU3RhdGUgPSB7XG4gIGNuUmVzZXQ7XG4gIGNvbnN0IGR0ID0gMC4wNSwgRUwgPSAtNzAsIFZ0aCA9IC01NCwgVnIgPSAtODAsIHRhdW0gPSAxMCwgUG1heCA9IDAuNTtcbiAgY29uc3Qgd2luID0gMjAwLCBuID0gTWF0aC5yb3VuZCh3aW4gLyBkdCksIHBoYXNlV2luID0gNTAwMDtcbiAgY29uc3QgViA9IFtWciArIChWdGggLSBWcikgKiBNYXRoLnJhbmRvbSgpLCBWciArIChWdGggLSBWcikgKiBNYXRoLnJhbmRvbSgpXTtcbiAgY29uc3QgUCA9IFswLCAwXSwgeiA9IFswLCAwXTtcbiAgY29uc3QgdHJhY2UgPSBbbmV3IEZsb2F0MzJBcnJheShuKS5maWxsKFZbMF0pLCBuZXcgRmxvYXQzMkFycmF5KG4pLmZpbGwoVlsxXSldO1xuICBjb25zdCBzcGlrZXMgPSBbW10sIFtdXSwgcGhhc2VzID0gW107XG4gIGxldCB0ID0gMCwgbGFzdFJhdGUgPSBbMCwgMF0sIG5leHRSYXRlQXQgPSAxMDAwLCBpZHggPSAwO1xuICB3aGlsZSAodHJ1ZSkge1xuICAgIGlmICghdmlld29mIGNuUGF1c2UudmFsdWUpIHtcbiAgICAgIGNvbnN0IEUgPSBbdmlld29mIGNuVHlwZTEudmFsdWUsIHZpZXdvZiBjblR5cGUyLnZhbHVlXTsgICAgICAgICAgIC8vIHJldmVyc2FsIG9mIHN5bmFwc2VzIG1hZGUgYnkgMSBhbmQgYnkgMlxuICAgICAgY29uc3QgZyA9IFt2aWV3b2YgY25HMjEudmFsdWUsIHZpZXdvZiBjbkcxMi52YWx1ZV07ICAgICAgICAgICAgICAgLy8gZ1tpXSA9IHN0cmVuZ3RoIG9mIHRoZSBzeW5hcHNlIG9udG8gbmV1cm9uIGlcbiAgICAgIGNvbnN0IHRhdXMgPSB2aWV3b2YgY25UYXVTLnZhbHVlLCBSSSA9IHZpZXdvZiBjbkRyaXZlLnZhbHVlO1xuICAgICAgY29uc3Qgc3RlcHNQZXJGcmFtZSA9IHZpZXdvZiBjblNwZWVkLnZhbHVlO1xuICAgICAgZm9yIChsZXQgcyA9IDA7IHMgPCBzdGVwc1BlckZyYW1lOyBzKyspIHtcbiAgICAgICAgaWR4ID0gKGlkeCArIDEpICUgbjtcbiAgICAgICAgY29uc3QgZFYgPSBbMCwgMF07XG4gICAgICAgIGZvciAobGV0IGkgPSAwOyBpIDwgMjsgaSsrKSB7IGNvbnN0IGogPSAxIC0gaTsgZFZbaV0gPSAoRUwgLSBWW2ldIC0gZ1tpXSAqIFBbal0gKiAoVltpXSAtIEVbal0pICsgUkkpIC8gdGF1bTsgfVxuICAgICAgICBmb3IgKGxldCBpID0gMDsgaSA8IDI7IGkrKykge1xuICAgICAgICAgIFBbaV0gKz0gZHQgKiAoTWF0aC5FICogUG1heCAqIHpbaV0gKiAoMSAtIFBbaV0pIC0gUFtpXSkgLyB0YXVzO1xuICAgICAgICAgIHpbaV0gKz0gZHQgKiAoLXpbaV0gLyB0YXVzKTtcbiAgICAgICAgfVxuICAgICAgICBmb3IgKGxldCBpID0gMDsgaSA8IDI7IGkrKykge1xuICAgICAgICAgIGNvbnN0IFZuID0gVltpXSArIGR0ICogZFZbaV07XG4gICAgICAgICAgaWYgKFZuID49IFZ0aCkge1xuICAgICAgICAgICAgY29uc3QgZnJhYyA9IChWdGggLSBWW2ldKSAvIChWbiAtIFZbaV0pLCB0cyA9IHQgKyBmcmFjICogZHQ7XG4gICAgICAgICAgICBWW2ldID0gVnIgKyAoMSAtIGZyYWMpICogZHQgKiBkVltpXTsgeltpXSA9IDE7IHNwaWtlc1tpXS5wdXNoKHRzKTtcbiAgICAgICAgICAgIHRyYWNlW2ldW2lkeF0gPSAyMDtcbiAgICAgICAgICAgIGlmIChpID09PSAxKSB7XG4gICAgICAgICAgICAgIGNvbnN0IHMxID0gc3Bpa2VzWzBdO1xuICAgICAgICAgICAgICBpZiAoczEubGVuZ3RoID49IDIgJiYgdHMgPj0gczFbczEubGVuZ3RoIC0gMV0pIHsgY29uc3QgYSA9IHMxW3MxLmxlbmd0aCAtIDFdLCBiID0gczFbczEubGVuZ3RoIC0gMl07IHBoYXNlcy5wdXNoKFt0cywgKHRzIC0gYSkgLyAoYSAtIGIpXSk7IH1cbiAgICAgICAgICAgIH1cbiAgICAgICAgICB9IGVsc2UgeyBWW2ldID0gVm47IHRyYWNlW2ldW2lkeF0gPSBWW2ldOyB9XG4gICAgICAgICAgd2hpbGUgKHNwaWtlc1tpXS5sZW5ndGggJiYgc3Bpa2VzW2ldWzBdIDwgdCAtIHBoYXNlV2luKSBzcGlrZXNbaV0uc2hpZnQoKTtcbiAgICAgICAgfVxuICAgICAgICB3aGlsZSAocGhhc2VzLmxlbmd0aCAmJiBwaGFzZXNbMF1bMF0gPCB0IC0gcGhhc2VXaW4pIHBoYXNlcy5zaGlmdCgpO1xuICAgICAgICB0ICs9IGR0O1xuICAgICAgfVxuICAgICAgaWYgKHQgPj0gbmV4dFJhdGVBdCkgeyBmb3IgKGxldCBpID0gMDsgaSA8IDI7IGkrKykgbGFzdFJhdGVbaV0gPSBzcGlrZXNbaV0uZmlsdGVyKHggPT4geCA+IHQgLSAxMDAwKS5sZW5ndGg7IG5leHRSYXRlQXQgPSB0ICsgMTAwMDsgfVxuICAgIH1cbiAgICB5aWVsZCB7ViwgUCwgdHJhY2UsIGlkeCwgc3Bpa2VzLCBwaGFzZXMsIHQsIHdpbiwgcGhhc2VXaW4sIGxhc3RSYXRlLCBFOiBbdmlld29mIGNuVHlwZTEudmFsdWUsIHZpZXdvZiBjblR5cGUyLnZhbHVlXSwgZzogW3ZpZXdvZiBjbkcxMi52YWx1ZSwgdmlld29mIGNuRzIxLnZhbHVlXX07XG4gIH1cbn1cbmNuQ2FudmFzID0gbWtDYW52YXMoNzYwLCAzMjApXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTQiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJ7XG4gIGNvbnN0IHN0ID0gY25TdGF0ZSwgYyA9IGNuQ2FudmFzLCBmZyA9IGV4RmcoKSwgVyA9IDc2MCwgSCA9IDMyMDtcbiAgY29uc3QgY29sID0gW1wiIzk0NjdiZFwiLCBcIiMxN2JlY2ZcIl0sIHJlZCA9IFwiI2Q2MjcyOFwiLCBibHVlID0gXCIjMWY3N2I0XCI7XG4gIGNvbnN0IFZ0aCA9IC01NCwgVnIgPSAtODA7XG4gIGMuY2xlYXJSZWN0KDAsIDAsIFcsIEgpOyBjLmZvbnQgPSBleEZvbnQ7XG4gIC8vIGNpcmN1aXQgZGlhZ3JhbSwgbGVmdFxuICBjb25zdCBEID0ge2N4OiA5NSwgeTE6IDU4LCB5MjogMTk2LCByOiAyNH07XG4gIGNvbnN0IGRyYXdOZXVyb24gPSAoaSwgeSkgPT4ge1xuICAgIGNvbnN0IGV4YyA9IHN0LkVbaV0gPT09IDA7XG4gICAgYy5saW5lV2lkdGggPSAyLjU7IGMuc3Ryb2tlU3R5bGUgPSBjb2xbaV07XG4gICAgYy5maWxsU3R5bGUgPSBpID09PSAwID8gXCJyZ2JhKDE0OCwxMDMsMTg5LDAuMjUpXCIgOiBcInJnYmEoMjMsMTkwLDIwNywwLjI1KVwiO1xuICAgIGMuYmVnaW5QYXRoKCk7XG4gICAgaWYgKGV4YykgeyBjLm1vdmVUbyhELmN4LCB5IC0gRC5yICogMS4xKTsgYy5saW5lVG8oRC5jeCArIEQuciAqIDEuMSwgeSArIEQuciAqIDAuOCk7IGMubGluZVRvKEQuY3ggLSBELnIgKiAxLjEsIHkgKyBELnIgKiAwLjgpOyBjLmNsb3NlUGF0aCgpOyB9XG4gICAgZWxzZSBjLmFyYyhELmN4LCB5LCBELnIsIDAsIDIgKiBNYXRoLlBJKTtcbiAgICBjLmZpbGwoKTsgYy5zdHJva2UoKTtcbiAgICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoYCR7aSArIDF9YCwgRC5jeCwgeSArIDUpO1xuICAgIGMuZmlsbFRleHQoZXhjID8gXCJleGNpdGF0b3J5XCIgOiBcImluaGliaXRvcnlcIiwgRC5jeCwgeSArIChpID09PSAwID8gLUQuciAtIDEyIDogRC5yICsgMjIpKTtcbiAgfTtcbiAgLy8gY29ubmVjdGlvbnM6IDEg4oaSIDIgb24gdGhlIHJpZ2h0LCAyIOKGkiAxIG9uIHRoZSBsZWZ0OyB0aGlja25lc3Mg4oidIHN0cmVuZ3RoOyByZWQgPSBleGNpdGF0b3J5LCBibHVlID0gaW5oaWJpdG9yeVxuICBjb25zdCBkcmF3U3luID0gKGZyb20sIHRvLCBzaWRlKSA9PiB7XG4gICAgY29uc3QgZ1MgPSBzdC5nW2Zyb20gPT09IDAgPyAwIDogMV0sIGV4YyA9IHN0LkVbZnJvbV0gPT09IDAsIGNvbHIgPSBleGMgPyByZWQgOiBibHVlO1xuICAgIGNvbnN0IHlBID0gZnJvbSA9PT0gMCA/IEQueTEgKyBELnIgOiBELnkyIC0gRC5yLCB5QiA9IHRvID09PSAwID8gRC55MSArIEQuciArIDQgOiBELnkyIC0gRC5yIC0gNDtcbiAgICBjb25zdCB4ID0gRC5jeCArIHNpZGUgKiAxOCwgeGMgPSBELmN4ICsgc2lkZSAqIDYyO1xuICAgIGMuc3Ryb2tlU3R5bGUgPSBjb2xyOyBjLmZpbGxTdHlsZSA9IGNvbHI7IGMubGluZVdpZHRoID0gTWF0aC5tYXgoMC41LCAxMiAqIGdTKTtcbiAgICBjLmdsb2JhbEFscGhhID0gZ1MgPT09IDAgPyAwLjI1IDogMTtcbiAgICBjLmJlZ2luUGF0aCgpOyBjLm1vdmVUbyh4LCB5QSk7IGMuYmV6aWVyQ3VydmVUbyh4YywgeUEsIHhjLCB5QiwgeCwgeUIpOyBjLnN0cm9rZSgpO1xuICAgIC8vIGVuZGluZzogYXJyb3doZWFkIGZvciBleGNpdGF0b3J5LCBmaWxsZWQgZG90IGZvciBpbmhpYml0b3J5XG4gICAgY29uc3QgZGlyID0gdG8gPT09IDAgPyAtMSA6IDEsIHRpcFkgPSB5QiArIGRpciAqIDI7XG4gICAgaWYgKGV4YykgeyBjLmJlZ2luUGF0aCgpOyBjLm1vdmVUbyh4LCB0aXBZICsgZGlyICogOCk7IGMubGluZVRvKHggLSA3LCB0aXBZIC0gZGlyICogNCk7IGMubGluZVRvKHggKyA3LCB0aXBZIC0gZGlyICogNCk7IGMuY2xvc2VQYXRoKCk7IGMuZmlsbCgpOyB9XG4gICAgZWxzZSB7IGMuYmVnaW5QYXRoKCk7IGMuYXJjKHgsIHRpcFkgKyBkaXIgKiAzLCA2LCAwLCAyICogTWF0aC5QSSk7IGMuZmlsbCgpOyB9XG4gICAgYy5nbG9iYWxBbHBoYSA9IDE7XG4gIH07XG4gIGRyYXdTeW4oMCwgMSwgMSk7IGRyYXdTeW4oMSwgMCwgLTEpO1xuICBkcmF3TmV1cm9uKDAsIEQueTEpOyBkcmF3TmV1cm9uKDEsIEQueTIpO1xuICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoYDHihpIyOiAke3N0LmdbMF0udG9GaXhlZCgyKX0gICAy4oaSMTogJHtzdC5nWzFdLnRvRml4ZWQoMil9YCwgRC5jeCwgRC55MiArIEQuciArIDQ4KTtcbiAgLy8gdm9sdGFnZSB0cmFjZXMsIG1pZGRsZVxuICBjb25zdCBUID0ge3gwOiAyNDAsIHkwOiAxNCwgdzogMjQwLCBoOiAyMjB9LCBuID0gc3QudHJhY2VbMF0ubGVuZ3RoO1xuICBjb25zdCB0eCA9IGkgPT4gVC54MCArIFQudyAqIGkgLyAobiAtIDEpLCB0eSA9IHYgPT4gVC55MCArIFQuaCAqICgxIC0gKHYgKyA4NSkgLyAoMTA1KSk7XG4gIGF4aXNCb3goYywgVC54MCwgVC55MCwgVC53LCBULmgpO1xuICBjLnNldExpbmVEYXNoKFs0LCA0XSk7IGMuc3Ryb2tlU3R5bGUgPSBcIiM5OTlcIjsgYy5iZWdpblBhdGgoKTsgYy5tb3ZlVG8oVC54MCwgdHkoVnRoKSk7IGMubGluZVRvKFQueDAgKyBULncsIHR5KFZ0aCkpOyBjLnN0cm9rZSgpOyBjLnNldExpbmVEYXNoKFtdKTtcbiAgLy8gb3NjaWxsb3Njb3BlIHN3ZWVwOiB0aGUgdHJhY2Ugc3RheXMgaW4gcGxhY2UgYW5kIGlzIG92ZXJ3cml0dGVuIGF0IHRoZSBjdXJzb3JcbiAgZm9yIChjb25zdCBpIG9mIFsxLCAwXSkge1xuICAgIGMuc3Ryb2tlU3R5bGUgPSBjb2xbaV07IGMubGluZVdpZHRoID0gMS41O1xuICAgIGZvciAoY29uc3QgW2EsIGJdIG9mIFtbMCwgc3QuaWR4XSwgW3N0LmlkeCArIDEsIG4gLSAxXV0pIHtcbiAgICAgIGlmIChiIDw9IGEpIGNvbnRpbnVlO1xuICAgICAgYy5iZWdpblBhdGgoKTtcbiAgICAgIGZvciAobGV0IGsgPSBhOyBrIDw9IGI7IGsrKykgayA9PT0gYSA/IGMubW92ZVRvKHR4KGspLCB0eShzdC50cmFjZVtpXVtrXSkpIDogYy5saW5lVG8odHgoayksIHR5KHN0LnRyYWNlW2ldW2tdKSk7XG4gICAgICBjLnN0cm9rZSgpO1xuICAgIH1cbiAgfVxuICBjLnN0cm9rZVN0eWxlID0gXCIjYmJiXCI7IGMubGluZVdpZHRoID0gMTsgYy5iZWdpblBhdGgoKTsgYy5tb3ZlVG8odHgoc3QuaWR4KSwgVC55MCk7IGMubGluZVRvKHR4KHN0LmlkeCksIFQueTAgKyBULmgpOyBjLnN0cm9rZSgpO1xuICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwicmlnaHRcIjsgYy5maWxsVGV4dChcIlYgKG1WKVwiLCBULngwIC0gOCwgVC55MCArIFQuaCAvIDIgKyA1KTtcbiAgYy5maWxsVGV4dChWdGgsIFQueDAgLSA4LCB0eShWdGgpICsgNSk7IGMuZmlsbFRleHQoVnIsIFQueDAgLSA4LCB0eShWcikgKyA1KTsgYy5maWxsVGV4dChcIjIwXCIsIFQueDAgLSA4LCB0eSgyMCkgKyA1KTtcbiAgYy50ZXh0QWxpZ24gPSBcImNlbnRlclwiOyBjLmZpbGxUZXh0KGAke3N0Lndpbn0gbXMgc3dlZXAgwrcgdCA9ICR7KHN0LnQgLyAxMDAwKS50b0ZpeGVkKDEpfSBzYCwgVC54MCArIFQudyAvIDIsIFQueTAgKyBULmggKyAyNCk7XG4gIGMudGV4dEFsaWduID0gXCJsZWZ0XCI7IGMuZmlsbFN0eWxlID0gY29sWzBdOyBjLmZpbGxUZXh0KGBuZXVyb24gMTogJHtzdC5sYXN0UmF0ZVswXX0gc3Bpa2VzL3NgLCBULngwLCBULnkwICsgVC5oICsgNDYpO1xuICBjLmZpbGxTdHlsZSA9IGNvbFsxXTsgYy5maWxsVGV4dChgbmV1cm9uIDI6ICR7c3QubGFzdFJhdGVbMV19IHNwaWtlcy9zYCwgVC54MCwgVC55MCArIFQuaCArIDY2KTtcbiAgLy8gcGhhc2UgZGlmZmVyZW5jZSwgcmlnaHRcbiAgY29uc3QgUGggPSB7eDA6IDUzNSwgeTA6IDE0LCB3OiAyMTUsIGg6IDIxNX07XG4gIGNvbnN0IHB4ID0gdHQgPT4gUGgueDAgKyBQaC53ICogKDEgLSAoc3QudCAtIHR0KSAvIHN0LnBoYXNlV2luKSwgcHkgPSBmID0+IFBoLnkwICsgUGguaCAqICgxIC0gZik7XG4gIGF4aXNCb3goYywgUGgueDAsIFBoLnkwLCBQaC53LCBQaC5oKTtcbiAgYy5zZXRMaW5lRGFzaChbNCwgNF0pOyBjLnN0cm9rZVN0eWxlID0gXCIjOTk5XCI7IGMuYmVnaW5QYXRoKCk7IGMubW92ZVRvKFBoLngwLCBweSgwLjUpKTsgYy5saW5lVG8oUGgueDAgKyBQaC53LCBweSgwLjUpKTsgYy5zdHJva2UoKTsgYy5zZXRMaW5lRGFzaChbXSk7XG4gIGMuZmlsbFN0eWxlID0gZmc7XG4gIGZvciAoY29uc3QgW3R0LCBmXSBvZiBzdC5waGFzZXMpIHsgaWYgKGYgPj0gMCAmJiBmIDw9IDEpIHsgYy5iZWdpblBhdGgoKTsgYy5hcmMocHgodHQpLCBweShmKSwgMi4yLCAwLCAyICogTWF0aC5QSSk7IGMuZmlsbCgpOyB9IH1cbiAgYy50ZXh0QWxpZ24gPSBcInJpZ2h0XCI7IGMuZmlsbFRleHQoXCIxXCIsIFBoLngwIC0gNiwgcHkoMSkgKyA1KTsgYy5maWxsVGV4dChcIsK9XCIsIFBoLngwIC0gNiwgcHkoMC41KSArIDUpOyBjLmZpbGxUZXh0KFwiMFwiLCBQaC54MCAtIDYsIHB5KDApICsgNSk7XG4gIGMudGV4dEFsaWduID0gXCJjZW50ZXJcIjsgYy5maWxsVGV4dChgdGltZSwgbGFzdCAke3N0LnBoYXNlV2luIC8gMTAwMH0gc2AsIFBoLngwICsgUGgudyAvIDIsIFBoLnkwICsgUGguaCArIDI0KTtcbiAgYy5maWxsVGV4dChcIjA6IHdpdGggMSdzIHNwaWtlIMK3IMK9OiBoYWxmd2F5XCIsIFBoLngwICsgUGgudyAvIDIsIFBoLnkwICsgUGguaCArIDQ0KTtcbiAgYy5zYXZlKCk7IGMudHJhbnNsYXRlKFBoLngwIC0gMzYsIFBoLnkwICsgUGguaCAvIDIpOyBjLnJvdGF0ZSgtTWF0aC5QSSAvIDIpOyBjLmZpbGxUZXh0KFwic3Bpa2UgcGhhc2Ugb2YgbmV1cm9uIDJcIiwgMCwgMCk7IGMucmVzdG9yZSgpO1xuICByZXR1cm4gYy5jYW52YXM7XG59XG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2NuVHlwZTEnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnY25UeXBlMicpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdjbkcxMicpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdjbkcyMScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdjblRhdVMnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnY25Ecml2ZScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdjblNwZWVkJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2NuUGF1c2UnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnY25SZXNldCcpIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../teaching";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/traegenap\.org");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This site is currently under construction.<br> © 2026 Sigrid Trägenap · <a href="../impressum.html">Impressum und Datenschutz</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

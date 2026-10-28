@@ -84,9 +84,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-86312c41d8c8d97270542994db1177a1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-140d28bfd7b94e0e9f63cc3bc68ccc2b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -380,6 +380,22 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../teaching/hebbian.html">
  <span class="dropdown-text">Hebbian learning</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/sde.html">
+ <span class="dropdown-text">Stochastic differential equations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/eigenmodes.html">
+ <span class="dropdown-text">Eigenmodes of a recurrent network</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/coupled-neurons.html">
+ <span class="dropdown-text">Two coupled neurons</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hodgkin-huxley.html">
+ <span class="dropdown-text">The Hodgkin–Huxley neuron</span></a>
   </li>  
     </ul>
   </li>
@@ -725,15 +741,15 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
 <p>Begin with the plain Hebbian rule and the default negative correlation. From any starting point the weights head off along a diagonal and leave the plot. Which diagonal depends on <span class="math inline">\(q\)</span>: the weights grow fastest along the eigenvector of <span class="math inline">\(Q\)</span> with the largest eigenvalue, and that is <span class="math inline">\((1, 1)\)</span> when the inputs are positively correlated and <span class="math inline">\((1, -1)\)</span> when they are anticorrelated. Move <span class="math inline">\(q\)</span> through zero and watch the flow swing from one diagonal to the other. At <span class="math inline">\(q = 0\)</span> both eigenvalues are equal and every direction grows at the same rate, so the trajectories are straight rays from the origin.</p>
 <p>Switch to the bounded rule. The runaway is gone, but something else has appeared: the plane is divided into regions, each draining into a different corner. A starting point that favours input 1 ends at <span class="math inline">\((1, 0)\)</span>, one that favours input 2 at <span class="math inline">\((0, 1)\)</span>, and with positive correlation most of the plane ends at <span class="math inline">\((1, 1)\)</span>. These regions are the basins of attraction of the three stable corners, and the bounds have turned a rule with no stable state into one that stores a decision about which input wins. Change <span class="math inline">\(q\)</span> and watch the boundaries between the basins move.</p>
-<p>Switch to Oja’s rule. Now the trajectories bend towards a circle of radius <span class="math inline">\(1/\sqrt{\alpha}\)</span> and then slide along it to an eigenvector of <span class="math inline">\(Q\)</span>. The rule does two things at once: it normalises the weight vector and it picks out the direction of largest input variance, which is the first principal component of the inputs. That is not a coincidence, it is the main reason Oja’s rule is famous. Raise <span class="math inline">\(\alpha\)</span> and the circle shrinks. Set <span class="math inline">\(q\)</span> to zero and the trajectories still reach the circle, but stop wherever they land on it, since no direction is preferred.</p>
+<p>Switch to Oja’s rule. Now the trajectories bend towards a circle of radius <span class="math inline">\(1/\sqrt{\alpha}\)</span> and then slide along it to an eigenvector of <span class="math inline">\(Q\)</span>. The rule does two things at once: it normalises the weight vector and it picks out the direction of largest input variance, which is the first principal component of the inputs. This is the main reason Oja’s rule is famous. Raise <span class="math inline">\(\alpha\)</span> and the circle shrinks. Set <span class="math inline">\(q\)</span> to zero and the trajectories still reach the circle, but stop wherever they land on it, since no direction is preferred.</p>
 <p>This page is based on the Hebbian learning exercise in Dayan and Abbott (2001, chapter 8). Miller and MacKay (1994) give a careful comparison of different ways of constraining Hebbian learning, including why subtractive and multiplicative normalisation lead to different outcomes, which is exactly the difference between the bounded rule and Oja’s rule above.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
 <p>Hebb DO (1949). <em>The Organization of Behavior: A Neuropsychological Theory</em>. Wiley.</p>
-<p>Miller KD, MacKay DJC (1994). The role of constraints in Hebbian learning. <em>Neural Computation</em> 6: 100–126.</p>
-<p>Oja E (1982). A simplified neuron model as a principal component analyzer. <em>Journal of Mathematical Biology</em> 15: 267–273.</p>
+<p>Miller KD, MacKay DJC (1994). The role of constraints in Hebbian learning. <em>Neural Computation</em> 6: 100–126. <a href="https://doi.org/10.1162/neco.1994.6.1.100">DOI</a></p>
+<p>Oja E (1982). A simplified neuron model as a principal component analyzer. <em>Journal of Mathematical Biology</em> 15: 267–273. <a href="https://doi.org/10.1007/BF00275687">DOI</a></p>
 
 
 </section>

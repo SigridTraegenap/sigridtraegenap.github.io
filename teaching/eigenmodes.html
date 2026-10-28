@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Why a linear network is easier to read in the basis of its eigenvectors: every mode decays or grows at its own rate, and the slowest one is the one that lasts.">
+
+<title>Eigenmodes of a recurrent network – Sigrid Trägenap</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-140d28bfd7b94e0e9f63cc3bc68ccc2b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Sigrid Trägenap</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../research.html"> 
+<span class="menu-text">Research Interests</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../publications.html"> 
+<span class="menu-text">Publications</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../outreach.html"> 
+<span class="menu-text">Outreach</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-teaching" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Teaching</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-teaching">    
+        <li>
+    <a class="dropdown-item" href="../teaching/philosophy.html">
+ <span class="dropdown-text">How I teach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/neuron.html">
+ <span class="dropdown-text">Integrate-and-fire neuron</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/pca.html">
+ <span class="dropdown-text">Principal component analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/fourier.html">
+ <span class="dropdown-text">Sampling and the Fourier transform</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/recurrent-networks.html">
+ <span class="dropdown-text">Recurrent networks</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hebbian.html">
+ <span class="dropdown-text">Hebbian learning</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/sde.html">
+ <span class="dropdown-text">Stochastic differential equations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/eigenmodes.html">
+ <span class="dropdown-text">Eigenmodes of a recurrent network</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/coupled-neurons.html">
+ <span class="dropdown-text">Two coupled neurons</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hodgkin-huxley.html">
+ <span class="dropdown-text">The Hodgkin–Huxley neuron</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/SigridTraegenap"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-model" id="toc-the-model" class="nav-link active" data-scroll-target="#the-model">The model</a></li>
+  <li><a href="#reading-the-figure" id="toc-reading-the-figure" class="nav-link" data-scroll-target="#reading-the-figure">Reading the figure</a></li>
+  <li><a href="#things-to-try" id="toc-things-to-try" class="nav-link" data-scroll-target="#things-to-try">Things to try</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Eigenmodes of a recurrent network</h1>
+</div>
+
+<div>
+  <div class="description">
+    Why a linear network is easier to read in the basis of its eigenvectors: every mode decays or grows at its own rate, and the slowest one is the one that lasts.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>A network of neurons that feed back on each other can do something a single neuron cannot: it can hold on to its activity. A single neuron forgets its input within a membrane time constant, a few tens of milliseconds. Cortical areas, by contrast, show fluctuations that last hundreds of milliseconds or seconds, and the duration grows along the cortical hierarchy (Murray et al. 2014). The simplest explanation is recurrence. Activity that excites the neurons that excite it back can outlive any single cell, and how long it lasts depends on how strong the loop is.</p>
+<p>The trick is to stop looking at the activity neuron by neuron and look at it mode by mode, where the modes are the eigenvectors of the connection matrix. I wrote this up as an exercise when I was a teaching assistant for the <em>Theoretical Neuroscience</em> lecture at Goethe University Frankfurt.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="26" data-source-offset="-92"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 25;"><span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>exFont <span class="op">=</span> ({<span class="dt">size</span><span class="op">:</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontSize</span><span class="op">,</span> <span class="dt">family</span><span class="op">:</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">fontFamily</span><span class="op">,</span> <span class="fu">toString</span>() { <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">size</span> <span class="op">+</span> <span class="st">" "</span> <span class="op">+</span> <span class="kw">this</span><span class="op">.</span><span class="at">family</span><span class="op">;</span> }})</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>exFg <span class="op">=</span> () <span class="kw">=&gt;</span> <span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">body</span>)<span class="op">.</span><span class="at">color</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>mkCanvas <span class="op">=</span> (W<span class="op">,</span> H) <span class="kw">=&gt;</span> {</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> c <span class="op">=</span> DOM<span class="op">.</span><span class="fu">context2d</span>(W<span class="op">,</span> H)<span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">width</span> <span class="op">=</span> <span class="st">"100%"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">maxWidth</span> <span class="op">=</span> W <span class="op">+</span> <span class="st">"px"</span><span class="op">;</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">height</span> <span class="op">=</span> <span class="st">"auto"</span><span class="op">;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>axisBox <span class="op">=</span> (c<span class="op">,</span> x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h) <span class="kw">=&gt;</span> { c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#999"</span><span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> c<span class="op">.</span><span class="fu">strokeRect</span>(x<span class="op">,</span> y<span class="op">,</span> w<span class="op">,</span> h)<span class="op">;</span> }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<section id="the-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-model">The model</h2>
+<p>The network has <span class="math inline">\(N\)</span> neurons with firing rates collected in a vector <span class="math inline">\(r\)</span>. Each neuron relaxes towards its input with time constant <span class="math inline">\(\tau\)</span>, and its input is the sum of an external drive <span class="math inline">\(h\)</span> and what it receives from the other neurons through the <span class="math inline">\(N \times N\)</span> connection matrix <span class="math inline">\(\mathbf M\)</span>:</p>
+<p><span class="math display">\[\tau \frac{dr}{dt} = -r + \mathbf M r + h .\]</span></p>
+<p>There is no nonlinearity, which is a real restriction, but it is what makes the following exact. If <span class="math inline">\(\mathbf M\)</span> is real and symmetric, it has <span class="math inline">\(N\)</span> orthogonal eigenvectors <span class="math inline">\(v_i\)</span> with real eigenvalues <span class="math inline">\(\lambda_i\)</span>, so that <span class="math inline">\(\mathbf M v_i = \lambda_i v_i\)</span>. Any activity pattern can be written as a weighted sum of these eigenvectors, <span class="math inline">\(r = \sum_i a_i v_i\)</span>, and the weights <span class="math inline">\(a_i\)</span> are found by projecting, <span class="math inline">\(a_i = v_i^{\mathsf T} r\)</span>. Substituting into the equation and projecting onto each <span class="math inline">\(v_i\)</span> in turn gives <span class="math inline">\(N\)</span> separate equations, one per mode:</p>
+<p><span class="math display">\[\tau \frac{da_i}{dt} = -(1 - \lambda_i)\, a_i + h_i ,\]</span></p>
+<p>where <span class="math inline">\(h_i = v_i^{\mathsf T} h\)</span> is the part of the input that lies along mode <span class="math inline">\(i\)</span>. The modes do not talk to each other. Each one is a leaky integrator on its own, with an effective time constant</p>
+<p><span class="math display">\[\tau_i = \frac{\tau}{1 - \lambda_i}\]</span></p>
+<p>and a steady state <span class="math inline">\(a_i^\ast = h_i / (1 - \lambda_i)\)</span>. A mode whose eigenvalue is close to 1 is slow and amplifies its input strongly. A mode with a negative eigenvalue is faster than a single neuron and suppresses its input. If any eigenvalue exceeds 1 the corresponding mode grows without bound, which is where the linear model stops being useful and the <a href="../teaching/recurrent-networks.html">recurrent networks page</a> takes over.</p>
+<p>The smallest example makes this concrete. Two neurons that excite each other with weight <span class="math inline">\(w\)</span> have <span class="math inline">\(\mathbf M = \begin{pmatrix} 0 &amp; w \\ w &amp; 0 \end{pmatrix}\)</span>, with eigenvectors <span class="math inline">\((1, 1)/\sqrt2\)</span> and <span class="math inline">\((1, -1)/\sqrt2\)</span> and eigenvalues <span class="math inline">\(w\)</span> and <span class="math inline">\(-w\)</span>. The common mode, both neurons active together, decays with time constant <span class="math inline">\(\tau/(1 - w)\)</span>, slower than a single neuron. The difference mode, one up and one down, decays with <span class="math inline">\(\tau/(1 + w)\)</span>, faster. Start the pair in any state and the difference dies away first, leaving both neurons at the same level. Everything on this page is that example with more neurons.</p>
+<p>The figure uses <span class="math inline">\(N = 40\)</span> neurons and a random symmetric matrix with independent Gaussian entries, scaled so that its largest eigenvalue is a number <span class="math inline">\(R\)</span> you control. <span class="math inline">\(R\)</span> is often called the spectral bound. The remaining eigenvalues spread out below <span class="math inline">\(R\)</span>, roughly symmetrically about zero, so the network has one slow mode and many fast ones. For a large matrix of this kind the eigenvalues fill a semicircle, Wigner’s semicircle law (Wigner 1958), and with 40 neurons the bottom panel shows a rough version of it. Pachitariu et al.&nbsp;(2026) argue that the activity of the mouse brain looks much like such a random symmetric network sitting close to the stability limit, which is the regime at the top of the <span class="math inline">\(R\)</span> slider. David Dahmen and colleagues reach a related conclusion from the other direction: Dahmen et al.&nbsp;(2019) show that the weak average correlations in motor cortex are what a strongly recurrent network close to that limit produces, and Dahmen et al.&nbsp;(2026) find that the strength of local recurrence sets how many dimensions the activity of a cortical area occupies. In the language of this page, the closer <span class="math inline">\(R\)</span> is to 1, the fewer modes carry the activity.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="97" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 96;"><span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>viewof emR <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="fl">0.98</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">0.9</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Spectral bound R (largest eigenvalue)"</span>})</span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>viewof emStart <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(<span class="kw">new</span> <span class="bu">Map</span>([[<span class="st">"random pattern"</span><span class="op">,</span> <span class="st">"random"</span>]<span class="op">,</span> [<span class="st">"slowest mode"</span><span class="op">,</span> <span class="st">"slow"</span>]<span class="op">,</span> [<span class="st">"fastest mode"</span><span class="op">,</span> <span class="st">"fast"</span>]<span class="op">,</span> [<span class="st">"slowest + fastest"</span><span class="op">,</span> <span class="st">"both"</span>]])<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="st">"random"</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Initial activity"</span>})</span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>viewof emDrive <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(<span class="kw">new</span> <span class="bu">Map</span>([[<span class="st">"none, activity decays"</span><span class="op">,</span> <span class="st">"none"</span>]<span class="op">,</span> [<span class="st">"constant random input"</span><span class="op">,</span> <span class="st">"const"</span>]])<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="st">"none"</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Input h"</span>})</span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>viewof emNoise <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="fl">0.2</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Input noise"</span>})</span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>viewof emNew <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">button</span>(<span class="st">"New random network"</span>)</span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>viewof emPause <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Pause"</span>})</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>viewof emReset <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">button</span>(<span class="st">"Reset"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-7" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="108" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 107;"><span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>emN <span class="op">=</span> <span class="dv">40</span></span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>emRandn <span class="op">=</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> u <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="cf">while</span> (u <span class="op">===</span> <span class="dv">0</span>) u <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>()<span class="op">;</span></span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="op">-</span><span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">log</span>(u)) <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(<span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>())<span class="op">;</span></span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a><span class="co">// Jacobi eigenvalue algorithm for a symmetric matrix; returns eigenvalues sorted descending with eigenvectors as rows</span></span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>emEigh <span class="op">=</span> A0 <span class="kw">=&gt;</span> {</span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> n <span class="op">=</span> A0<span class="op">.</span><span class="at">length</span><span class="op">,</span> A <span class="op">=</span> A0<span class="op">.</span><span class="fu">map</span>(row <span class="kw">=&gt;</span> <span class="bu">Float64Array</span><span class="op">.</span><span class="fu">from</span>(row))<span class="op">;</span></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> V <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> n}<span class="op">,</span> (_<span class="op">,</span> i) <span class="kw">=&gt;</span> { <span class="kw">const</span> r <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(n)<span class="op">;</span> r[i] <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> <span class="cf">return</span> r<span class="op">;</span> })<span class="op">;</span></span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> sweep <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> sweep <span class="op">&lt;</span> <span class="dv">60</span><span class="op">;</span> sweep<span class="op">++</span>) {</span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> off <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++</span>) <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> i <span class="op">+</span> <span class="dv">1</span><span class="op">;</span> j <span class="op">&lt;</span> n<span class="op">;</span> j<span class="op">++</span>) off <span class="op">+=</span> A[i][j] <span class="op">*</span> A[i][j]<span class="op">;</span></span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (off <span class="op">&lt;</span> <span class="fl">1e-20</span>) <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">let</span> p <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> p <span class="op">&lt;</span> n<span class="op">;</span> p<span class="op">++</span>) <span class="cf">for</span> (<span class="kw">let</span> q <span class="op">=</span> p <span class="op">+</span> <span class="dv">1</span><span class="op">;</span> q <span class="op">&lt;</span> n<span class="op">;</span> q<span class="op">++</span>) {</span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(A[p][q]) <span class="op">&lt;</span> <span class="fl">1e-14</span>) <span class="cf">continue</span><span class="op">;</span></span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> theta <span class="op">=</span> (A[q][q] <span class="op">-</span> A[p][p]) <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> A[p][q])<span class="op">;</span></span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> t <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sign</span>(theta <span class="op">||</span> <span class="dv">1</span>) <span class="op">/</span> (<span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(theta) <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(theta <span class="op">*</span> theta <span class="op">+</span> <span class="dv">1</span>))<span class="op">;</span></span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> c <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(t <span class="op">*</span> t <span class="op">+</span> <span class="dv">1</span>)<span class="op">,</span> s <span class="op">=</span> t <span class="op">*</span> c<span class="op">;</span></span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> k <span class="op">&lt;</span> n<span class="op">;</span> k<span class="op">++</span>) { <span class="kw">const</span> akp <span class="op">=</span> A[k][p]<span class="op">,</span> akq <span class="op">=</span> A[k][q]<span class="op">;</span> A[k][p] <span class="op">=</span> c <span class="op">*</span> akp <span class="op">-</span> s <span class="op">*</span> akq<span class="op">;</span> A[k][q] <span class="op">=</span> s <span class="op">*</span> akp <span class="op">+</span> c <span class="op">*</span> akq<span class="op">;</span> }</span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> k <span class="op">&lt;</span> n<span class="op">;</span> k<span class="op">++</span>) { <span class="kw">const</span> apk <span class="op">=</span> A[p][k]<span class="op">,</span> aqk <span class="op">=</span> A[q][k]<span class="op">;</span> A[p][k] <span class="op">=</span> c <span class="op">*</span> apk <span class="op">-</span> s <span class="op">*</span> aqk<span class="op">;</span> A[q][k] <span class="op">=</span> s <span class="op">*</span> apk <span class="op">+</span> c <span class="op">*</span> aqk<span class="op">;</span> }</span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> k <span class="op">&lt;</span> n<span class="op">;</span> k<span class="op">++</span>) { <span class="kw">const</span> vkp <span class="op">=</span> V[k][p]<span class="op">,</span> vkq <span class="op">=</span> V[k][q]<span class="op">;</span> V[k][p] <span class="op">=</span> c <span class="op">*</span> vkp <span class="op">-</span> s <span class="op">*</span> vkq<span class="op">;</span> V[k][q] <span class="op">=</span> s <span class="op">*</span> vkp <span class="op">+</span> c <span class="op">*</span> vkq<span class="op">;</span> }</span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> idx <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> n}<span class="op">,</span> (_<span class="op">,</span> i) <span class="kw">=&gt;</span> i)<span class="op">.</span><span class="fu">sort</span>((a<span class="op">,</span> b) <span class="kw">=&gt;</span> A[b][b] <span class="op">-</span> A[a][a])<span class="op">;</span></span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {<span class="dt">vals</span><span class="op">:</span> idx<span class="op">.</span><span class="fu">map</span>(i <span class="kw">=&gt;</span> A[i][i])<span class="op">,</span> <span class="dt">vecs</span><span class="op">:</span> idx<span class="op">.</span><span class="fu">map</span>(i <span class="kw">=&gt;</span> <span class="bu">Float64Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> n}<span class="op">,</span> (_<span class="op">,</span> k) <span class="kw">=&gt;</span> V[k][i]))}<span class="op">;</span></span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>emNet <span class="op">=</span> {</span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>  emNew<span class="op">;</span></span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> N <span class="op">=</span> emN<span class="op">,</span> G <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> N}<span class="op">,</span> () <span class="kw">=&gt;</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N))<span class="op">;</span></span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> i<span class="op">;</span> j <span class="op">&lt;</span> N<span class="op">;</span> j<span class="op">++</span>) { <span class="kw">const</span> g <span class="op">=</span> i <span class="op">===</span> j <span class="op">?</span> <span class="dv">0</span> <span class="op">:</span> <span class="fu">emRandn</span>()<span class="op">;</span> G[i][j] <span class="op">=</span> g<span class="op">;</span> G[j][i] <span class="op">=</span> g<span class="op">;</span> }</span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> {vals<span class="op">,</span> vecs} <span class="op">=</span> <span class="fu">emEigh</span>(G)<span class="op">;</span></span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {G<span class="op">,</span> <span class="dt">lmax</span><span class="op">:</span> vals[<span class="dv">0</span>]<span class="op">,</span> vals<span class="op">,</span> vecs<span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="bu">Float64Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> N}<span class="op">,</span> () <span class="kw">=&gt;</span> <span class="fu">emRandn</span>())}<span class="op">;</span></span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>emM <span class="op">=</span> {</span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> {G<span class="op">,</span> lmax} <span class="op">=</span> emNet<span class="op">,</span> s <span class="op">=</span> emR <span class="op">/</span> lmax<span class="op">;</span></span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {<span class="dt">M</span><span class="op">:</span> G<span class="op">.</span><span class="fu">map</span>(row <span class="kw">=&gt;</span> row<span class="op">.</span><span class="fu">map</span>(x <span class="kw">=&gt;</span> x <span class="op">*</span> s))<span class="op">,</span> <span class="dt">vals</span><span class="op">:</span> emNet<span class="op">.</span><span class="at">vals</span><span class="op">.</span><span class="fu">map</span>(x <span class="kw">=&gt;</span> x <span class="op">*</span> s)<span class="op">,</span> <span class="dt">vecs</span><span class="op">:</span> emNet<span class="op">.</span><span class="at">vecs</span>}<span class="op">;</span></span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>emState <span class="op">=</span> {</span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>  emReset<span class="op">;</span></span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> N <span class="op">=</span> emN<span class="op">,</span> {M<span class="op">,</span> vals<span class="op">,</span> vecs} <span class="op">=</span> emM<span class="op">,</span> start <span class="op">=</span> emStart<span class="op">,</span> drive <span class="op">=</span> emDrive<span class="op">;</span></span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> dt <span class="op">=</span> <span class="fl">0.02</span><span class="op">,</span> tau <span class="op">=</span> <span class="dv">1</span><span class="op">,</span> T <span class="op">=</span> <span class="dv">20</span><span class="op">,</span> n <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(T <span class="op">/</span> dt) <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> h <span class="op">=</span> drive <span class="op">===</span> <span class="st">"const"</span> <span class="op">?</span> emNet<span class="op">.</span><span class="at">h</span> <span class="op">:</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N)<span class="op">;</span></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> r <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N)<span class="op">;</span></span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (drive <span class="op">===</span> <span class="st">"none"</span>) {</span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (start <span class="op">===</span> <span class="st">"random"</span>) <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) r[i] <span class="op">=</span> <span class="fu">emRandn</span>()<span class="op">;</span></span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (start <span class="op">===</span> <span class="st">"slow"</span> <span class="op">||</span> start <span class="op">===</span> <span class="st">"both"</span>) <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) r[i] <span class="op">+=</span> vecs[<span class="dv">0</span>][i] <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(N)<span class="op">;</span></span>
+<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (start <span class="op">===</span> <span class="st">"fast"</span> <span class="op">||</span> start <span class="op">===</span> <span class="st">"both"</span>) <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) r[i] <span class="op">+=</span> vecs[N <span class="op">-</span> <span class="dv">1</span>][i] <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(N)<span class="op">;</span></span>
+<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> nrm <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(r<span class="op">.</span><span class="fu">reduce</span>((s<span class="op">,</span> x) <span class="kw">=&gt;</span> s <span class="op">+</span> x <span class="op">*</span> x<span class="op">,</span> <span class="dv">0</span>))<span class="op">;</span> <span class="cf">if</span> (nrm <span class="op">&gt;</span> <span class="dv">0</span>) <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) r[i] <span class="op">*=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(N) <span class="op">/</span> nrm<span class="op">;</span></span>
+<span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> hist <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> N}<span class="op">,</span> () <span class="kw">=&gt;</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n))<span class="op">,</span> amps <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> N}<span class="op">,</span> () <span class="kw">=&gt;</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(n))<span class="op">;</span></span>
+<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> a0 <span class="op">=</span> vecs<span class="op">.</span><span class="fu">map</span>(v <span class="kw">=&gt;</span> v<span class="op">.</span><span class="fu">reduce</span>((s<span class="op">,</span> x<span class="op">,</span> i) <span class="kw">=&gt;</span> s <span class="op">+</span> x <span class="op">*</span> r[i]<span class="op">,</span> <span class="dv">0</span>))<span class="op">;</span></span>
+<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> record <span class="op">=</span> k <span class="kw">=&gt;</span> { <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) { hist[i][k] <span class="op">=</span> r[i]<span class="op">;</span> <span class="kw">let</span> a <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> N<span class="op">;</span> j<span class="op">++</span>) a <span class="op">+=</span> vecs[i][j] <span class="op">*</span> r[j]<span class="op">;</span> amps[i][k] <span class="op">=</span> a<span class="op">;</span> } }<span class="op">;</span></span>
+<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a>  <span class="fu">record</span>(<span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb3-160"><a href="#cb3-160" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-161"><a href="#cb3-161" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (<span class="kw">true</span>) {</span>
+<span id="cb3-162"><a href="#cb3-162" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>viewof emPause<span class="op">.</span><span class="at">value</span> <span class="op">&amp;&amp;</span> k <span class="op">&lt;</span> n <span class="op">-</span> <span class="dv">1</span>) {</span>
+<span id="cb3-163"><a href="#cb3-163" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> sig <span class="op">=</span> viewof emNoise<span class="op">.</span><span class="at">value</span><span class="op">;</span></span>
+<span id="cb3-164"><a href="#cb3-164" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (<span class="kw">let</span> s <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> s <span class="op">&lt;</span> <span class="dv">5</span> <span class="op">&amp;&amp;</span> k <span class="op">&lt;</span> n <span class="op">-</span> <span class="dv">1</span><span class="op">;</span> s<span class="op">++</span>) {</span>
+<span id="cb3-165"><a href="#cb3-165" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> rn <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float64Array</span>(N)<span class="op">;</span></span>
+<span id="cb3-166"><a href="#cb3-166" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb3-167"><a href="#cb3-167" aria-hidden="true" tabindex="-1"></a>          <span class="kw">let</span> inp <span class="op">=</span> h[i]<span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> N<span class="op">;</span> j<span class="op">++</span>) inp <span class="op">+=</span> M[i][j] <span class="op">*</span> r[j]<span class="op">;</span></span>
+<span id="cb3-168"><a href="#cb3-168" aria-hidden="true" tabindex="-1"></a>          rn[i] <span class="op">=</span> r[i] <span class="op">+</span> dt <span class="op">/</span> tau <span class="op">*</span> (<span class="op">-</span>r[i] <span class="op">+</span> inp) <span class="op">+</span> sig <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(dt) <span class="op">*</span> <span class="fu">emRandn</span>()<span class="op">;</span></span>
+<span id="cb3-169"><a href="#cb3-169" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-170"><a href="#cb3-170" aria-hidden="true" tabindex="-1"></a>        r <span class="op">=</span> rn<span class="op">;</span> k<span class="op">++;</span> <span class="fu">record</span>(k)<span class="op">;</span></span>
+<span id="cb3-171"><a href="#cb3-171" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb3-172"><a href="#cb3-172" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-173"><a href="#cb3-173" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> {hist<span class="op">,</span> amps<span class="op">,</span> k<span class="op">,</span> <span class="dt">t</span><span class="op">:</span> k <span class="op">*</span> dt<span class="op">,</span> dt<span class="op">,</span> T<span class="op">,</span> a0<span class="op">,</span> vals<span class="op">,</span> h<span class="op">,</span> drive<span class="op">,</span> <span class="dt">hvec</span><span class="op">:</span> vecs<span class="op">.</span><span class="fu">map</span>(v <span class="kw">=&gt;</span> v<span class="op">.</span><span class="fu">reduce</span>((s<span class="op">,</span> x<span class="op">,</span> i) <span class="kw">=&gt;</span> s <span class="op">+</span> x <span class="op">*</span> h[i]<span class="op">,</span> <span class="dv">0</span>))}<span class="op">;</span></span>
+<span id="cb3-174"><a href="#cb3-174" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-175"><a href="#cb3-175" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-176"><a href="#cb3-176" aria-hidden="true" tabindex="-1"></a>emCanvas <span class="op">=</span> <span class="fu">mkCanvas</span>(<span class="dv">760</span><span class="op">,</span> <span class="dv">500</span>)</span>
+<span id="cb3-177"><a href="#cb3-177" aria-hidden="true" tabindex="-1"></a>emRaster <span class="op">=</span> DOM<span class="op">.</span><span class="fu">context2d</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(<span class="dv">20</span> <span class="op">/</span> <span class="fl">0.02</span>) <span class="op">+</span> <span class="dv">1</span><span class="op">,</span> emN<span class="op">,</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-7" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-8" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="181" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 180;"><span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> st <span class="op">=</span> emState<span class="op">,</span> c <span class="op">=</span> emCanvas<span class="op">,</span> fg <span class="op">=</span> <span class="fu">exFg</span>()<span class="op">,</span> W <span class="op">=</span> <span class="dv">760</span><span class="op">,</span> H <span class="op">=</span> <span class="dv">500</span><span class="op">,</span> N <span class="op">=</span> emN<span class="op">;</span></span>
+<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> {hist<span class="op">,</span> amps<span class="op">,</span> k<span class="op">,</span> dt<span class="op">,</span> T<span class="op">,</span> a0<span class="op">,</span> vals<span class="op">,</span> drive<span class="op">,</span> hvec} <span class="op">=</span> st<span class="op">;</span></span>
+<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> orange <span class="op">=</span> <span class="st">"#ff7f0e"</span><span class="op">,</span> blue <span class="op">=</span> <span class="st">"#1f77b4"</span><span class="op">;</span></span>
+<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">clearRect</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> W<span class="op">,</span> H)<span class="op">;</span> c<span class="op">.</span><span class="at">font</span> <span class="op">=</span> exFont<span class="op">;</span></span>
+<span id="cb4-186"><a href="#cb4-186" aria-hidden="true" tabindex="-1"></a>  <span class="co">// panel A: activity raster</span></span>
+<span id="cb4-187"><a href="#cb4-187" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> A <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">60</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">320</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">220</span>}<span class="op">;</span></span>
+<span id="cb4-188"><a href="#cb4-188" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> n <span class="op">=</span> hist[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span><span class="op">,</span> img <span class="op">=</span> emRaster<span class="op">.</span><span class="fu">createImageData</span>(n<span class="op">,</span> N)<span class="op">;</span></span>
+<span id="cb4-189"><a href="#cb4-189" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> vmax <span class="op">=</span> <span class="fl">1e-6</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;=</span> k<span class="op">;</span> j<span class="op">++</span>) vmax <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(vmax<span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(hist[i][j]))<span class="op">;</span></span>
+<span id="cb4-190"><a href="#cb4-190" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> n<span class="op">;</span> j<span class="op">++</span>) {</span>
+<span id="cb4-191"><a href="#cb4-191" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> p <span class="op">=</span> <span class="dv">4</span> <span class="op">*</span> (i <span class="op">*</span> n <span class="op">+</span> j)<span class="op">;</span></span>
+<span id="cb4-192"><a href="#cb4-192" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (j <span class="op">&gt;</span> k) { img<span class="op">.</span><span class="at">data</span>[p] <span class="op">=</span> <span class="dv">255</span><span class="op">;</span> img<span class="op">.</span><span class="at">data</span>[p <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> <span class="dv">255</span><span class="op">;</span> img<span class="op">.</span><span class="at">data</span>[p <span class="op">+</span> <span class="dv">2</span>] <span class="op">=</span> <span class="dv">255</span><span class="op">;</span> img<span class="op">.</span><span class="at">data</span>[p <span class="op">+</span> <span class="dv">3</span>] <span class="op">=</span> <span class="dv">255</span><span class="op">;</span> <span class="cf">continue</span><span class="op">;</span> }</span>
+<span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> u <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(<span class="dv">1</span><span class="op">,</span> hist[i][j] <span class="op">/</span> vmax))<span class="op">,</span> v <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sign</span>(u) <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(u))<span class="op">;</span></span>
+<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> rC <span class="op">=</span> v <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">255</span> <span class="op">:</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(<span class="dv">255</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> v))<span class="op">,</span> bC <span class="op">=</span> v <span class="op">&lt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">255</span> <span class="op">:</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(<span class="dv">255</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> v))<span class="op">,</span> gC <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(<span class="dv">255</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(v)))<span class="op">;</span></span>
+<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a>    img<span class="op">.</span><span class="at">data</span>[p] <span class="op">=</span> rC<span class="op">;</span> img<span class="op">.</span><span class="at">data</span>[p <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> gC<span class="op">;</span> img<span class="op">.</span><span class="at">data</span>[p <span class="op">+</span> <span class="dv">2</span>] <span class="op">=</span> bC<span class="op">;</span> img<span class="op">.</span><span class="at">data</span>[p <span class="op">+</span> <span class="dv">3</span>] <span class="op">=</span> <span class="dv">255</span><span class="op">;</span></span>
+<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a>  emRaster<span class="op">.</span><span class="fu">putImageData</span>(img<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">imageSmoothingEnabled</span> <span class="op">=</span> <span class="kw">false</span><span class="op">;</span> c<span class="op">.</span><span class="fu">drawImage</span>(emRaster<span class="op">.</span><span class="at">canvas</span><span class="op">,</span> A<span class="op">.</span><span class="at">x0</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span><span class="op">,</span> A<span class="op">.</span><span class="at">w</span><span class="op">,</span> A<span class="op">.</span><span class="at">h</span>)<span class="op">;</span> c<span class="op">.</span><span class="at">imageSmoothingEnabled</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb4-199"><a href="#cb4-199" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> A<span class="op">.</span><span class="at">x0</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span><span class="op">,</span> A<span class="op">.</span><span class="at">w</span><span class="op">,</span> A<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-200"><a href="#cb4-200" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span></span>
+<span id="cb4-201"><a href="#cb4-201" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`time (units of τ) · t = </span><span class="sc">${</span>st<span class="op">.</span><span class="at">t</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span> A<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span></span>
+<span id="cb4-202"><a href="#cb4-202" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> A<span class="op">.</span><span class="at">x0</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(T<span class="op">,</span> A<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">w</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span></span>
+<span id="cb4-203"><a href="#cb4-203" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">translate</span>(A<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">40</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">rotate</span>(<span class="op">-</span><span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"neuron"</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-204"><a href="#cb4-204" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"1"</span><span class="op">,</span> A<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> <span class="dv">10</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(N<span class="op">,</span> A<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-205"><a href="#cb4-205" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"left"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`colour: activity ±</span><span class="sc">${</span>vmax<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs">, square-root scale`</span><span class="op">,</span> A<span class="op">.</span><span class="at">x0</span><span class="op">,</span> A<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> A<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">46</span>)<span class="op">;</span></span>
+<span id="cb4-206"><a href="#cb4-206" aria-hidden="true" tabindex="-1"></a>  <span class="co">// panel B: mode amplitudes on a log scale</span></span>
+<span id="cb4-207"><a href="#cb4-207" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> B <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">470</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">270</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">220</span>}<span class="op">,</span> lo <span class="op">=</span> <span class="fl">1e-3</span><span class="op">,</span> hi <span class="op">=</span> <span class="dv">20</span><span class="op">;</span></span>
+<span id="cb4-208"><a href="#cb4-208" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> bx <span class="op">=</span> j <span class="kw">=&gt;</span> B<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">w</span> <span class="op">*</span> j <span class="op">/</span> (n <span class="op">-</span> <span class="dv">1</span>)<span class="op">,</span> by <span class="op">=</span> a <span class="kw">=&gt;</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (<span class="bu">Math</span><span class="op">.</span><span class="fu">log10</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(lo<span class="op">,</span> a)) <span class="op">-</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">log10</span>(lo)) <span class="op">/</span> (<span class="bu">Math</span><span class="op">.</span><span class="fu">log10</span>(hi) <span class="op">-</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">log10</span>(lo)))<span class="op">;</span></span>
+<span id="cb4-209"><a href="#cb4-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> B<span class="op">.</span><span class="at">x0</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span><span class="op">,</span> B<span class="op">.</span><span class="at">w</span><span class="op">,</span> B<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-210"><a href="#cb4-210" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">rect</span>(B<span class="op">.</span><span class="at">x0</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span><span class="op">,</span> B<span class="op">.</span><span class="at">w</span><span class="op">,</span> B<span class="op">.</span><span class="at">h</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">clip</span>()<span class="op">;</span></span>
+<span id="cb4-211"><a href="#cb4-211" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> drawMode <span class="op">=</span> (i<span class="op">,</span> col<span class="op">,</span> lw) <span class="kw">=&gt;</span> { c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> col<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> lw<span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;=</span> k<span class="op">;</span> j<span class="op">++</span>) j <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">bx</span>(j)<span class="op">,</span> <span class="fu">by</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(amps[i][j]))) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">bx</span>(<span class="dv">0</span>)<span class="op">,</span> <span class="fu">by</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(amps[i][<span class="dv">0</span>])))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> }<span class="op">;</span></span>
+<span id="cb4-212"><a href="#cb4-212" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> <span class="fl">0.35</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> i <span class="op">&lt;</span> N <span class="op">-</span> <span class="dv">1</span><span class="op">;</span> i<span class="op">++</span>) <span class="fu">drawMode</span>(i<span class="op">,</span> <span class="st">"#888"</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span> c<span class="op">.</span><span class="at">globalAlpha</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-213"><a href="#cb4-213" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drawMode</span>(N <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> blue<span class="op">,</span> <span class="dv">2</span>)<span class="op">;</span> <span class="fu">drawMode</span>(<span class="dv">0</span><span class="op">,</span> orange<span class="op">,</span> <span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb4-214"><a href="#cb4-214" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">5</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">lineWidth</span> <span class="op">=</span> <span class="fl">1.2</span><span class="op">;</span></span>
+<span id="cb4-215"><a href="#cb4-215" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> i <span class="kw">of</span> [<span class="dv">0</span><span class="op">,</span> N <span class="op">-</span> <span class="dv">1</span>]) {</span>
+<span id="cb4-216"><a href="#cb4-216" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span></span>
+<span id="cb4-217"><a href="#cb4-217" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;=</span> k<span class="op">;</span> j<span class="op">++</span>) {</span>
+<span id="cb4-218"><a href="#cb4-218" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> t <span class="op">=</span> j <span class="op">*</span> dt<span class="op">,</span> lam <span class="op">=</span> vals[i]<span class="op">,</span> ainf <span class="op">=</span> drive <span class="op">===</span> <span class="st">"const"</span> <span class="op">?</span> hvec[i] <span class="op">/</span> (<span class="dv">1</span> <span class="op">-</span> lam) <span class="op">:</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-219"><a href="#cb4-219" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> a <span class="op">=</span> ainf <span class="op">+</span> (a0[i] <span class="op">-</span> ainf) <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">exp</span>(<span class="op">-</span>(<span class="dv">1</span> <span class="op">-</span> lam) <span class="op">*</span> t)<span class="op">;</span></span>
+<span id="cb4-220"><a href="#cb4-220" aria-hidden="true" tabindex="-1"></a>      j <span class="op">?</span> c<span class="op">.</span><span class="fu">lineTo</span>(<span class="fu">bx</span>(j)<span class="op">,</span> <span class="fu">by</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(a))) <span class="op">:</span> c<span class="op">.</span><span class="fu">moveTo</span>(<span class="fu">bx</span>(<span class="dv">0</span>)<span class="op">,</span> <span class="fu">by</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(a)))<span class="op">;</span></span>
+<span id="cb4-221"><a href="#cb4-221" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-222"><a href="#cb4-222" aria-hidden="true" tabindex="-1"></a>    c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-223"><a href="#cb4-223" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-224"><a href="#cb4-224" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-225"><a href="#cb4-225" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"time (units of τ)"</span><span class="op">,</span> B<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span></span>
+<span id="cb4-226"><a href="#cb4-226" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> B<span class="op">.</span><span class="at">x0</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(T<span class="op">,</span> B<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">w</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span></span>
+<span id="cb4-227"><a href="#cb4-227" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> <span class="cf">for</span> (<span class="kw">const</span> v <span class="kw">of</span> [<span class="fl">1e-3</span><span class="op">,</span> <span class="fl">1e-2</span><span class="op">,</span> <span class="fl">0.1</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">10</span>]) c<span class="op">.</span><span class="fu">fillText</span>(v <span class="op">&gt;=</span> <span class="dv">1</span> <span class="op">?</span> v <span class="op">:</span> v<span class="op">.</span><span class="fu">toString</span>()<span class="op">,</span> B<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">6</span><span class="op">,</span> <span class="fu">by</span>(v) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-228"><a href="#cb4-228" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">translate</span>(B<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">62</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">rotate</span>(<span class="op">-</span><span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"|mode amplitude|"</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-229"><a href="#cb4-229" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"left"</span><span class="op">;</span> c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> orange<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`slowest mode: λ = </span><span class="sc">${</span>vals[<span class="dv">0</span>]<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">, τ₁ = </span><span class="sc">${</span>(<span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">-</span> vals[<span class="dv">0</span>]))<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs"> τ`</span><span class="op">,</span> B<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">60</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">46</span>)<span class="op">;</span></span>
+<span id="cb4-230"><a href="#cb4-230" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> blue<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="vs">`fastest mode: λ = </span><span class="sc">${</span>vals[N <span class="op">-</span> <span class="dv">1</span>]<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs">, τ₄₀ = </span><span class="sc">${</span>(<span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">-</span> vals[N <span class="op">-</span> <span class="dv">1</span>]))<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs"> τ`</span><span class="op">,</span> B<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">60</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">66</span>)<span class="op">;</span></span>
+<span id="cb4-231"><a href="#cb4-231" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"grey: the other modes · dashed: formula"</span><span class="op">,</span> B<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">60</span><span class="op">,</span> B<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> B<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">86</span>)<span class="op">;</span></span>
+<span id="cb4-232"><a href="#cb4-232" aria-hidden="true" tabindex="-1"></a>  <span class="co">// panel C: eigenvalue spectrum</span></span>
+<span id="cb4-233"><a href="#cb4-233" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> C <span class="op">=</span> {<span class="dt">x0</span><span class="op">:</span> <span class="dv">60</span><span class="op">,</span> <span class="dt">y0</span><span class="op">:</span> <span class="dv">350</span><span class="op">,</span> <span class="dt">w</span><span class="op">:</span> <span class="dv">680</span><span class="op">,</span> <span class="dt">h</span><span class="op">:</span> <span class="dv">110</span>}<span class="op">,</span> emin <span class="op">=</span> <span class="op">-</span><span class="fl">1.1</span><span class="op">,</span> emax <span class="op">=</span> <span class="fl">1.1</span><span class="op">;</span></span>
+<span id="cb4-234"><a href="#cb4-234" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> cx <span class="op">=</span> i <span class="kw">=&gt;</span> C<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> C<span class="op">.</span><span class="at">w</span> <span class="op">*</span> (i <span class="op">+</span> <span class="fl">0.5</span>) <span class="op">/</span> N<span class="op">,</span> cy <span class="op">=</span> v <span class="kw">=&gt;</span> C<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> C<span class="op">.</span><span class="at">h</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> (v <span class="op">-</span> emin) <span class="op">/</span> (emax <span class="op">-</span> emin))<span class="op">;</span></span>
+<span id="cb4-235"><a href="#cb4-235" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axisBox</span>(c<span class="op">,</span> C<span class="op">.</span><span class="at">x0</span><span class="op">,</span> C<span class="op">.</span><span class="at">y0</span><span class="op">,</span> C<span class="op">.</span><span class="at">w</span><span class="op">,</span> C<span class="op">.</span><span class="at">h</span>)<span class="op">;</span></span>
+<span id="cb4-236"><a href="#cb4-236" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">setLineDash</span>([<span class="dv">4</span><span class="op">,</span> <span class="dv">4</span>])<span class="op">;</span> c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"red"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(C<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">cy</span>(<span class="dv">1</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(C<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> C<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">cy</span>(<span class="dv">1</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">setLineDash</span>([])<span class="op">;</span></span>
+<span id="cb4-237"><a href="#cb4-237" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">strokeStyle</span> <span class="op">=</span> <span class="st">"#888"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">moveTo</span>(C<span class="op">.</span><span class="at">x0</span><span class="op">,</span> <span class="fu">cy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">lineTo</span>(C<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> C<span class="op">.</span><span class="at">w</span><span class="op">,</span> <span class="fu">cy</span>(<span class="dv">0</span>))<span class="op">;</span> c<span class="op">.</span><span class="fu">stroke</span>()<span class="op">;</span></span>
+<span id="cb4-238"><a href="#cb4-238" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++</span>) { c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> i <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> orange <span class="op">:</span> i <span class="op">===</span> N <span class="op">-</span> <span class="dv">1</span> <span class="op">?</span> blue <span class="op">:</span> <span class="st">"gray"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">beginPath</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">arc</span>(<span class="fu">cx</span>(i)<span class="op">,</span> <span class="fu">cy</span>(vals[i])<span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fill</span>()<span class="op">;</span> }</span>
+<span id="cb4-239"><a href="#cb4-239" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">fillStyle</span> <span class="op">=</span> fg<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"right"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"1"</span><span class="op">,</span> C<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">cy</span>(<span class="dv">1</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"0"</span><span class="op">,</span> C<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">cy</span>(<span class="dv">0</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"−1"</span><span class="op">,</span> C<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">8</span><span class="op">,</span> <span class="fu">cy</span>(<span class="op">-</span><span class="dv">1</span>) <span class="op">+</span> <span class="dv">5</span>)<span class="op">;</span></span>
+<span id="cb4-240"><a href="#cb4-240" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="fu">save</span>()<span class="op">;</span> c<span class="op">.</span><span class="fu">translate</span>(C<span class="op">.</span><span class="at">x0</span> <span class="op">-</span> <span class="dv">40</span><span class="op">,</span> C<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> C<span class="op">.</span><span class="at">h</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">rotate</span>(<span class="op">-</span><span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span> c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"eigenvalue"</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span> c<span class="op">.</span><span class="fu">restore</span>()<span class="op">;</span></span>
+<span id="cb4-241"><a href="#cb4-241" aria-hidden="true" tabindex="-1"></a>  c<span class="op">.</span><span class="at">textAlign</span> <span class="op">=</span> <span class="st">"center"</span><span class="op">;</span> c<span class="op">.</span><span class="fu">fillText</span>(<span class="st">"modes, sorted by eigenvalue"</span><span class="op">,</span> C<span class="op">.</span><span class="at">x0</span> <span class="op">+</span> C<span class="op">.</span><span class="at">w</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> C<span class="op">.</span><span class="at">y0</span> <span class="op">+</span> C<span class="op">.</span><span class="at">h</span> <span class="op">+</span> <span class="dv">24</span>)<span class="op">;</span></span>
+<span id="cb4-242"><a href="#cb4-242" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> c<span class="op">.</span><span class="at">canvas</span><span class="op">;</span></span>
+<span id="cb4-243"><a href="#cb4-243" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</section>
+<section id="reading-the-figure" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-figure">Reading the figure</h2>
+<p>The top left panel is the activity of all 40 neurons over time, one row per neuron, red for positive and blue for negative rates, scaled to the largest value seen so far. The colour scale is a square root, so that small activity late in the run stays visible. With no input, the activity is set at <span class="math inline">\(t = 0\)</span> by the initial pattern you chose and then evolves on its own; with constant input it starts at zero and builds up. Rates below zero are not physical, but a linear model does not know that, and it is simplest to read the colours as deviations from a background rate.</p>
+<p>The top right panel is the same activity after projecting it onto the eigenvectors of <span class="math inline">\(\mathbf M\)</span>. Each thin grey line is the amplitude of one mode on a logarithmic axis, so a pure exponential decay is a straight line whose slope is the decay rate. The slowest mode, the one with the largest eigenvalue, is orange, and the fastest, with the most negative eigenvalue, is blue. The dashed lines next to them are the solutions of the one-mode equation above, computed from the eigenvalue and the initial amplitude alone. They should sit on top of the simulated lines when the noise is off.</p>
+<p>The bottom panel is the spectrum: all 40 eigenvalues sorted from largest to smallest, with the slow and fast modes coloured to match. The red dashed line at 1 is the stability limit. The spectral bound <span class="math inline">\(R\)</span> moves the orange point up and down, and the rest of the spectrum scales with it.</p>
+<p>The time axis is in units of <span class="math inline">\(\tau\)</span>, the time constant of a single neuron. The two time constants printed in the top right panel are in the same units.</p>
+</section>
+<section id="things-to-try" class="level2">
+<h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
+<p>Start with a random initial pattern and no input at <span class="math inline">\(R = 0.9\)</span>. In the raster the activity fades within a few <span class="math inline">\(\tau\)</span>, but not to nothing: a faint pattern remains and dies away much more slowly. In the mode panel this is obvious. Every grey line drops steeply, the blue one steepest of all, while the orange line falls at a tenth of that slope: its time constant is <span class="math inline">\(1/(1 - 0.9) = 10\)</span> times that of a single neuron. After a few <span class="math inline">\(\tau\)</span> the orange mode is all that is left, and the surviving pattern in the raster is its eigenvector.</p>
+<p>Now set the initial activity to the slowest mode alone. The raster shows a fixed pattern that just fades, and the mode panel is a single straight orange line, since nothing else was excited. Then pick the fastest mode. Its pattern alternates sign from neuron to neuron, so the recurrent input to each neuron opposes its own activity, and it is gone within a <span class="math inline">\(\tau\)</span>. The option with both modes shows the two decays together; after about two <span class="math inline">\(\tau\)</span> the blue line has dropped below the grey floor and the raster has quietly switched from one pattern to the other.</p>
+<p>Move <span class="math inline">\(R\)</span>. At <span class="math inline">\(R = 0.98\)</span> the slowest time constant is <span class="math inline">\(50\,\tau\)</span> and the orange line is nearly flat; the network has become a memory, holding its pattern long after the input is gone. At <span class="math inline">\(R = 0.5\)</span> the slow mode lasts only twice as long as a neuron and the whole spectrum is compressed towards zero. At <span class="math inline">\(R = 0\)</span> the matrix is zero, there is no recurrence, and all modes decay at the same rate.</p>
+<p>Switch to constant input. Each mode now rises to its steady state <span class="math inline">\(h_i /
+(1 - \lambda_i)\)</span>, and the dashed lines show the approach. The slow mode is amplified ten times at <span class="math inline">\(R = 0.9\)</span>, so the steady-state pattern of the network is dominated by its slowest eigenvector almost regardless of what the input looks like. This is the second thing recurrence does besides lengthening timescales: it filters the input, keeping the parts that match its slow modes and suppressing the rest. Click “New random network” to get a different matrix and a different slow pattern, and notice that the statements above do not depend on which one you got.</p>
+<p>Finally add noise. The grey lines no longer decay but hover at a floor set by the noise, and the slow mode hovers highest on average, since it integrates the noise over the longest time. This is the network’s spontaneous activity, and its autocorrelation time is the slow mode’s time constant. A network can be made to look slow without any slow element in it, just by wiring fast elements into a loop that nearly closes. Measuring such timescales from recordings is harder than it looks, and much of what I know about it comes from the groups of <a href="https://uni-tuebingen.de/en/161236">Anna Levina</a> in Tübingen and <a href="https://engel-lab.princeton.edu/">Tatiana Engel</a> at Princeton. Fitting an exponential to an autocorrelation gives a biased answer for short recordings, and Zeraati, Engel and Levina (2022) show how to do it properly, by fitting the data with a mixture of exactly the kind of noisy modes shown here. In the same spirit, Shi et al.&nbsp;(2023) work out how spatially structured connections produce several timescales at once, one per spatial frequency, and Zeraati et al.&nbsp;(2023) find those multiple timescales in recordings from visual cortex, where the slow one lengthens with attention. The figure above is the toy version of all three: the spectrum of <span class="math inline">\(\mathbf M\)</span> is the set of timescales, and <span class="math inline">\(R\)</span> is the knob that attention would turn.</p>
+<p>The exercise this page is based on is from the recurrent network chapter of Dayan and Abbott (2001, chapter 7). Rajan and Abbott (2006) describe what the spectrum of a random connection matrix looks like when excitatory and inhibitory neurons are distinguished, which the symmetric matrix here does not do.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Dahmen D, Grün S, Diesmann M, Helias M (2019). Second type of criticality in the brain uncovers rich multiple-neuron dynamics. <em>Proceedings of the National Academy of Sciences</em> 116: 13051–13060. <a href="https://doi.org/10.1073/pnas.1818972116">DOI</a></p>
+<p>Dahmen D, Recanatesi S, Jia X, Ocker GK, Lahiji N, Musall S, Campagnola L, Seeman S, Jarsky T, Helias M, Shea-Brown E (2026). Strong and localized recurrence controls the dimensionality of neural activity across brain areas. <em>Nature Neuroscience</em> 29: 2578–2587. <a href="https://doi.org/10.1038/s41593-026-02395-w">DOI</a></p>
+<p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
+<p>Murray JD, Bernacchia A, Freedman DJ, Romo R, Wallis JD, Cai X, Padoa-Schioppa C, Pasternak T, Seo H, Lee D, Wang XJ (2014). A hierarchy of intrinsic timescales across primate cortex. <em>Nature Neuroscience</em> 17: 1661–1663. <a href="https://doi.org/10.1038/nn.3862">DOI</a></p>
+<p>Pachitariu M, Zhong L, Gracias A, Minisi A, Lopez C, Stringer C (2026). A critical initialization for biological neural networks. <em>Nature</em> 655: 990–996. <a href="https://doi.org/10.1038/s41586-026-10528-1">DOI</a></p>
+<p>Rajan K, Abbott LF (2006). Eigenvalue spectra of random matrices for neural networks. <em>Physical Review Letters</em> 97: 188104. <a href="https://doi.org/10.1103/PhysRevLett.97.188104">DOI</a></p>
+<p>Shi YL, Zeraati R, Levina A, Engel TA (2023). Spatial and temporal correlations in neural networks with structured connectivity. <em>Physical Review Research</em> 5: 013005. <a href="https://doi.org/10.1103/PhysRevResearch.5.013005">DOI</a></p>
+<p>Wigner EP (1958). On the distribution of the roots of certain symmetric matrices. <em>Annals of Mathematics</em> 67: 325–327. <a href="https://doi.org/10.2307/1970008">DOI</a></p>
+<p>Zeraati R, Engel TA, Levina A (2022). A flexible Bayesian framework for unbiased estimation of timescales. <em>Nature Computational Science</em> 2: 193–204. <a href="https://doi.org/10.1038/s43588-022-00214-3">DOI</a></p>
+<p>Zeraati R, Shi YL, Steinmetz NA, Gieselmann MA, Thiele A, Moore T, Levina A, Engel TA (2023). Intrinsic timescales in the visual cortex change with selective attention and reflect spatial connectivity. <em>Nature Communications</em> 14: 1858. <a href="https://doi.org/10.1038/s41467-023-37613-7">DOI</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ii8vIHNoYXJlZCBoZWxwZXJzOiBvbmUgcGVyc2lzdGVudCBjYW52YXMgcGVyIGV4cGxvcmFibGUsIHRleHQtc2l6ZWQgZm9udHMsIHJlc3BvbnNpdmUgd2lkdGhcbmV4Rm9udCA9ICh7c2l6ZTogZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5ib2R5KS5mb250U2l6ZSwgZmFtaWx5OiBnZXRDb21wdXRlZFN0eWxlKGRvY3VtZW50LmJvZHkpLmZvbnRGYW1pbHksIHRvU3RyaW5nKCkgeyByZXR1cm4gdGhpcy5zaXplICsgXCIgXCIgKyB0aGlzLmZhbWlseTsgfX0pXG5leEZnID0gKCkgPT4gZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5ib2R5KS5jb2xvclxubWtDYW52YXMgPSAoVywgSCkgPT4ge1xuICBjb25zdCBjID0gRE9NLmNvbnRleHQyZChXLCBIKTtcbiAgYy5jYW52YXMuc3R5bGUud2lkdGggPSBcIjEwMCVcIjsgYy5jYW52YXMuc3R5bGUubWF4V2lkdGggPSBXICsgXCJweFwiOyBjLmNhbnZhcy5zdHlsZS5oZWlnaHQgPSBcImF1dG9cIjtcbiAgcmV0dXJuIGM7XG59XG5heGlzQm94ID0gKGMsIHgsIHksIHcsIGgpID0+IHsgYy5zdHJva2VTdHlsZSA9IFwiIzk5OVwiOyBjLmxpbmVXaWR0aCA9IDE7IGMuc3Ryb2tlUmVjdCh4LCB5LCB3LCBoKTsgfVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0yIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoidmlld29mIGVtUiA9IElucHV0cy5yYW5nZShbMCwgMC45OF0sIHt2YWx1ZTogMC45LCBzdGVwOiAwLjAxLCBsYWJlbDogXCJTcGVjdHJhbCBib3VuZCBSIChsYXJnZXN0IGVpZ2VudmFsdWUpXCJ9KVxudmlld29mIGVtU3RhcnQgPSBJbnB1dHMucmFkaW8obmV3IE1hcChbW1wicmFuZG9tIHBhdHRlcm5cIiwgXCJyYW5kb21cIl0sIFtcInNsb3dlc3QgbW9kZVwiLCBcInNsb3dcIl0sIFtcImZhc3Rlc3QgbW9kZVwiLCBcImZhc3RcIl0sIFtcInNsb3dlc3QgKyBmYXN0ZXN0XCIsIFwiYm90aFwiXV0pLCB7dmFsdWU6IFwicmFuZG9tXCIsIGxhYmVsOiBcIkluaXRpYWwgYWN0aXZpdHlcIn0pXG52aWV3b2YgZW1Ecml2ZSA9IElucHV0cy5yYWRpbyhuZXcgTWFwKFtbXCJub25lLCBhY3Rpdml0eSBkZWNheXNcIiwgXCJub25lXCJdLCBbXCJjb25zdGFudCByYW5kb20gaW5wdXRcIiwgXCJjb25zdFwiXV0pLCB7dmFsdWU6IFwibm9uZVwiLCBsYWJlbDogXCJJbnB1dCBoXCJ9KVxudmlld29mIGVtTm9pc2UgPSBJbnB1dHMucmFuZ2UoWzAsIDAuMl0sIHt2YWx1ZTogMCwgc3RlcDogMC4wMSwgbGFiZWw6IFwiSW5wdXQgbm9pc2VcIn0pXG52aWV3b2YgZW1OZXcgPSBJbnB1dHMuYnV0dG9uKFwiTmV3IHJhbmRvbSBuZXR3b3JrXCIpXG52aWV3b2YgZW1QYXVzZSA9IElucHV0cy50b2dnbGUoe2xhYmVsOiBcIlBhdXNlXCJ9KVxudmlld29mIGVtUmVzZXQgPSBJbnB1dHMuYnV0dG9uKFwiUmVzZXRcIilcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMyIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImVtTiA9IDQwXG5lbVJhbmRuID0gKCkgPT4ge1xuICBsZXQgdSA9IDA7IHdoaWxlICh1ID09PSAwKSB1ID0gTWF0aC5yYW5kb20oKTtcbiAgcmV0dXJuIE1hdGguc3FydCgtMiAqIE1hdGgubG9nKHUpKSAqIE1hdGguY29zKDIgKiBNYXRoLlBJICogTWF0aC5yYW5kb20oKSk7XG59XG4vLyBKYWNvYmkgZWlnZW52YWx1ZSBhbGdvcml0aG0gZm9yIGEgc3ltbWV0cmljIG1hdHJpeDsgcmV0dXJucyBlaWdlbnZhbHVlcyBzb3J0ZWQgZGVzY2VuZGluZyB3aXRoIGVpZ2VudmVjdG9ycyBhcyByb3dzXG5lbUVpZ2ggPSBBMCA9PiB7XG4gIGNvbnN0IG4gPSBBMC5sZW5ndGgsIEEgPSBBMC5tYXAocm93ID0+IEZsb2F0NjRBcnJheS5mcm9tKHJvdykpO1xuICBjb25zdCBWID0gQXJyYXkuZnJvbSh7bGVuZ3RoOiBufSwgKF8sIGkpID0+IHsgY29uc3QgciA9IG5ldyBGbG9hdDY0QXJyYXkobik7IHJbaV0gPSAxOyByZXR1cm4gcjsgfSk7XG4gIGZvciAobGV0IHN3ZWVwID0gMDsgc3dlZXAgPCA2MDsgc3dlZXArKykge1xuICAgIGxldCBvZmYgPSAwOyBmb3IgKGxldCBpID0gMDsgaSA8IG47IGkrKykgZm9yIChsZXQgaiA9IGkgKyAxOyBqIDwgbjsgaisrKSBvZmYgKz0gQVtpXVtqXSAqIEFbaV1bal07XG4gICAgaWYgKG9mZiA8IDFlLTIwKSBicmVhaztcbiAgICBmb3IgKGxldCBwID0gMDsgcCA8IG47IHArKykgZm9yIChsZXQgcSA9IHAgKyAxOyBxIDwgbjsgcSsrKSB7XG4gICAgICBpZiAoTWF0aC5hYnMoQVtwXVtxXSkgPCAxZS0xNCkgY29udGludWU7XG4gICAgICBjb25zdCB0aGV0YSA9IChBW3FdW3FdIC0gQVtwXVtwXSkgLyAoMiAqIEFbcF1bcV0pO1xuICAgICAgY29uc3QgdCA9IE1hdGguc2lnbih0aGV0YSB8fCAxKSAvIChNYXRoLmFicyh0aGV0YSkgKyBNYXRoLnNxcnQodGhldGEgKiB0aGV0YSArIDEpKTtcbiAgICAgIGNvbnN0IGMgPSAxIC8gTWF0aC5zcXJ0KHQgKiB0ICsgMSksIHMgPSB0ICogYztcbiAgICAgIGZvciAobGV0IGsgPSAwOyBrIDwgbjsgaysrKSB7IGNvbnN0IGFrcCA9IEFba11bcF0sIGFrcSA9IEFba11bcV07IEFba11bcF0gPSBjICogYWtwIC0gcyAqIGFrcTsgQVtrXVtxXSA9IHMgKiBha3AgKyBjICogYWtxOyB9XG4gICAgICBmb3IgKGxldCBrID0gMDsgayA8IG47IGsrKykgeyBjb25zdCBhcGsgPSBBW3BdW2tdLCBhcWsgPSBBW3FdW2tdOyBBW3BdW2tdID0gYyAqIGFwayAtIHMgKiBhcWs7IEFbcV1ba10gPSBzICogYXBrICsgYyAqIGFxazsgfVxuICAgICAgZm9yIChsZXQgayA9IDA7IGsgPCBuOyBrKyspIHsgY29uc3QgdmtwID0gVltrXVtwXSwgdmtxID0gVltrXVtxXTsgVltrXVtwXSA9IGMgKiB2a3AgLSBzICogdmtxOyBWW2tdW3FdID0gcyAqIHZrcCArIGMgKiB2a3E7IH1cbiAgICB9XG4gIH1cbiAgY29uc3QgaWR4ID0gQXJyYXkuZnJvbSh7bGVuZ3RoOiBufSwgKF8sIGkpID0+IGkpLnNvcnQoKGEsIGIpID0+IEFbYl1bYl0gLSBBW2FdW2FdKTtcbiAgcmV0dXJuIHt2YWxzOiBpZHgubWFwKGkgPT4gQVtpXVtpXSksIHZlY3M6IGlkeC5tYXAoaSA9PiBGbG9hdDY0QXJyYXkuZnJvbSh7bGVuZ3RoOiBufSwgKF8sIGspID0+IFZba11baV0pKX07XG59XG5lbU5ldCA9IHtcbiAgZW1OZXc7XG4gIGNvbnN0IE4gPSBlbU4sIEcgPSBBcnJheS5mcm9tKHtsZW5ndGg6IE59LCAoKSA9PiBuZXcgRmxvYXQ2NEFycmF5KE4pKTtcbiAgZm9yIChsZXQgaSA9IDA7IGkgPCBOOyBpKyspIGZvciAobGV0IGogPSBpOyBqIDwgTjsgaisrKSB7IGNvbnN0IGcgPSBpID09PSBqID8gMCA6IGVtUmFuZG4oKTsgR1tpXVtqXSA9IGc7IEdbal1baV0gPSBnOyB9XG4gIGNvbnN0IHt2YWxzLCB2ZWNzfSA9IGVtRWlnaChHKTtcbiAgcmV0dXJuIHtHLCBsbWF4OiB2YWxzWzBdLCB2YWxzLCB2ZWNzLCBoOiBGbG9hdDY0QXJyYXkuZnJvbSh7bGVuZ3RoOiBOfSwgKCkgPT4gZW1SYW5kbigpKX07XG59XG5lbU0gPSB7XG4gIGNvbnN0IHtHLCBsbWF4fSA9IGVtTmV0LCBzID0gZW1SIC8gbG1heDtcbiAgcmV0dXJuIHtNOiBHLm1hcChyb3cgPT4gcm93Lm1hcCh4ID0+IHggKiBzKSksIHZhbHM6IGVtTmV0LnZhbHMubWFwKHggPT4geCAqIHMpLCB2ZWNzOiBlbU5ldC52ZWNzfTtcbn1cbmVtU3RhdGUgPSB7XG4gIGVtUmVzZXQ7XG4gIGNvbnN0IE4gPSBlbU4sIHtNLCB2YWxzLCB2ZWNzfSA9IGVtTSwgc3RhcnQgPSBlbVN0YXJ0LCBkcml2ZSA9IGVtRHJpdmU7XG4gIGNvbnN0IGR0ID0gMC4wMiwgdGF1ID0gMSwgVCA9IDIwLCBuID0gTWF0aC5yb3VuZChUIC8gZHQpICsgMTtcbiAgY29uc3QgaCA9IGRyaXZlID09PSBcImNvbnN0XCIgPyBlbU5ldC5oIDogbmV3IEZsb2F0NjRBcnJheShOKTtcbiAgbGV0IHIgPSBuZXcgRmxvYXQ2NEFycmF5KE4pO1xuICBpZiAoZHJpdmUgPT09IFwibm9uZVwiKSB7XG4gICAgaWYgKHN0YXJ0ID09PSBcInJhbmRvbVwiKSBmb3IgKGxldCBpID0gMDsgaSA8IE47IGkrKykgcltpXSA9IGVtUmFuZG4oKTtcbiAgICBpZiAoc3RhcnQgPT09IFwic2xvd1wiIHx8IHN0YXJ0ID09PSBcImJvdGhcIikgZm9yIChsZXQgaSA9IDA7IGkgPCBOOyBpKyspIHJbaV0gKz0gdmVjc1swXVtpXSAqIE1hdGguc3FydChOKTtcbiAgICBpZiAoc3RhcnQgPT09IFwiZmFzdFwiIHx8IHN0YXJ0ID09PSBcImJvdGhcIikgZm9yIChsZXQgaSA9IDA7IGkgPCBOOyBpKyspIHJbaV0gKz0gdmVjc1tOIC0gMV1baV0gKiBNYXRoLnNxcnQoTik7XG4gICAgY29uc3QgbnJtID0gTWF0aC5zcXJ0KHIucmVkdWNlKChzLCB4KSA9PiBzICsgeCAqIHgsIDApKTsgaWYgKG5ybSA+IDApIGZvciAobGV0IGkgPSAwOyBpIDwgTjsgaSsrKSByW2ldICo9IE1hdGguc3FydChOKSAvIG5ybTtcbiAgfVxuICBjb25zdCBoaXN0ID0gQXJyYXkuZnJvbSh7bGVuZ3RoOiBOfSwgKCkgPT4gbmV3IEZsb2F0MzJBcnJheShuKSksIGFtcHMgPSBBcnJheS5mcm9tKHtsZW5ndGg6IE59LCAoKSA9PiBuZXcgRmxvYXQzMkFycmF5KG4pKTtcbiAgY29uc3QgYTAgPSB2ZWNzLm1hcCh2ID0+IHYucmVkdWNlKChzLCB4LCBpKSA9PiBzICsgeCAqIHJbaV0sIDApKTtcbiAgY29uc3QgcmVjb3JkID0gayA9PiB7IGZvciAobGV0IGkgPSAwOyBpIDwgTjsgaSsrKSB7IGhpc3RbaV1ba10gPSByW2ldOyBsZXQgYSA9IDA7IGZvciAobGV0IGogPSAwOyBqIDwgTjsgaisrKSBhICs9IHZlY3NbaV1bal0gKiByW2pdOyBhbXBzW2ldW2tdID0gYTsgfSB9O1xuICByZWNvcmQoMCk7XG4gIGxldCBrID0gMDtcbiAgd2hpbGUgKHRydWUpIHtcbiAgICBpZiAoIXZpZXdvZiBlbVBhdXNlLnZhbHVlICYmIGsgPCBuIC0gMSkge1xuICAgICAgY29uc3Qgc2lnID0gdmlld29mIGVtTm9pc2UudmFsdWU7XG4gICAgICBmb3IgKGxldCBzID0gMDsgcyA8IDUgJiYgayA8IG4gLSAxOyBzKyspIHtcbiAgICAgICAgY29uc3Qgcm4gPSBuZXcgRmxvYXQ2NEFycmF5KE4pO1xuICAgICAgICBmb3IgKGxldCBpID0gMDsgaSA8IE47IGkrKykge1xuICAgICAgICAgIGxldCBpbnAgPSBoW2ldOyBmb3IgKGxldCBqID0gMDsgaiA8IE47IGorKykgaW5wICs9IE1baV1bal0gKiByW2pdO1xuICAgICAgICAgIHJuW2ldID0gcltpXSArIGR0IC8gdGF1ICogKC1yW2ldICsgaW5wKSArIHNpZyAqIE1hdGguc3FydChkdCkgKiBlbVJhbmRuKCk7XG4gICAgICAgIH1cbiAgICAgICAgciA9IHJuOyBrKys7IHJlY29yZChrKTtcbiAgICAgIH1cbiAgICB9XG4gICAgeWllbGQge2hpc3QsIGFtcHMsIGssIHQ6IGsgKiBkdCwgZHQsIFQsIGEwLCB2YWxzLCBoLCBkcml2ZSwgaHZlYzogdmVjcy5tYXAodiA9PiB2LnJlZHVjZSgocywgeCwgaSkgPT4gcyArIHggKiBoW2ldLCAwKSl9O1xuICB9XG59XG5lbUNhbnZhcyA9IG1rQ2FudmFzKDc2MCwgNTAwKVxuZW1SYXN0ZXIgPSBET00uY29udGV4dDJkKE1hdGgucm91bmQoMjAgLyAwLjAyKSArIDEsIGVtTiwgMSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtNCIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6IntcbiAgY29uc3Qgc3QgPSBlbVN0YXRlLCBjID0gZW1DYW52YXMsIGZnID0gZXhGZygpLCBXID0gNzYwLCBIID0gNTAwLCBOID0gZW1OO1xuICBjb25zdCB7aGlzdCwgYW1wcywgaywgZHQsIFQsIGEwLCB2YWxzLCBkcml2ZSwgaHZlY30gPSBzdDtcbiAgY29uc3Qgb3JhbmdlID0gXCIjZmY3ZjBlXCIsIGJsdWUgPSBcIiMxZjc3YjRcIjtcbiAgYy5jbGVhclJlY3QoMCwgMCwgVywgSCk7IGMuZm9udCA9IGV4Rm9udDtcbiAgLy8gcGFuZWwgQTogYWN0aXZpdHkgcmFzdGVyXG4gIGNvbnN0IEEgPSB7eDA6IDYwLCB5MDogMTQsIHc6IDMyMCwgaDogMjIwfTtcbiAgY29uc3QgbiA9IGhpc3RbMF0ubGVuZ3RoLCBpbWcgPSBlbVJhc3Rlci5jcmVhdGVJbWFnZURhdGEobiwgTik7XG4gIGxldCB2bWF4ID0gMWUtNjsgZm9yIChsZXQgaSA9IDA7IGkgPCBOOyBpKyspIGZvciAobGV0IGogPSAwOyBqIDw9IGs7IGorKykgdm1heCA9IE1hdGgubWF4KHZtYXgsIE1hdGguYWJzKGhpc3RbaV1bal0pKTtcbiAgZm9yIChsZXQgaSA9IDA7IGkgPCBOOyBpKyspIGZvciAobGV0IGogPSAwOyBqIDwgbjsgaisrKSB7XG4gICAgY29uc3QgcCA9IDQgKiAoaSAqIG4gKyBqKTtcbiAgICBpZiAoaiA+IGspIHsgaW1nLmRhdGFbcF0gPSAyNTU7IGltZy5kYXRhW3AgKyAxXSA9IDI1NTsgaW1nLmRhdGFbcCArIDJdID0gMjU1OyBpbWcuZGF0YVtwICsgM10gPSAyNTU7IGNvbnRpbnVlOyB9XG4gICAgY29uc3QgdSA9IE1hdGgubWF4KC0xLCBNYXRoLm1pbigxLCBoaXN0W2ldW2pdIC8gdm1heCkpLCB2ID0gTWF0aC5zaWduKHUpICogTWF0aC5zcXJ0KE1hdGguYWJzKHUpKTtcbiAgICBjb25zdCByQyA9IHYgPiAwID8gMjU1IDogTWF0aC5yb3VuZCgyNTUgKiAoMSArIHYpKSwgYkMgPSB2IDwgMCA/IDI1NSA6IE1hdGgucm91bmQoMjU1ICogKDEgLSB2KSksIGdDID0gTWF0aC5yb3VuZCgyNTUgKiAoMSAtIE1hdGguYWJzKHYpKSk7XG4gICAgaW1nLmRhdGFbcF0gPSByQzsgaW1nLmRhdGFbcCArIDFdID0gZ0M7IGltZy5kYXRhW3AgKyAyXSA9IGJDOyBpbWcuZGF0YVtwICsgM10gPSAyNTU7XG4gIH1cbiAgZW1SYXN0ZXIucHV0SW1hZ2VEYXRhKGltZywgMCwgMCk7XG4gIGMuaW1hZ2VTbW9vdGhpbmdFbmFibGVkID0gZmFsc2U7IGMuZHJhd0ltYWdlKGVtUmFzdGVyLmNhbnZhcywgQS54MCwgQS55MCwgQS53LCBBLmgpOyBjLmltYWdlU21vb3RoaW5nRW5hYmxlZCA9IHRydWU7XG4gIGF4aXNCb3goYywgQS54MCwgQS55MCwgQS53LCBBLmgpO1xuICBjLmZpbGxTdHlsZSA9IGZnOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7XG4gIGMuZmlsbFRleHQoYHRpbWUgKHVuaXRzIG9mIM+EKSDCtyB0ID0gJHtzdC50LnRvRml4ZWQoMSl9YCwgQS54MCArIEEudyAvIDIsIEEueTAgKyBBLmggKyAyNCk7XG4gIGMuZmlsbFRleHQoXCIwXCIsIEEueDAsIEEueTAgKyBBLmggKyAyNCk7IGMuZmlsbFRleHQoVCwgQS54MCArIEEudywgQS55MCArIEEuaCArIDI0KTtcbiAgYy5zYXZlKCk7IGMudHJhbnNsYXRlKEEueDAgLSA0MCwgQS55MCArIEEuaCAvIDIpOyBjLnJvdGF0ZSgtTWF0aC5QSSAvIDIpOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoXCJuZXVyb25cIiwgMCwgMCk7IGMucmVzdG9yZSgpO1xuICBjLnRleHRBbGlnbiA9IFwicmlnaHRcIjsgYy5maWxsVGV4dChcIjFcIiwgQS54MCAtIDgsIEEueTAgKyAxMCk7IGMuZmlsbFRleHQoTiwgQS54MCAtIDgsIEEueTAgKyBBLmgpO1xuICBjLnRleHRBbGlnbiA9IFwibGVmdFwiOyBjLmZpbGxUZXh0KGBjb2xvdXI6IGFjdGl2aXR5IMKxJHt2bWF4LnRvRml4ZWQoMSl9LCBzcXVhcmUtcm9vdCBzY2FsZWAsIEEueDAsIEEueTAgKyBBLmggKyA0Nik7XG4gIC8vIHBhbmVsIEI6IG1vZGUgYW1wbGl0dWRlcyBvbiBhIGxvZyBzY2FsZVxuICBjb25zdCBCID0ge3gwOiA0NzAsIHkwOiAxNCwgdzogMjcwLCBoOiAyMjB9LCBsbyA9IDFlLTMsIGhpID0gMjA7XG4gIGNvbnN0IGJ4ID0gaiA9PiBCLngwICsgQi53ICogaiAvIChuIC0gMSksIGJ5ID0gYSA9PiBCLnkwICsgQi5oICogKDEgLSAoTWF0aC5sb2cxMChNYXRoLm1heChsbywgYSkpIC0gTWF0aC5sb2cxMChsbykpIC8gKE1hdGgubG9nMTAoaGkpIC0gTWF0aC5sb2cxMChsbykpKTtcbiAgYXhpc0JveChjLCBCLngwLCBCLnkwLCBCLncsIEIuaCk7XG4gIGMuc2F2ZSgpOyBjLmJlZ2luUGF0aCgpOyBjLnJlY3QoQi54MCwgQi55MCwgQi53LCBCLmgpOyBjLmNsaXAoKTtcbiAgY29uc3QgZHJhd01vZGUgPSAoaSwgY29sLCBsdykgPT4geyBjLnN0cm9rZVN0eWxlID0gY29sOyBjLmxpbmVXaWR0aCA9IGx3OyBjLmJlZ2luUGF0aCgpOyBmb3IgKGxldCBqID0gMDsgaiA8PSBrOyBqKyspIGogPyBjLmxpbmVUbyhieChqKSwgYnkoTWF0aC5hYnMoYW1wc1tpXVtqXSkpKSA6IGMubW92ZVRvKGJ4KDApLCBieShNYXRoLmFicyhhbXBzW2ldWzBdKSkpOyBjLnN0cm9rZSgpOyB9O1xuICBjLmdsb2JhbEFscGhhID0gMC4zNTsgZm9yIChsZXQgaSA9IDE7IGkgPCBOIC0gMTsgaSsrKSBkcmF3TW9kZShpLCBcIiM4ODhcIiwgMSk7IGMuZ2xvYmFsQWxwaGEgPSAxO1xuICBkcmF3TW9kZShOIC0gMSwgYmx1ZSwgMik7IGRyYXdNb2RlKDAsIG9yYW5nZSwgMik7XG4gIGMuc2V0TGluZURhc2goWzUsIDRdKTsgYy5zdHJva2VTdHlsZSA9IGZnOyBjLmxpbmVXaWR0aCA9IDEuMjtcbiAgZm9yIChjb25zdCBpIG9mIFswLCBOIC0gMV0pIHtcbiAgICBjLmJlZ2luUGF0aCgpO1xuICAgIGZvciAobGV0IGogPSAwOyBqIDw9IGs7IGorKykge1xuICAgICAgY29uc3QgdCA9IGogKiBkdCwgbGFtID0gdmFsc1tpXSwgYWluZiA9IGRyaXZlID09PSBcImNvbnN0XCIgPyBodmVjW2ldIC8gKDEgLSBsYW0pIDogMDtcbiAgICAgIGNvbnN0IGEgPSBhaW5mICsgKGEwW2ldIC0gYWluZikgKiBNYXRoLmV4cCgtKDEgLSBsYW0pICogdCk7XG4gICAgICBqID8gYy5saW5lVG8oYngoaiksIGJ5KE1hdGguYWJzKGEpKSkgOiBjLm1vdmVUbyhieCgwKSwgYnkoTWF0aC5hYnMoYSkpKTtcbiAgICB9XG4gICAgYy5zdHJva2UoKTtcbiAgfVxuICBjLnNldExpbmVEYXNoKFtdKTsgYy5yZXN0b3JlKCk7XG4gIGMuZmlsbFN0eWxlID0gZmc7IGMudGV4dEFsaWduID0gXCJjZW50ZXJcIjsgYy5maWxsVGV4dChcInRpbWUgKHVuaXRzIG9mIM+EKVwiLCBCLngwICsgQi53IC8gMiwgQi55MCArIEIuaCArIDI0KTtcbiAgYy5maWxsVGV4dChcIjBcIiwgQi54MCwgQi55MCArIEIuaCArIDI0KTsgYy5maWxsVGV4dChULCBCLngwICsgQi53LCBCLnkwICsgQi5oICsgMjQpO1xuICBjLnRleHRBbGlnbiA9IFwicmlnaHRcIjsgZm9yIChjb25zdCB2IG9mIFsxZS0zLCAxZS0yLCAwLjEsIDEsIDEwXSkgYy5maWxsVGV4dCh2ID49IDEgPyB2IDogdi50b1N0cmluZygpLCBCLngwIC0gNiwgYnkodikgKyA1KTtcbiAgYy5zYXZlKCk7IGMudHJhbnNsYXRlKEIueDAgLSA2MiwgQi55MCArIEIuaCAvIDIpOyBjLnJvdGF0ZSgtTWF0aC5QSSAvIDIpOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoXCJ8bW9kZSBhbXBsaXR1ZGV8XCIsIDAsIDApOyBjLnJlc3RvcmUoKTtcbiAgYy50ZXh0QWxpZ24gPSBcImxlZnRcIjsgYy5maWxsU3R5bGUgPSBvcmFuZ2U7IGMuZmlsbFRleHQoYHNsb3dlc3QgbW9kZTogzrsgPSAke3ZhbHNbMF0udG9GaXhlZCgyKX0sIM+E4oKBID0gJHsoMSAvICgxIC0gdmFsc1swXSkpLnRvRml4ZWQoMSl9IM+EYCwgQi54MCAtIDYwLCBCLnkwICsgQi5oICsgNDYpO1xuICBjLmZpbGxTdHlsZSA9IGJsdWU7IGMuZmlsbFRleHQoYGZhc3Rlc3QgbW9kZTogzrsgPSAke3ZhbHNbTiAtIDFdLnRvRml4ZWQoMil9LCDPhOKChOKCgCA9ICR7KDEgLyAoMSAtIHZhbHNbTiAtIDFdKSkudG9GaXhlZCgyKX0gz4RgLCBCLngwIC0gNjAsIEIueTAgKyBCLmggKyA2Nik7XG4gIGMuZmlsbFN0eWxlID0gZmc7IGMuZmlsbFRleHQoXCJncmV5OiB0aGUgb3RoZXIgbW9kZXMgwrcgZGFzaGVkOiBmb3JtdWxhXCIsIEIueDAgLSA2MCwgQi55MCArIEIuaCArIDg2KTtcbiAgLy8gcGFuZWwgQzogZWlnZW52YWx1ZSBzcGVjdHJ1bVxuICBjb25zdCBDID0ge3gwOiA2MCwgeTA6IDM1MCwgdzogNjgwLCBoOiAxMTB9LCBlbWluID0gLTEuMSwgZW1heCA9IDEuMTtcbiAgY29uc3QgY3ggPSBpID0+IEMueDAgKyBDLncgKiAoaSArIDAuNSkgLyBOLCBjeSA9IHYgPT4gQy55MCArIEMuaCAqICgxIC0gKHYgLSBlbWluKSAvIChlbWF4IC0gZW1pbikpO1xuICBheGlzQm94KGMsIEMueDAsIEMueTAsIEMudywgQy5oKTtcbiAgYy5zZXRMaW5lRGFzaChbNCwgNF0pOyBjLnN0cm9rZVN0eWxlID0gXCJyZWRcIjsgYy5iZWdpblBhdGgoKTsgYy5tb3ZlVG8oQy54MCwgY3koMSkpOyBjLmxpbmVUbyhDLngwICsgQy53LCBjeSgxKSk7IGMuc3Ryb2tlKCk7IGMuc2V0TGluZURhc2goW10pO1xuICBjLnN0cm9rZVN0eWxlID0gXCIjODg4XCI7IGMuYmVnaW5QYXRoKCk7IGMubW92ZVRvKEMueDAsIGN5KDApKTsgYy5saW5lVG8oQy54MCArIEMudywgY3koMCkpOyBjLnN0cm9rZSgpO1xuICBmb3IgKGxldCBpID0gMDsgaSA8IE47IGkrKykgeyBjLmZpbGxTdHlsZSA9IGkgPT09IDAgPyBvcmFuZ2UgOiBpID09PSBOIC0gMSA/IGJsdWUgOiBcImdyYXlcIjsgYy5iZWdpblBhdGgoKTsgYy5hcmMoY3goaSksIGN5KHZhbHNbaV0pLCA0LCAwLCAyICogTWF0aC5QSSk7IGMuZmlsbCgpOyB9XG4gIGMuZmlsbFN0eWxlID0gZmc7IGMudGV4dEFsaWduID0gXCJyaWdodFwiOyBjLmZpbGxUZXh0KFwiMVwiLCBDLngwIC0gOCwgY3koMSkgKyA1KTsgYy5maWxsVGV4dChcIjBcIiwgQy54MCAtIDgsIGN5KDApICsgNSk7IGMuZmlsbFRleHQoXCLiiJIxXCIsIEMueDAgLSA4LCBjeSgtMSkgKyA1KTtcbiAgYy5zYXZlKCk7IGMudHJhbnNsYXRlKEMueDAgLSA0MCwgQy55MCArIEMuaCAvIDIpOyBjLnJvdGF0ZSgtTWF0aC5QSSAvIDIpOyBjLnRleHRBbGlnbiA9IFwiY2VudGVyXCI7IGMuZmlsbFRleHQoXCJlaWdlbnZhbHVlXCIsIDAsIDApOyBjLnJlc3RvcmUoKTtcbiAgYy50ZXh0QWxpZ24gPSBcImNlbnRlclwiOyBjLmZpbGxUZXh0KFwibW9kZXMsIHNvcnRlZCBieSBlaWdlbnZhbHVlXCIsIEMueDAgKyBDLncgLyAyLCBDLnkwICsgQy5oICsgMjQpO1xuICByZXR1cm4gYy5jYW52YXM7XG59XG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2VtUicpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdlbVN0YXJ0JykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2VtRHJpdmUnKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnZW1Ob2lzZScpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdlbU5ldycpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdlbVBhdXNlJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2VtUmVzZXQnKSJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../teaching";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/traegenap\.org");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This site is currently under construction.<br> © 2026 Sigrid Trägenap · <a href="../impressum.html">Impressum und Datenschutz</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

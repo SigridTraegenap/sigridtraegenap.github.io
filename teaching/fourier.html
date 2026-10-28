@@ -84,9 +84,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-86312c41d8c8d97270542994db1177a1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-140d28bfd7b94e0e9f63cc3bc68ccc2b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -381,6 +381,22 @@ window.Quarto = {
     <a class="dropdown-item" href="../teaching/hebbian.html">
  <span class="dropdown-text">Hebbian learning</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/sde.html">
+ <span class="dropdown-text">Stochastic differential equations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/eigenmodes.html">
+ <span class="dropdown-text">Eigenmodes of a recurrent network</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/coupled-neurons.html">
+ <span class="dropdown-text">Two coupled neurons</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hodgkin-huxley.html">
+ <span class="dropdown-text">The Hodgkin–Huxley neuron</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -649,18 +665,18 @@ window.Quarto = {
 </section>
 <section id="things-to-try" class="level2">
 <h2 class="anchored" data-anchor-id="things-to-try">Things to try</h2>
-<p>Raise <span class="math inline">\(f_2\)</span> slowly past the Nyquist frequency, which is 5 cycles per unit at the default sampling interval. Just below it the stem still sits where it should. Just above it, the green line and the stem jump to a lower frequency, and the orange reconstruction now contains a slow oscillation that was never in the signal. Look at the blue dots in the upper panel while you do this: they genuinely are consistent with that slower wave. Then make the sampling interval smaller. Nyquist moves up, the fast component is resolved again, and the problem goes away. That is the one reliable cure for aliasing: sample faster, or filter out the fast components before you sample.</p>
+<p>Raise <span class="math inline">\(f_2\)</span> slowly past the Nyquist frequency, which is 5 cycles per unit at the default sampling interval. Just below it the stem still sits where it should. Just above it, the green line and the stem jump to a lower frequency, and the orange reconstruction now contains a slow oscillation that was never in the signal. Look at the blue dots in the upper panel while you do this: they are consistent with that slower wave. Then make the sampling interval smaller. Nyquist moves up, the fast component is resolved again, and the problem goes away. That is the one reliable cure for aliasing: sample faster, or filter out the fast components before you sample.</p>
 <p>Set <span class="math inline">\(f_1\)</span> to 1 and change <span class="math inline">\(T\)</span> from 4 to 4.5. The signal has not changed, but the grid has, and 1 cycle per unit no longer lies on it. The single stem turns into a cluster around the true frequency. With <span class="math inline">\(K = 2\)</span> the reconstruction is now visibly wrong, and you need to raise <span class="math inline">\(K\)</span> to get the signal back. The general lesson is that the width of a peak in a spectrum is set by the recording length, not by the signal, and that a sharp peak needs a recording that is long compared to the period.</p>
 <p>Set both amplitudes to the same value and bring <span class="math inline">\(f_1\)</span> and <span class="math inline">\(f_2\)</span> close together. At some point the two stems merge into one, and no setting of <span class="math inline">\(K\)</span> separates them. The frequency resolution is <span class="math inline">\(1/T\)</span>, so two frequencies closer than that cannot be distinguished, no matter how finely you sample.</p>
 <p>This page is based on the Fourier exercises in Dayan and Abbott (2001). The transform here is computed by the direct sum, which is fine for a few hundred samples. For anything larger one uses the fast Fourier transform of Cooley and Tukey (1965), which gives the same numbers in a fraction of the time. Press et al.&nbsp;(2007) is a practical reference for both the algorithm and the pitfalls of sampling.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
-<p>Cooley JW, Tukey JW (1965). An algorithm for the machine calculation of complex Fourier series. <em>Mathematics of Computation</em> 19: 297–301.</p>
+<p>Cooley JW, Tukey JW (1965). An algorithm for the machine calculation of complex Fourier series. <em>Mathematics of Computation</em> 19: 297–301. <a href="https://doi.org/10.1090/S0025-5718-1965-0178586-1">DOI</a></p>
 <p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
-<p>Nyquist H (1928). Certain topics in telegraph transmission theory. <em>Transactions of the American Institute of Electrical Engineers</em> 47: 617–644.</p>
+<p>Nyquist H (1928). Certain topics in telegraph transmission theory. <em>Transactions of the American Institute of Electrical Engineers</em> 47: 617–644. <a href="https://doi.org/10.1109/T-AIEE.1928.5055024">DOI</a></p>
 <p>Press WH, Teukolsky SA, Vetterling WT, Flannery BP (2007). <em>Numerical Recipes: The Art of Scientific Computing</em>, 3rd edition. Cambridge University Press.</p>
-<p>Shannon CE (1949). Communication in the presence of noise. <em>Proceedings of the IRE</em> 37: 10–21.</p>
+<p>Shannon CE (1949). Communication in the presence of noise. <em>Proceedings of the IRE</em> 37: 10–21. <a href="https://doi.org/10.1109/JRPROC.1949.232969">DOI</a></p>
 
 
 </section>

@@ -84,9 +84,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-86312c41d8c8d97270542994db1177a1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-06ba7be8a9db8fae51a6880d99219d26.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-140d28bfd7b94e0e9f63cc3bc68ccc2b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93746dc3cbbcd81a9676ef7cdae46d35.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -381,6 +381,22 @@ window.Quarto = {
     <a class="dropdown-item" href="../teaching/hebbian.html">
  <span class="dropdown-text">Hebbian learning</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/sde.html">
+ <span class="dropdown-text">Stochastic differential equations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/eigenmodes.html">
+ <span class="dropdown-text">Eigenmodes of a recurrent network</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/coupled-neurons.html">
+ <span class="dropdown-text">Two coupled neurons</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../teaching/hodgkin-huxley.html">
+ <span class="dropdown-text">The Hodgkin–Huxley neuron</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -608,7 +624,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The first plot shows the excitatory Gaussian in orange, the inhibitory one in blue, drawn negative, and their difference in black. The second plot is the magnitude of the kernel’s Fourier transform, with the orange dashed line at its peak. With the default settings the peak sits at about 0.15 cycles per unit length, a wavelength of six to seven units, a few times the width of the inhibitory surround.</p>
-<p>A few things are worth trying before moving on. Make inhibition wider and the peak moves to lower frequencies: the stripes the network will produce get broader. Make excitation wider, closer to the inhibition width, and the peak gets lower and broader, since the two Gaussians cancel over a larger range of frequencies. Set the inhibition strength to zero and the peak moves to frequency zero, meaning the network would simply amplify uniform activity rather than any pattern. The Mexican hat shape, not just excitation, is what makes stripes.</p>
+<p>A few things are worth trying before moving on. Make inhibition wider and the peak moves to lower frequencies: the stripes the network will produce get broader. Make excitation wider, closer to the inhibition width, and the peak gets lower and broader, since the two Gaussians cancel over a larger range of frequencies. Set the inhibition strength to zero and the peak moves to frequency zero, meaning the network would simply amplify uniform activity rather than any pattern. Stripes need the Mexican hat shape, inhibition surrounding excitation.</p>
 </section>
 <section id="pattern-formation-in-a-recurrent-network" class="level2">
 <h2 class="anchored" data-anchor-id="pattern-formation-in-a-recurrent-network">Pattern formation in a recurrent network</h2>
@@ -920,13 +936,13 @@ window.Quarto = {
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
-<p>Amari S (1977). Dynamics of pattern formation in lateral-inhibition type neural fields. <em>Biological Cybernetics</em> 27: 77–87.</p>
+<p>Amari S (1977). Dynamics of pattern formation in lateral-inhibition type neural fields. <em>Biological Cybernetics</em> 27: 77–87. <a href="https://doi.org/10.1007/BF00337259">DOI</a></p>
 <p>Ben-Yishai R, Bar-Or RL, Sompolinsky H (1995). Theory of orientation tuning in visual cortex. <em>Proceedings of the National Academy of Sciences</em> 92: 3844–3848.</p>
 <p>Dayan P, Abbott LF (2001). <em>Theoretical Neuroscience: Computational and Mathematical Modeling of Neural Systems</em>. MIT Press.</p>
 <p>Ermentrout GB, Cowan JD (1979). A mathematical theory of visual hallucination patterns. <em>Biological Cybernetics</em> 34: 137–150.</p>
-<p>Rubin DB, Van Hooser SD, Miller KD (2015). The stabilized supralinear network: a unifying circuit motif underlying multi-input integration in sensory cortex. <em>Neuron</em> 85: 402–417.</p>
-<p>Swindale NV (1980). A model for the formation of ocular dominance stripes. <em>Proceedings of the Royal Society B</em> 208: 243–264.</p>
-<p>Turing AM (1952). The chemical basis of morphogenesis. <em>Philosophical Transactions of the Royal Society B</em> 237: 37–72.</p>
+<p>Rubin DB, Van Hooser SD, Miller KD (2015). The stabilized supralinear network: a unifying circuit motif underlying multi-input integration in sensory cortex. <em>Neuron</em> 85: 402–417. <a href="https://doi.org/10.1016/j.neuron.2014.12.026">DOI</a></p>
+<p>Swindale NV (1980). A model for the formation of ocular dominance stripes. <em>Proceedings of the Royal Society B</em> 208: 243–264. <a href="https://doi.org/10.1098/rspb.1980.0051">DOI</a></p>
+<p>Turing AM (1952). The chemical basis of morphogenesis. <em>Philosophical Transactions of the Royal Society B</em> 237: 37–72. <a href="https://doi.org/10.1098/rstb.1952.0012">DOI</a></p>
 
 
 </section>

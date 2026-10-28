@@ -6,7 +6,11 @@
       "/teaching/pca.html",
       "/teaching/fourier.html",
       "/teaching/recurrent-networks.html",
-      "/teaching/hebbian.html"
+      "/teaching/hebbian.html",
+      "/teaching/sde.html",
+      "/teaching/eigenmodes.html",
+      "/teaching/coupled-neurons.html",
+      "/teaching/hodgkin-huxley.html"
     ]
   }
 ]
