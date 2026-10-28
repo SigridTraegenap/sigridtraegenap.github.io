@@ -214,8 +214,7 @@ Switch to Oja's rule. Now the trajectories bend towards a circle of radius
 $1/\sqrt{\alpha}$ and then slide along it to an eigenvector of $Q$. The rule
 does two things at once: it normalises the weight vector and it picks out the
 direction of largest input variance, which is the first principal component
-of the inputs. That is not a coincidence, it is the main reason Oja's rule is
-famous. Raise $\alpha$ and the circle shrinks. Set $q$ to zero and the
+of the inputs. This is the main reason Oja's rule is famous. Raise $\alpha$ and the circle shrinks. Set $q$ to zero and the
 trajectories still reach the circle, but stop wherever they land on it,
 since no direction is preferred.
 
@@ -235,6 +234,8 @@ Wiley.
 
 Miller KD, MacKay DJC (1994). The role of constraints in Hebbian learning.
 *Neural Computation* 6: 100–126.
+[DOI](https://doi.org/10.1162/neco.1994.6.1.100)
 
 Oja E (1982). A simplified neuron model as a principal component analyzer.
 *Journal of Mathematical Biology* 15: 267–273.
+[DOI](https://doi.org/10.1007/BF00275687)

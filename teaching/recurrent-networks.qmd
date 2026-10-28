@@ -110,8 +110,8 @@ broader. Make excitation wider, closer to the inhibition width, and the peak
 gets lower and broader, since the two Gaussians cancel over a larger range of
 frequencies. Set the inhibition strength to zero and the peak moves to
 frequency zero, meaning the network would simply amplify uniform activity
-rather than any pattern. The Mexican hat shape, not just excitation, is what
-makes stripes.
+rather than any pattern. Stripes need the Mexican hat shape, inhibition
+surrounding excitation.
 
 ## Pattern formation in a recurrent network
 
@@ -366,6 +366,7 @@ position, is the ring model of orientation tuning of Ben-Yishai et al.
 
 Amari S (1977). Dynamics of pattern formation in lateral-inhibition type
 neural fields. *Biological Cybernetics* 27: 77–87.
+[DOI](https://doi.org/10.1007/BF00337259)
 
 Ben-Yishai R, Bar-Or RL, Sompolinsky H (1995). Theory of orientation tuning
 in visual cortex. *Proceedings of the National Academy of Sciences* 92:
@@ -380,9 +381,12 @@ hallucination patterns. *Biological Cybernetics* 34: 137–150.
 Rubin DB, Van Hooser SD, Miller KD (2015). The stabilized supralinear
 network: a unifying circuit motif underlying multi-input integration in
 sensory cortex. *Neuron* 85: 402–417.
+[DOI](https://doi.org/10.1016/j.neuron.2014.12.026)
 
 Swindale NV (1980). A model for the formation of ocular dominance stripes.
 *Proceedings of the Royal Society B* 208: 243–264.
+[DOI](https://doi.org/10.1098/rspb.1980.0051)
 
 Turing AM (1952). The chemical basis of morphogenesis. *Philosophical
 Transactions of the Royal Society B* 237: 37–72.
+[DOI](https://doi.org/10.1098/rstb.1952.0012)

@@ -64,7 +64,7 @@ $\lambda_k / \sum_j \lambda_j$ tells you how much of the data's variability
 each component accounts for. If the first two fractions are large, a plot
 along those two directions shows you most of what there is to see.
 
-One detail matters more than it looks: whether you standardise. The
+Whether you standardise the variables matters a great deal. The
 measurements all happen to be in centimetres here, but petal length ranges
 over about six centimetres while sepal width ranges over barely two. Variance
 grows with the square of the range, so without any correction the first
@@ -217,21 +217,27 @@ are mostly measurement noise and natural variation within a species.
 This page is based on the dimensionality-reduction exercise in Dayan and
 Abbott (2001). For how the same method is used on neural population
 recordings, where the "measurements" are the firing rates of many neurons,
-Cunningham and Yu (2014) is a good starting point.
+Cunningham and Yu (2014) is a good starting point. For a first encounter
+with PCA, the
+[Stack Exchange answer](https://stats.stackexchange.com/questions/2691/making-sense-of-principal-component-analysis-eigenvectors-eigenvalues)
+that explains it over a family dinner is hard to beat.
 
 ## References
 
 Cunningham JP, Yu BM (2014). Dimensionality reduction for large-scale neural
 recordings. *Nature Neuroscience* 17: 1500–1509.
+[DOI](https://doi.org/10.1038/nn.3776)
 
 Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
 Mathematical Modeling of Neural Systems*. MIT Press.
 
 Fisher RA (1936). The use of multiple measurements in taxonomic problems.
 *Annals of Eugenics* 7: 179–188.
+[DOI](https://doi.org/10.1111/j.1469-1809.1936.tb02137.x)
 
 Hotelling H (1933). Analysis of a complex of statistical variables into
-principal components. *Journal of Educational Psychology* 24: 417–441.
+principal components. *Journal of Educational Psychology* 24: 417–441 and
+498–520.
 
 Pearson K (1901). On lines and planes of closest fit to systems of points in
 space. *Philosophical Magazine* 2: 559–572.

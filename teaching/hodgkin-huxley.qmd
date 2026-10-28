@@ -1,0 +1,256 @@
+---
+title: "The Hodgkin–Huxley neuron"
+description: "The model that explains where the spike comes from: a live membrane trace with its three gating variables, sliders for the sodium and potassium conductances, and an f-I curve that fills in as you explore."
+toc: true
+execute:
+  enabled: false
+---
+
+The [integrate-and-fire neuron](neuron.qmd) treats a spike as an event: the
+voltage reaches a line, something happens, and the voltage is put back.
+That describes a spiking neuron without explaining the spike. In 1952,
+Hodgkin and Huxley wrote down a set of equations in which the spike emerges
+from the dynamics of two kinds of ion channels, one for sodium and one for
+potassium, measured in the giant axon of the squid. The equations are still
+in use, essentially unchanged, and almost every detailed neuron model since
+is a variation on them.
+
+As a teaching assistant for the *Theoretical Neuroscience* lecture at Goethe
+University Frankfurt I wrote an exercise around this model, originally in
+Brian2, and the way I think about it goes back to a weekend block course on
+electrophysiology I took as a student in Frankfurt, where the gating
+variables first made sense to me. The figure follows the pattern of the
+integrate-and-fire page: the simulation keeps running while you move the
+sliders, and the f-I curve on the right fills in from wherever you have
+been.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## The model
+
+The membrane is a capacitor in parallel with three conductances, one each
+for sodium, potassium and a leak, and the voltage changes according to the
+current that flows through them:
+
+$$C \frac{dV}{dt} = I - \bar g_{\text{Na}}\, m^3 h\, (V - E_{\text{Na}})
+- \bar g_{\text{K}}\, n^4\, (V - E_{\text{K}}) - g_L\, (V - E_L) .$$
+
+Each conductance is a maximal value $\bar g$ times the fraction of channels
+that are open, and each reversal potential $E$ is the voltage at which that
+ion's current changes sign. With the numbers from Dayan and Abbott (2001),
+$E_{\text{Na}} = 50$ mV, $E_{\text{K}} = -77$ mV and $E_L = -54.4$ mV, so
+sodium current pushes the voltage up and potassium current pushes it down.
+The maximal conductances are $\bar g_{\text{Na}} = 120$, $\bar g_{\text{K}}
+= 36$ and $g_L = 0.3$ mS/cm², with $C = 1$ µF/cm² and the injected current
+$I$ in µA/cm².
+
+The whole model lives in the three gating variables $m$, $h$ and $n$, each
+a number between 0 and 1 giving the probability that a particular gate is
+open. A sodium channel is open when its three $m$ gates and its one $h$
+gate are all open, a potassium channel when its four $n$ gates are. So there
+are two kinds of channel but three gating variables: the sodium channel has
+two different kinds of gate, a fast one that opens on depolarisation ($m$)
+and a slow one that closes on depolarisation ($h$), while the potassium
+channel has a single kind ($n$). Each gate opens and closes at
+voltage-dependent rates,
+
+$$\frac{dx}{dt} = \alpha_x(V)\,(1 - x) - \beta_x(V)\, x, \qquad x \in \{m, h, n\},$$
+
+and the particular functions $\alpha$ and $\beta$ that Hodgkin and Huxley
+fitted to their data are what make the spike. In words: $m$ is fast and
+opens when the voltage rises, $h$ is slow and closes when the voltage rises,
+and $n$ is slow and opens when the voltage rises. A small depolarisation
+opens $m$, sodium flows in, the voltage rises further and opens more $m$.
+That is the upstroke. Then the slow gates catch up: $h$ closes and shuts
+the sodium channels off, $n$ opens and lets potassium out, and the voltage
+falls back below rest. That is the downstroke and the afterhyperpolarisation.
+While $h$ is still closed and $n$ still open, the neuron cannot fire again,
+which is the refractory period, and here it follows from the equations
+without any extra rule.
+
+```{ojs}
+//| echo: false
+viewof hhI = Inputs.range([0, 200], {value: 10, step: 1, label: "Injected current I (µA/cm²)"})
+viewof hhNa = Inputs.range([0.5, 1.5], {value: 1, step: 0.05, label: "Sodium conductance, × 120 mS/cm²"})
+viewof hhK = Inputs.range([0.5, 1.5], {value: 1, step: 0.05, label: "Potassium conductance, × 36 mS/cm²"})
+viewof hhSpeed = Inputs.radio(new Map([["slow", 15], ["normal", 50], ["fast", 150]]), {value: 15, label: "Speed"})
+viewof hhPause = Inputs.toggle({label: "Pause"})
+viewof hhReset = Inputs.button("Reset (also clears the f-I points)")
+```
+
+```{ojs}
+//| echo: false
+hhRates = V => {
+  const exprel = x => Math.abs(x) < 1e-6 ? 1 : x / (1 - Math.exp(-x));
+  return {
+    am: exprel((V + 40) / 10), bm: 4 * Math.exp(-(V + 65) / 18),
+    ah: 0.07 * Math.exp(-(V + 65) / 20), bh: 1 / (1 + Math.exp(-(V + 35) / 10)),
+    an: 0.1 * exprel((V + 55) / 10), bn: 0.125 * Math.exp(-(V + 65) / 80)
+  };
+}
+hhState = {
+  hhReset;
+  const dt = 0.01, win = 25, n = Math.round(win / dt / 5), stride = 5;
+  const V = new Float32Array(n).fill(-65), M = new Float32Array(n), Hh = new Float32Array(n), Nn = new Float32Array(n);
+  let v = -65, r = hhRates(v), m = r.am / (r.am + r.bm), h = r.ah / (r.ah + r.bh), nn = r.an / (r.an + r.bn);
+  M.fill(m); Hh.fill(h); Nn.fill(nn);
+  let t = 0, key = null, sinceChange = 0, spikesSince = 0, prev = v, prev2 = v, minSince = v, lastSpike = -1e9, idx = 0, sub = 0;
+  const fi = new Map();
+  while (true) {
+    const I = viewof hhI.value, sNa = viewof hhNa.value, sK = viewof hhK.value;
+    if (!viewof hhPause.value) {
+      const k = `${I}|${sNa}|${sK}`;
+      if (k !== key) { key = k; sinceChange = 0; spikesSince = 0; }
+      const stepsPerFrame = viewof hhSpeed.value;
+      for (let s = 0; s < stepsPerFrame; s++) {
+        r = hhRates(v);
+        const dv = I - 120 * sNa * m * m * m * h * (v - 50) - 36 * sK * nn * nn * nn * nn * (v + 77) - 0.3 * (v + 54.387);
+        v += dt * dv;
+        m += dt * (r.am * (1 - m) - r.bm * m); h += dt * (r.ah * (1 - h) - r.bh * h); nn += dt * (r.an * (1 - nn) - r.bn * nn);
+        // a spike is a local maximum at least 15 mV above the minimum since the previous spike
+        if (prev > prev2 && prev >= v && prev - minSince > 15 && t - lastSpike > 2) { spikesSince++; lastSpike = t; minSince = prev; }
+        if (v < minSince) minSince = v;
+        prev2 = prev; prev = v;
+        if (++sub === stride) { sub = 0; idx = (idx + 1) % n; V[idx] = v; M[idx] = m; Hh[idx] = h; Nn[idx] = nn; }
+        t += dt; sinceChange += dt;
+      }
+      if (sinceChange >= 400) fi.set(key, {I, std: sNa === 1 && sK === 1, rate: 1000 * spikesSince / sinceChange});
+    }
+    yield {V, M, Hh, Nn, idx, t, win, fi, I, sNa, sK, rate: sinceChange > 0 ? 1000 * spikesSince / sinceChange : 0};
+  }
+}
+hhCanvas = mkCanvas(760, 490)
+```
+
+```{ojs}
+//| echo: false
+{
+  const {V, M, Hh, Nn, idx, win, fi, I, sNa, sK, rate} = hhState, c = hhCanvas, fg = exFg();
+  const blue = "#1f77b4", orange = "#ff7f0e", W = 760, H = 490, n = V.length;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  const mL = 70, trR = 480;
+  const top = {y0: 12, h: 150, lo: -90, hi: 50};
+  const gates = [
+    {arr: M, col: "#d62728", name: "m", y0: 180, h: 66, desc: "sodium activation, fast"},
+    {arr: Hh, col: "#2ca02c", name: "h", y0: 258, h: 66, desc: "sodium inactivation, slow"},
+    {arr: Nn, col: "#9467bd", name: "n", y0: 336, h: 66, desc: "potassium activation, slow"}
+  ];
+  const sx = i => mL + (trR - mL) * i / (n - 1), sy = (p, v) => p.y0 + p.h * (1 - (v - p.lo) / (p.hi - p.lo));
+  axisBox(c, mL, top.y0, trR - mL, top.h);
+  for (const g of gates) axisBox(c, mL, g.y0, trR - mL, g.h);
+  // oscilloscope sweep: the traces stay in place and are overwritten at the cursor
+  const sweep = (arr, yf) => { for (const [a, b] of [[0, idx], [idx + 1, n - 1]]) { if (b <= a) continue; c.beginPath(); for (let i = a; i <= b; i++) i === a ? c.moveTo(sx(i), yf(arr[i])) : c.lineTo(sx(i), yf(arr[i])); c.stroke(); } };
+  c.strokeStyle = blue; c.lineWidth = 1.5; sweep(V, v => sy(top, v));
+  for (const g of gates) { const p = {y0: g.y0, h: g.h, lo: 0, hi: 1}; c.strokeStyle = g.col; c.lineWidth = 1.5; sweep(g.arr, v => sy(p, v)); }
+  c.strokeStyle = "#bbb"; c.lineWidth = 1;
+  for (const p of [top, ...gates]) { c.beginPath(); c.moveTo(sx(idx), p.y0); c.lineTo(sx(idx), p.y0 + p.h); c.stroke(); }
+  c.fillStyle = fg; c.textAlign = "right";
+  c.fillText("V (mV)", mL - 8, top.y0 + top.h / 2 + 5); c.fillText("50", mL - 8, sy(top, 50) + 5); c.fillText("-65", mL - 8, sy(top, -65) + 5);
+  for (const g of gates) { c.fillStyle = g.col; c.fillText(g.name, mL - 8, g.y0 + g.h / 2 + 5); c.fillStyle = fg; c.fillText("1", mL - 8, g.y0 + 5); c.fillText("0", mL - 8, g.y0 + g.h + 2); }
+  const gBottom = gates[gates.length - 1].y0 + gates[gates.length - 1].h;
+  c.textAlign = "center"; c.fillText(`${win} ms sweep`, (mL + trR) / 2, gBottom + 24);
+  c.textAlign = "left"; c.fillText(`${rate.toFixed(0)} spikes / s`, mL + 8, top.y0 + 20);
+  // legend below the axes
+  let lx = mL, ly = gBottom + 48;
+  for (const g of gates) { const txt = `${g.name}: ${g.desc}`; c.fillStyle = g.col; c.fillText(txt, lx, ly); lx += c.measureText(txt).width + 18; }
+  // f-I curve, right
+  const fP = {x0: 560, y0: 12, w: 180, h: 390}, Imax = 200, fmax = 200;
+  const fx = I => fP.x0 + fP.w * I / Imax, fy = f => fP.y0 + fP.h * (1 - Math.min(f, fmax) / fmax);
+  axisBox(c, fP.x0, fP.y0, fP.w, fP.h);
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText("I (µA/cm²)", fP.x0 + fP.w / 2, fP.y0 + fP.h + 24);
+  c.fillText("0", fx(0), fP.y0 + fP.h + 24); c.fillText(Imax, fx(Imax), fP.y0 + fP.h + 24);
+  c.save(); c.translate(fP.x0 - 40, fP.y0 + fP.h / 2); c.rotate(-Math.PI / 2); c.fillText("spikes / s", 0, 0); c.restore();
+  c.textAlign = "right"; c.fillText("0", fP.x0 - 6, fy(0) + 5); c.fillText(fmax, fP.x0 - 6, fy(fmax) + 5);
+  for (const [, p] of fi) { c.fillStyle = p.std ? blue : orange; c.beginPath(); c.arc(fx(p.I), fy(p.rate), 5, 0, 2 * Math.PI); c.fill(); }
+  c.strokeStyle = sNa === 1 && sK === 1 ? blue : orange; c.lineWidth = 2; c.beginPath(); c.arc(fx(I), fy(rate), 8, 0, 2 * Math.PI); c.stroke();
+  c.textAlign = "left"; c.fillStyle = blue; c.fillText("standard channels", fP.x0 + 8, fP.y0 + 22);
+  c.fillStyle = orange; c.fillText("modified channels", fP.x0 + 8, fP.y0 + 44);
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+The top panel is 25 milliseconds of membrane potential, enough for one or
+two spikes, drawn like an oscilloscope: the trace stays where it is and a
+grey cursor sweeps across, overwriting it, at a pace set by the Speed
+control. The number in its corner is the firing rate over the time since you
+last touched a slider. Below it are the three gating variables, each in its
+own panel on the same time axis: $m$ in red, $h$ in green and $n$ in purple,
+with the legend under the panels. During a spike you can see the order of
+events: $m$ shoots up first, then $h$ drops and $n$ rises together, and
+after the spike $m$ falls at once while $h$ and $n$ take several
+milliseconds to recover. Simulated time runs much slower than real time, so
+that a spike that lasts one millisecond is visible; at the slow setting one
+sweep takes a few seconds.
+
+The panel on the right is the f-I curve, firing rate against injected
+current. A point is added for each current you hold for at least 400 ms,
+blue when the conductances are at their standard values and orange when
+either has been changed, and the open circle marks the current setting.
+Reset clears the points.
+
+## Things to try
+
+Start at the default current of 10 µA/cm², where the neuron fires about
+70 spikes per second, and lower it slowly. The rate falls a little, to
+about 55 spikes per second, and then at a current just above 6 the firing
+stops altogether. There is no setting at which the neuron fires slowly.
+This is the main difference from the integrate-and-fire neuron, whose rate
+rises smoothly from zero: the Hodgkin–Huxley neuron starts at a minimum
+rate or not at all, because the spike is an oscillation of the whole
+system, and an oscillation has a natural frequency. Neurons with this
+property are called type II, and the squid axon is the standard example.
+
+Now raise the current. The rate climbs past 150 spikes per second at
+120 µA/cm², but notice what happens to the spikes themselves: they get
+smaller as the current grows, and the trough between them gets shallower.
+By 140 the spike has shrunk to a ripple of about 15 mV, which is where the
+counter stops treating it as a spike, and at about 155 even the ripple is
+gone: the voltage sits at around $-42$ mV with $h$ stuck low and $n$ stuck
+high. This is depolarisation block, and it is what the f-I curve on the
+right shows at its far end: the rate goes to zero at high current, which no
+integrate-and-fire model would predict.
+
+Return the current to 10 and reduce the sodium conductance. At three
+quarters of its standard value the neuron is silent at this current but
+still fires if you raise $I$ to 30; at half it does not fire at all, at any
+current in the range. This is what a sodium channel blocker like
+tetrodotoxin does. Now put sodium back and halve the potassium conductance
+instead. The neuron fires even with no injected current, at about 50
+spikes per second, because the current that normally ends the spike and
+holds the membrane down is too weak. Raising the potassium conductance to
+one and a half times its value silences the neuron at any current in the
+range, which is the opposite effect.
+
+The equations and parameters are those of Dayan and Abbott (2001, chapter
+5), which follow Hodgkin and Huxley (1952) with the resting potential
+shifted to $-65$ mV. The original paper is still readable and worth it; the
+Nobel lecture (Hodgkin 1963) tells the story of how the measurements were
+made.
+
+## References
+
+Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
+Mathematical Modeling of Neural Systems*. MIT Press.
+
+Hodgkin AL, Huxley AF (1952). A quantitative description of membrane
+current and its application to conduction and excitation in nerve.
+*Journal of Physiology* 117: 500–544.
+[DOI](https://doi.org/10.1113/jphysiol.1952.sp004764)
+
+Hodgkin AL (1963). The ionic basis of nervous conduction. Nobel lecture,
+11 December 1963.
+[Nobel Prize website](https://www.nobelprize.org/prizes/medicine/1963/hodgkin/lecture/)

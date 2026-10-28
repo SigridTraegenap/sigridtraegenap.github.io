@@ -170,7 +170,7 @@ the default sampling interval. Just below it the stem still sits where it
 should. Just above it, the green line and the stem jump to a lower
 frequency, and the orange reconstruction now contains a slow oscillation that
 was never in the signal. Look at the blue dots in the upper panel while you
-do this: they genuinely are consistent with that slower wave. Then make the
+do this: they are consistent with that slower wave. Then make the
 sampling interval smaller. Nyquist moves up, the fast component is resolved
 again, and the problem goes away. That is the one reliable cure for aliasing:
 sample faster, or filter out the fast components before you sample.
@@ -199,16 +199,18 @@ pitfalls of sampling.
 
 Cooley JW, Tukey JW (1965). An algorithm for the machine calculation of
 complex Fourier series. *Mathematics of Computation* 19: 297–301.
+[DOI](https://doi.org/10.1090/S0025-5718-1965-0178586-1)
 
 Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
 Mathematical Modeling of Neural Systems*. MIT Press.
 
 Nyquist H (1928). Certain topics in telegraph transmission theory.
 *Transactions of the American Institute of Electrical Engineers* 47: 617–644.
+[DOI](https://doi.org/10.1109/T-AIEE.1928.5055024)
 
 Press WH, Teukolsky SA, Vetterling WT, Flannery BP (2007). *Numerical
 Recipes: The Art of Scientific Computing*, 3rd edition. Cambridge University
 Press.
 
 Shannon CE (1949). Communication in the presence of noise. *Proceedings of
-the IRE* 37: 10–21.
+the IRE* 37: 10–21. [DOI](https://doi.org/10.1109/JRPROC.1949.232969)

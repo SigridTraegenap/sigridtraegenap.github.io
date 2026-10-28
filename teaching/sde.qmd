@@ -1,0 +1,480 @@
+---
+title: "Stochastic differential equations"
+description: "How to add noise to a differential equation without angering the mathematicians: an ensemble of sample paths, the Euler–Maruyama scheme, and the odd rule that noise scales with the square root of the time step."
+toc: true
+execute:
+  enabled: false
+---
+
+Almost every model I work with has noise in it. Synaptic input arrives at
+irregular times, spontaneous activity in the cortex fluctuates, and even a
+tidy rate model gets a noise term the moment it is compared with data. The
+usual way to write this down is to take an ordinary differential equation and
+add a random forcing term. That looks harmless, and in practice it mostly is,
+but the step from "add noise" to "a stochastic differential equation" hides a
+few genuine surprises. In 2022 I gave a short talk about these at our lab's
+coffee meeting under the title "How to avoid angering the mathematicians".
+The first figure grows a bundle of sample paths while you watch, and the
+second lets you break the simulation on purpose by picking the wrong time
+step.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## From a spring to a random walk
+
+My talk started with a spring, because that is where the trouble starts. A
+mass on a damped spring, pushed by an external force $w(t)$, obeys
+
+$$\frac{d^2x}{dt^2} + \gamma\,\frac{dx}{dt} + \nu^2 x = w(t),$$
+
+with $x$ the position, $\gamma$ the damping and $\nu$ the natural frequency.
+This is a second-order linear ordinary differential equation, and everything
+about it is well understood: it has exactly one solution for a given start,
+and you can find it by hand or with a standard numerical scheme such as Euler
+or Runge–Kutta. Now let the force be random. The natural choice is white
+noise, a process $w(t)$ that has zero mean, is Gaussian, and whose values at
+any two different times are independent. The spring is now a stochastic
+differential equation, and the textbook guarantees no longer apply.
+
+The reason is that white noise is a strange object. Independence at every
+pair of times means it is discontinuous everywhere, and it takes arbitrarily
+large values in any interval, however short. The theory of ordinary
+differential equations asks for a continuous right-hand side, so the usual
+existence and uniqueness theorem cannot even be stated, and the integral
+$\int w(t)\,dt$ that would give the solution does not exist as an ordinary
+integral because $w$ is unbounded. The way out is to stop talking about $w$
+and talk instead about its running sum, Brownian motion $\beta(t)$. Brownian
+motion is continuous, so integrals against its increments $d\beta$ can be
+made to work. Formally $w = d\beta/dt$, but $\beta$ has no derivative
+anywhere, which is exactly why $w$ is so badly behaved. This is the origin of
+Itô calculus, and it is also why its chain rule has an extra term that the
+ordinary one does not: a tiny increment $d\beta$ is not negligible when
+squared, because $(d\beta)^2$ behaves like $dt$. All of this is why a
+mathematician winces when $w(t)$ is written into an equation as if it were an
+ordinary function. The mathematics allows the equation, as long as you say
+what you mean by the integral.
+
+The name "white noise", by the way, comes from the spectrum. By the
+Wiener–Khinchin theorem (Wiener 1930; Khintchine 1934), the power spectrum
+of a stationary process is the Fourier transform of its autocorrelation,
+and the delta-shaped autocorrelation of $w$ transforms into a flat spectrum,
+all frequencies present in equal measure, as in white light. Brownian
+motion, the running sum of white noise, has a spectrum that falls as
+$1/f^2$ and is called brown noise, after the motion rather than the colour,
+and the $1/f$ spectrum in between is pink. That deserves a page of its own,
+and it is on the list.
+
+The two equations on this page are the ones you are most likely to meet.
+Written in the Itô form, they are
+
+$$\text{Brownian motion:}\qquad dx = D\, d\beta$$
+
+$$\text{Ornstein–Uhlenbeck:}\qquad dx = -\theta\, x\, dt + D\, d\beta .$$
+
+The first is a random walk: $x$ wanders with no preference for any value and
+spreads out forever, which is also the equation for the position of a
+diffusing particle. The second adds a spring that pulls $x$ back towards
+zero with rate $\theta$, so the wandering is kept in check. The
+Ornstein–Uhlenbeck process (Uhlenbeck and Ornstein 1930) was invented for the
+velocity of a Brownian particle, and it is the standard model for anything
+that fluctuates around a set point, from membrane potentials to interest
+rates. The third option in the figure is the noisy spring itself, with
+$\nu = 2$ fixed and the slider setting the damping $\gamma$. Written as a
+first-order system in position and velocity it is
+
+$$\text{Noisy spring:}\qquad dx = v\, dt, \qquad dv = (-\gamma\, v - \nu^2 x)\, dt + D\, d\beta .$$
+
+Because these equations are linear, their solutions can be described
+completely. The whole ensemble of possible paths is Gaussian at every time,
+with a mean that follows the noise-free equation and a variance that grows in
+a known way. Starting from $x_0$, Brownian motion has mean $x_0$ and variance
+$D^2 t$, so its spread grows without limit as $\sqrt{t}$. The
+Ornstein–Uhlenbeck process has mean $x_0 e^{-\theta t}$ and variance
+$\frac{D^2}{2\theta}\left(1 - e^{-2\theta t}\right)$, which settles at
+$D^2/(2\theta)$. The first figure draws these formulas over the simulated
+ensemble, so you can check them.
+
+```{ojs}
+//| echo: false
+viewof sdModel = Inputs.radio(new Map([["Brownian motion", "bm"], ["Ornstein–Uhlenbeck", "ou"], ["Noisy spring", "spring"]]), {value: "ou", label: "Model"})
+viewof sdTheta = Inputs.range([0.1, 3], {value: 1, step: 0.1, label: "θ (pull towards 0; damping γ for the spring)"})
+viewof sdD = Inputs.range([0, 2], {value: 1, step: 0.05, label: "D (noise strength)"})
+viewof sdPause = Inputs.toggle({label: "Pause"})
+viewof sdReset = Inputs.button("Restart")
+```
+
+```{ojs}
+//| echo: false
+sdRandn = () => {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+sdPar = ({T: 10, dt: 0.01, N: 300, show: 12, x0: 2, nu: 2})
+sdState = {
+  sdReset;
+  const model = sdModel, theta = sdTheta, D = sdD;
+  const {T, dt, N, show, x0, nu} = sdPar, n = Math.round(T / dt) + 1;
+  const x = new Float32Array(N).fill(x0), v = new Float32Array(N);
+  const traces = Array.from({length: show}, () => new Float32Array(n).fill(x0));
+  const mean = new Float32Array(n).fill(x0), sd = new Float32Array(n);
+  let k = 0;
+  const sq = Math.sqrt(dt);
+  while (true) {
+    if (!viewof sdPause.value && k < n - 1) {
+      for (let s = 0; s < 5 && k < n - 1; s++) {
+        k++;
+        let sum = 0, sum2 = 0;
+        for (let i = 0; i < N; i++) {
+          const db = sdRandn() * sq;
+          if (model === "bm") x[i] += D * db;
+          else if (model === "ou") x[i] += -theta * x[i] * dt + D * db;
+          else { const a = -theta * v[i] - nu * nu * x[i]; x[i] += v[i] * dt; v[i] += a * dt + D * db; }
+          sum += x[i]; sum2 += x[i] * x[i];
+        }
+        for (let j = 0; j < show; j++) traces[j][k] = x[j];
+        mean[k] = sum / N; sd[k] = Math.sqrt(Math.max(0, sum2 / N - mean[k] * mean[k]));
+      }
+    }
+    yield {x, traces, mean, sd, k, t: k * dt, model, theta, D};
+  }
+}
+sdTheory = (model, theta, D, t, x0) => {
+  if (model === "bm") return {m: x0, s: D * Math.sqrt(t)};
+  if (model === "ou") return {m: x0 * Math.exp(-theta * t), s: D * Math.sqrt((1 - Math.exp(-2 * theta * t)) / (2 * theta))};
+  return null;
+}
+sdCanvas = mkCanvas(760, 370)
+```
+
+```{ojs}
+//| echo: false
+{
+  const st = sdState, c = sdCanvas, fg = exFg(), W = 760, H = 370;
+  const {T, dt, N, x0} = sdPar, ymax = 5;
+  const P = {x0: 56, y0: 14, w: 500, h: 270}, R = {x0: 590, y0: 14, w: 150, h: 270};
+  const sx = t => P.x0 + P.w * t / T, sy = v => P.y0 + P.h * (1 - (v + ymax) / (2 * ymax));
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  // left: sample paths with ensemble band
+  axisBox(c, P.x0, P.y0, P.w, P.h);
+  c.save(); c.beginPath(); c.rect(P.x0, P.y0, P.w, P.h); c.clip();
+  c.strokeStyle = "#999"; c.setLineDash([3, 4]); c.beginPath(); c.moveTo(P.x0, sy(0)); c.lineTo(P.x0 + P.w, sy(0)); c.stroke(); c.setLineDash([]);
+  c.fillStyle = "rgba(31,119,180,0.18)"; c.beginPath();
+  for (let i = 0; i <= st.k; i++) c.lineTo(sx(i * dt), sy(st.mean[i] + st.sd[i]));
+  for (let i = st.k; i >= 0; i--) c.lineTo(sx(i * dt), sy(st.mean[i] - st.sd[i]));
+  c.closePath(); c.fill();
+  c.lineWidth = 1; c.strokeStyle = "#ff7f0e"; c.globalAlpha = 0.6;
+  for (const tr of st.traces) { c.beginPath(); for (let i = 0; i <= st.k; i++) i ? c.lineTo(sx(i * dt), sy(tr[i])) : c.moveTo(sx(0), sy(tr[0])); c.stroke(); }
+  c.globalAlpha = 1; c.lineWidth = 2.5; c.strokeStyle = "#1f77b4"; c.beginPath();
+  for (let i = 0; i <= st.k; i++) i ? c.lineTo(sx(i * dt), sy(st.mean[i])) : c.moveTo(sx(0), sy(st.mean[0]));
+  c.stroke();
+  const th = sdTheory(st.model, st.theta, st.D, 0, x0);
+  if (th) {
+    c.strokeStyle = fg; c.lineWidth = 1.5; c.setLineDash([6, 4]);
+    for (const sgn of [1, -1]) { c.beginPath(); for (let i = 0; i <= st.k; i++) { const q = sdTheory(st.model, st.theta, st.D, i * dt, x0); i ? c.lineTo(sx(i * dt), sy(q.m + sgn * q.s)) : c.moveTo(sx(0), sy(q.m)); } c.stroke(); }
+    c.setLineDash([]);
+  }
+  c.restore();
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText("time t", P.x0 + P.w / 2, P.y0 + P.h + 26); c.fillText("0", sx(0), P.y0 + P.h + 26); c.fillText(T, sx(T), P.y0 + P.h + 26);
+  c.textAlign = "right"; c.fillText("x", P.x0 - 12, P.y0 + P.h / 2 - 16);
+  for (const yv of [-ymax, 0, ymax]) c.fillText(yv, P.x0 - 8, sy(yv) + 5);
+  c.textAlign = "left"; c.fillText(`t = ${st.t.toFixed(1)}`, P.x0 + 8, P.y0 + 20);
+  // right: histogram of x across the ensemble at time t, with the predicted Gaussian
+  axisBox(c, R.x0, R.y0, R.w, R.h);
+  const nb = 40, bins = new Float32Array(nb), bw = 2 * ymax / nb;
+  for (let i = 0; i < N; i++) { const b = Math.floor((st.x[i] + ymax) / bw); if (b >= 0 && b < nb) bins[b]++; }
+  const dens = Array.from(bins, b => b / (N * bw));
+  const m = st.mean[st.k], s = st.sd[st.k];
+  const q = th ? sdTheory(st.model, st.theta, st.D, st.t, x0) : {m, s};
+  const peak = 1.15 * Math.max(...dens, q.s > 1e-3 ? 1 / (q.s * Math.sqrt(2 * Math.PI)) : 0, 0.05);
+  const rx = d => R.x0 + R.w * Math.min(1, d / peak);
+  c.fillStyle = "rgba(255,127,14,0.55)";
+  for (let b = 0; b < nb; b++) { const lo = -ymax + b * bw; c.fillRect(R.x0, sy(lo + bw), rx(dens[b]) - R.x0, sy(lo) - sy(lo + bw)); }
+  if (q.s > 1e-3) {
+    c.save(); c.beginPath(); c.rect(R.x0, R.y0, R.w, R.h); c.clip();
+    c.strokeStyle = fg; c.lineWidth = 1.5; c.setLineDash([6, 4]); c.beginPath();
+    for (let i = 0; i <= 100; i++) { const yv = -ymax + 2 * ymax * i / 100, d = Math.exp(-0.5 * ((yv - q.m) / q.s) ** 2) / (q.s * Math.sqrt(2 * Math.PI)); i ? c.lineTo(rx(d), sy(yv)) : c.moveTo(rx(d), sy(yv)); }
+    c.stroke(); c.setLineDash([]); c.restore();
+  }
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText("x at time t", R.x0 + R.w / 2, R.y0 + R.h + 26);
+  c.textAlign = "left";
+  c.fillText(`mean ${m.toFixed(2)}`, R.x0 + 6, R.y0 + 20);
+  c.fillText(`std ${s.toFixed(2)}`, R.x0 + 6, R.y0 + 38);
+  if (th) c.fillText(`formula ${q.s.toFixed(2)}`, R.x0 + 6, R.y0 + 56);
+  // legend below the axes
+  let lx = P.x0, ly = P.y0 + P.h + 50;
+  for (const [txt, col] of [["orange: sample paths", "#ff7f0e"], ["blue: ensemble mean", "#1f77b4"], ["band: mean ± 1 std", "#1f77b4"], ["dashed: formula", fg]]) {
+    c.fillStyle = col; c.fillText(txt, lx, ly); lx += c.measureText(txt).width + 16;
+  }
+  return c.canvas;
+}
+```
+
+## Solving them numerically
+
+Most of the time nobody solves these equations by hand. The simplest scheme is
+Euler–Maruyama, which is the Euler method with one change. For an equation
+$dx = f(x)\,dt + L(x)\,d\beta$ it reads
+
+$$x_{k+1} = x_k + f(x_k)\,\Delta t + L(x_k)\,\Delta\beta_k, \qquad
+\Delta\beta_k \sim \mathcal N(0, \Delta t),$$
+
+so each step adds a Gaussian random number with variance $\Delta t$, or
+equivalently a standard normal number multiplied by $\sqrt{\Delta t}$. That
+square root is the whole point. If you treat the noise like any other term
+and multiply it by $\Delta t$, the random part shrinks faster than the
+deterministic part as the step gets smaller, and in the limit it vanishes.
+Put differently, multiplying the noise by $\Delta t$ is the same as running
+Euler–Maruyama with a noise strength $D\sqrt{\Delta t}$: the scheme is
+internally consistent, but it solves a different equation, and which one
+depends on the time step. The second figure shows this directly.
+Higher-order schemes exist, Milstein
+being the most common, but for the models on this page Euler–Maruyama with a
+small step is all you need.
+
+
+```{ojs}
+//| echo: false
+viewof sdDt = Inputs.radio([5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01], {value: 0.1, label: "Δt", format: d => String(d)})
+viewof sdRedraw = Inputs.button("New noise")
+```
+
+```{ojs}
+//| echo: false
+sdDtSteps = [5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01]
+sdDtSpread = (dt, scale, N, T, D) => {
+  const n = Math.round(T / dt); let sum2 = 0;
+  for (let i = 0; i < N; i++) { let x = 0; for (let k = 0; k < n; k++) x += D * sdRandn() * scale; sum2 += x * x; }
+  return Math.sqrt(sum2 / N);
+}
+sdDtSweep = {
+  sdRedraw;
+  const T = 10, D = 1, N = 500;
+  return sdDtSteps.map(dt => ({dt, sqrt: sdDtSpread(dt, Math.sqrt(dt), N, T, D), lin: sdDtSpread(dt, dt, N, T, D)}));
+}
+sdDtRun = {
+  sdRedraw;
+  const T = 10, D = 1, N = 500, show = 15, dt = sdDt, n = Math.round(T / dt);
+  const out = {};
+  for (const [key, scale] of [["sqrt", Math.sqrt(dt)], ["lin", dt]]) {
+    const paths = Array.from({length: show}, () => [0]);
+    let sum2 = 0;
+    for (let i = 0; i < N; i++) {
+      let x = 0;
+      for (let k = 0; k < n; k++) { x += D * sdRandn() * scale; if (i < show) paths[i].push(x); }
+      sum2 += x * x;
+    }
+    out[key] = {paths, std: Math.sqrt(sum2 / N)};
+  }
+  return {...out, dt, T, D, exact: D * Math.sqrt(T)};
+}
+sdDtCanvas = mkCanvas(760, 352)
+```
+
+```{ojs}
+//| echo: false
+{
+  const r = sdDtRun, sw = sdDtSweep, c = sdDtCanvas, fg = exFg(), W = 760, H = 352, ymax = 8;
+  const blue = "#1f77b4", orange = "#ff7f0e";
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  const panels = [
+    {key: "sqrt", x0: 56, title: "noise × √Δt (Euler–Maruyama)", col: blue},
+    {key: "lin", x0: 300, title: "noise × Δt (naive Euler)", col: orange}
+  ];
+  for (const p of panels) {
+    const P = {x0: p.x0, y0: 14, w: 200, h: 230}, run = r[p.key], n = run.paths[0].length - 1;
+    const sx = i => P.x0 + P.w * i / n, sy = v => P.y0 + P.h * (1 - (v + ymax) / (2 * ymax));
+    axisBox(c, P.x0, P.y0, P.w, P.h);
+    c.save(); c.beginPath(); c.rect(P.x0, P.y0, P.w, P.h); c.clip();
+    c.strokeStyle = "#999"; c.setLineDash([3, 4]); c.beginPath(); c.moveTo(P.x0, sy(0)); c.lineTo(P.x0 + P.w, sy(0)); c.stroke(); c.setLineDash([]);
+    c.strokeStyle = p.col; c.lineWidth = 1; c.globalAlpha = 0.7;
+    for (const path of run.paths) { c.beginPath(); path.forEach((v, i) => i ? c.lineTo(sx(i), sy(v)) : c.moveTo(sx(0), sy(v))); c.stroke(); }
+    c.globalAlpha = 1; c.strokeStyle = fg; c.lineWidth = 1.5; c.setLineDash([6, 4]);
+    for (const sgn of [1, -1]) { c.beginPath(); for (let i = 0; i <= 50; i++) { const t = r.T * i / 50; i ? c.lineTo(P.x0 + P.w * i / 50, sy(sgn * r.D * Math.sqrt(t))) : c.moveTo(P.x0, sy(0)); } c.stroke(); }
+    c.setLineDash([]); c.restore();
+    c.fillStyle = fg; c.textAlign = "center";
+    c.fillText("time t", P.x0 + P.w / 2, P.y0 + P.h + 26); c.fillText("0", P.x0, P.y0 + P.h + 26); c.fillText(r.T, P.x0 + P.w, P.y0 + P.h + 26);
+    c.fillStyle = p.col; c.fillText(p.title, P.x0 + P.w / 2, P.y0 + P.h + 48);
+    c.fillStyle = fg; c.fillText(`spread at t = ${r.T}: ${run.std.toFixed(2)}`, P.x0 + P.w / 2, P.y0 + P.h + 70);
+  }
+  c.textAlign = "right"; c.fillStyle = fg; for (const yv of [-ymax, 0, ymax]) c.fillText(yv, 56 - 8, 14 + 230 * (1 - (yv + ymax) / (2 * ymax)) + 5);
+  c.fillText("x", 56 - 12, 14 + 115 - 16);
+  // convergence panel: spread at t = T against Δt for both schemes
+  const Cv = {x0: 560, y0: 14, w: 184, h: 230}, smax = 8;
+  const lx = dt => Cv.x0 + Cv.w * (Math.log10(dt) + 2) / 3, ly = sd => Cv.y0 + Cv.h * (1 - sd / smax);
+  axisBox(c, Cv.x0, Cv.y0, Cv.w, Cv.h);
+  c.strokeStyle = fg; c.lineWidth = 1.5; c.setLineDash([6, 4]); c.beginPath(); c.moveTo(Cv.x0, ly(r.exact)); c.lineTo(Cv.x0 + Cv.w, ly(r.exact)); c.stroke(); c.setLineDash([]);
+  for (const [key, col] of [["sqrt", blue], ["lin", orange]]) {
+    c.strokeStyle = col; c.lineWidth = 1; c.beginPath(); sw.forEach((q, i) => i ? c.lineTo(lx(q.dt), ly(q[key])) : c.moveTo(lx(q.dt), ly(q[key]))); c.stroke();
+    c.fillStyle = col; for (const q of sw) { c.beginPath(); c.arc(lx(q.dt), ly(q[key]), q.dt === r.dt ? 6 : 3.5, 0, 2 * Math.PI); c.fill(); }
+  }
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText("Δt (log scale)", Cv.x0 + Cv.w / 2, Cv.y0 + Cv.h + 26);
+  for (const d of [0.01, 0.1, 1, 10]) c.fillText(String(d), lx(d), Cv.y0 + Cv.h + 46);
+  c.fillText(`spread at t = ${r.T}`, Cv.x0 + Cv.w / 2, Cv.y0 + Cv.h + 70);
+  c.textAlign = "right"; c.fillText("0", Cv.x0 - 6, ly(0) + 5); c.fillText(smax, Cv.x0 - 6, ly(smax) + 5); c.fillText(`√${r.T}`, Cv.x0 - 6, ly(r.exact) + 5);
+  c.textAlign = "left"; c.fillText("dashed: exact spread √t", 56, H - 10);
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+In the first figure, the panel on the left shows twelve sample paths in
+orange, all started at $x_0 = 2$ and simulated with Euler–Maruyama at
+$\Delta t = 0.01$. Behind them, the blue line is the mean of a larger
+ensemble of 300 paths and the blue band is that ensemble's mean plus and minus
+one standard deviation, as the legend under the panel says. The dashed black lines are the formulas for the
+Brownian and Ornstein–Uhlenbeck cases, mean plus and minus one standard
+deviation, so when the simulation is right the band and the dashed lines
+should agree up to sampling noise. The noisy spring has no dashed lines; its
+ensemble statistics would need a longer formula, and the band speaks for
+itself.
+
+The panel on the right is a histogram of where the 300 paths are at the
+current moment, turned on its side so that it shares the vertical axis with
+the paths. The dashed curve is the Gaussian predicted by the formulas, or, for
+the spring, the Gaussian with the ensemble's own mean and standard deviation.
+The three numbers above it are the ensemble mean, the ensemble standard
+deviation and the predicted standard deviation. The histogram is rescaled
+to fit its panel, so compare widths along the vertical axis, not bar
+lengths. Changing a slider or the model restarts the simulation from
+$t = 0$.
+
+The second figure runs the same random walk, $dx = d\beta$ with $D = 1$, twice
+with the time step you choose. On the left each step adds a standard normal
+number times $\sqrt{\Delta t}$, on the right the same number times
+$\Delta t$. The dashed lines in both panels are the same thing, the exact
+spread $\sqrt{t}$ of the equation being solved, and the number under each
+panel is the measured standard deviation of 500 paths at $t = 10$. The third
+panel collects that number for every available time step, blue for
+Euler–Maruyama and orange for naive Euler, against the exact value $\sqrt{10}
+\approx 3.16$ as a dashed line, with the current time step drawn larger.
+
+## Things to try
+
+Start with the Ornstein–Uhlenbeck process at the default values. The mean
+decays from 2 towards 0 with time constant $1/\theta$, and the band widens
+until it reaches a standard deviation of $D/\sqrt{2\theta}$, which is 0.71
+for the defaults. Once the mean has settled, the histogram on the right stops
+changing shape even though every individual path keeps moving. That is the
+stationary distribution, and it is what people mean when they say that
+an Ornstein–Uhlenbeck process "has" a variance. Raise $\theta$ and the band
+narrows and settles faster. Lower it and the process starts to look like
+Brownian motion for a while before the pull makes itself felt.
+
+Switch to Brownian motion. Now nothing pulls $x$ back, the mean stays at 2
+and the band keeps growing as $\sqrt t$, reaching a standard deviation of
+$D\sqrt{10} \approx 3.2$ for $D = 1$ at the end of the run. The histogram
+just keeps flattening. Set $D$ to 2 and watch how many paths leave the plot:
+the standard deviation at $t = 10$ is now 6.3, well beyond the axis.
+
+Switch to the noisy spring. With $\gamma = 1$ the mean oscillates a few times
+before it dies away, and the band is narrower than for the
+Ornstein–Uhlenbeck process at the same $D$, because the noise drives the
+velocity rather than the position and the spring filters it. Set the damping
+to 0.1 and the paths ring at the natural frequency for the whole run, still
+roughly in step with each other, while the mean decays only slowly and the
+band widens a little with every swing. Ten time units is too short to see
+where this ends up, but the trend is the point: the noise slowly knocks the
+paths out of phase with one another, so over a long enough run the mean
+fades away while every single path keeps oscillating. The ensemble mean is
+then a poor description of any member of the ensemble, which is worth
+remembering whenever a model is compared with trial-averaged data.
+
+In the second figure, begin with $\Delta t = 1$. The two path panels are
+indistinguishable, because $\sqrt{1} = 1$, and the two dots in the third
+panel coincide on the dashed line. Go the other way first, to $\Delta t = 2$
+and then 5. With only five steps in the whole run the paths are crude in
+both panels, but the blue spread stays near 3.2 while the orange one climbs
+to 4.5 and then 7.1: a coarse step overstates the noise in the naive scheme
+just as a fine step understates it. Now reduce the step. The left panel stays
+the same apart from looking smoother, and its spread stays near 3.2 at every
+step: the blue dots sit on the line. The right panel shrinks. Its paths
+still spread as $\sqrt t$, since it is a random walk like any other, only
+one with a weaker noise, and the spread at $t = 10$ drops to 1.0 at
+$\Delta t = 0.1$ and 0.32 at $\Delta t = 0.01$. The orange dots fall away
+from the line as $\sqrt{\Delta t}$. A numerical scheme is supposed to give
+an answer that stops depending on $\Delta t$ once the step is small enough,
+and the naive one never does. In the limit of a vanishing step its noise
+would disappear altogether. This is the practical face of everything in the
+section on white noise. A random force that leaves a finite mark in a finite
+time must have an infinite amplitude in the limit, and the $\sqrt{\Delta t}$
+in the Euler–Maruyama scheme is the bookkeeping that makes that work on a
+computer. If a simulation of a noisy model gives results that change when
+you refine the time step, this is the first thing to check.
+
+This page follows my 2022 coffee-meeting talk, which drew mostly on the
+lecture notes by Särkkä (2012), since published as a book (Särkkä and Solin
+2019). Higham (2001) is the friendliest introduction to the numerical side
+and the source of the Euler–Maruyama figure in the talk. A disclaimer is in
+order: I once tried studying mathematics alongside biophysics and gave it
+up in favour of the physics part of my degree, so the mathematicians in the
+title may be angered by this page after all. If you are one of them, Särkkä and Solin (2019) has the proper
+version.
+
+## Numerical details
+
+Both figures use the Euler–Maruyama scheme exactly as written above, with
+standard normal numbers from the Box–Muller transform. The first figure
+integrates 300 paths with $\Delta t = 0.01$ from $x_0 = 2$ (and $v_0 = 0$
+for the spring) to $T = 10$, draws 12 of them, and computes the mean and
+standard deviation across all 300 at every step; the spring uses $\nu = 2$.
+The second figure integrates 500 paths of $dx = d\beta$ with $D = 1$ to
+$T = 10$ at the chosen $\Delta t$ and draws 15 of them; the convergence
+panel repeats the 500-path run for each of the nine available time steps
+with both schemes. The naive Euler
+scheme, with the noise increment multiplied by $\Delta t$ instead of
+$\sqrt{\Delta t}$, is used nowhere except in the right panel of that
+figure, where it is the point.
+
+## References
+
+Higham DJ (2001). An algorithmic introduction to numerical simulation of
+stochastic differential equations. *SIAM Review* 43: 525–546.
+[DOI](https://doi.org/10.1137/S0036144500378302) ·
+[PDF](https://inc.ucsd.edu/mplab/75/media//sde.pdf)
+
+Itô K (1944). Stochastic integral. *Proceedings of the Imperial Academy*
+20: 519–524.
+
+Khintchine A (1934). Korrelationstheorie der stationären stochastischen
+Prozesse. *Mathematische Annalen* 109: 604–615.
+[DOI](https://doi.org/10.1007/BF01449156)
+
+Särkkä S (2012). *Applied Stochastic Differential Equations*, lecture notes,
+Aalto University.
+[PDF](https://users.aalto.fi/~ssarkka/course_s2012/pdf/sde_course_booklet_2012.pdf)
+
+Särkkä S, Solin A (2019). *Applied Stochastic Differential Equations*.
+Cambridge University Press. [DOI](https://doi.org/10.1017/9781108186735)
+
+Uhlenbeck GE, Ornstein LS (1930). On the theory of the Brownian motion.
+*Physical Review* 36: 823–841.
+[DOI](https://doi.org/10.1103/PhysRev.36.823)
+
+Vatiwutipong P, Phewchean N (2019). Alternative way to derive the distribution
+of the multivariate Ornstein–Uhlenbeck process. *Advances in Difference
+Equations* 2019: 276.
+[DOI](https://doi.org/10.1186/s13662-019-2214-1) ·
+[PDF](https://advancesindifferenceequations.springeropen.com/track/pdf/10.1186/s13662-019-2214-1.pdf)
+
+Wiener N (1930). Generalized harmonic analysis. *Acta Mathematica* 55:
+117–258.
+
+Lecture notes on stochastic systems, Institute for Dynamic Systems and
+Control, ETH Zürich.
+[PDF](https://ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/Lectures/Stochastic-Systems/SDE.pdf)

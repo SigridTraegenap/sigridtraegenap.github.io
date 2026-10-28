@@ -10,6 +10,10 @@ listing:
     - fourier.qmd
     - recurrent-networks.qmd
     - hebbian.qmd
+    - sde.qmd
+    - eigenmodes.qmd
+    - coupled-neurons.qmd
+    - hodgkin-huxley.qmd
   type: grid
   grid-columns: 2
   sort: false

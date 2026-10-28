@@ -1,0 +1,310 @@
+---
+title: "Two coupled neurons"
+description: "Two spiking neurons wired to each other through synapses: why mutual inhibition makes them fire together, mutual excitation makes them alternate, and the synaptic time constant decides which."
+toc: true
+execute:
+  enabled: false
+---
+
+Neurons in the cortex often fire in step with one another. Rhythms in the
+gamma range, roughly 30 to 90 cycles per second (Buzsáki and Wang 2012), are
+the best-known example, and they are a property of groups of cells, not of
+any single one. The first guess about how neurons come to fire together is
+that they excite each other. For these fast rhythms the guess turns out to
+be wrong, or at least incomplete: in the models that reproduce gamma, the
+inhibitory interneurons do the synchronising, and the excitatory
+connections, if anything, pull the rhythm apart (Whittington, Traub and
+Jefferys 1995; Buzsáki and Wang 2012). The smallest circuit that shows why
+has just two neurons, and it was one of the exercises in the *Theoretical
+Neuroscience* lecture at Goethe University Frankfurt, where I was a teaching
+assistant. The exercise goes back to the courses of Thomas Burwick at the
+same university, which I took as a student.
+
+Everything runs in your browser. Pick a type for each neuron, set the two
+coupling strengths, and watch the diagram, the two voltage traces, and the
+phase between the two neurons update together.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## The model
+
+Each neuron is the [leaky integrate-and-fire model](neuron.qmd) from the
+first page, with the same numbers as in Dayan and Abbott (2001, section 5.8):
+resting potential $E_L = -70$ mV, membrane time constant $\tau_m = 10$ ms, a
+spike when the voltage reaches $-54$ mV, and a reset to $-80$ mV afterwards.
+Both neurons receive the same constant drive $R_m I_e$, strong enough to
+make each of them fire on its own. What is new is the synapse. A spike in
+neuron $j$ opens channels in neuron $i$, and the current through them
+depends on neuron $i$'s own voltage:
+
+$$\tau_m \frac{dV_i}{dt} = E_L - V_i - g_{ji}\, P_j\, (V_i - E_{ji}) + R_m I_e .$$
+
+Here $P_j$ is the fraction of open channels at the synapse made by neuron
+$j$, $g_{ji}$ is the strength of that synapse, and $E_{ji}$ is its reversal
+potential. The reversal potential is what makes a synapse excitatory or
+inhibitory. With $E = 0$ mV the current always pushes the voltage up towards
+threshold. With $E = -80$ mV it pushes it down, towards the reset. A neuron
+that makes excitatory synapses is drawn as a triangle, after the pyramidal
+cells of the cortex, and an inhibitory one as a circle, after the
+interneurons. The strengths are dimensionless, in units where $g = 1$ means
+the synaptic conductance at its peak equals the leak conductance.
+
+After a spike, $P$ rises over a few milliseconds and then decays, with both
+phases governed by one synaptic time constant $\tau_s$:
+
+$$\tau_s \frac{dP}{dt} = e\, P_{\max}\, z\, (1 - P) - P, \qquad
+\tau_s \frac{dz}{dt} = -z ,$$
+
+where $z$ is set to 1 at every presynaptic spike and $P_{\max} = 0.5$. The
+peak of $P$ comes about $\tau_s$ after the spike, which is the realistic
+shape. The time constant turns out to matter as much as the sign.
+
+```{ojs}
+//| echo: false
+viewof cnType1 = Inputs.radio(new Map([["excitatory", 0], ["inhibitory", -80]]), {value: -80, label: "Neuron 1 (purple) makes synapses that are"})
+viewof cnType2 = Inputs.radio(new Map([["excitatory", 0], ["inhibitory", -80]]), {value: -80, label: "Neuron 2 (teal) makes synapses that are"})
+viewof cnG12 = Inputs.range([0, 0.6], {value: 0.2, step: 0.02, label: "Strength 1 → 2"})
+viewof cnG21 = Inputs.range([0, 0.6], {value: 0.2, step: 0.02, label: "Strength 2 → 1"})
+viewof cnTauS = Inputs.range([1, 30], {value: 10, step: 1, label: "Synaptic time constant τₛ (ms)"})
+viewof cnDrive = Inputs.range([17, 40], {value: 25, step: 1, label: "Drive RₘIₑ (mV)"})
+viewof cnSpeed = Inputs.radio(new Map([["slow", 30], ["normal", 65], ["fast", 260]]), {value: 30, label: "Speed"})
+viewof cnPause = Inputs.toggle({label: "Pause"})
+viewof cnReset = Inputs.button("Reset with new random starting voltages")
+```
+
+```{ojs}
+//| echo: false
+cnState = {
+  cnReset;
+  const dt = 0.05, EL = -70, Vth = -54, Vr = -80, taum = 10, Pmax = 0.5;
+  const win = 200, n = Math.round(win / dt), phaseWin = 5000;
+  const V = [Vr + (Vth - Vr) * Math.random(), Vr + (Vth - Vr) * Math.random()];
+  const P = [0, 0], z = [0, 0];
+  const trace = [new Float32Array(n).fill(V[0]), new Float32Array(n).fill(V[1])];
+  const spikes = [[], []], phases = [];
+  let t = 0, lastRate = [0, 0], nextRateAt = 1000, idx = 0;
+  while (true) {
+    if (!viewof cnPause.value) {
+      const E = [viewof cnType1.value, viewof cnType2.value];           // reversal of synapses made by 1 and by 2
+      const g = [viewof cnG21.value, viewof cnG12.value];               // g[i] = strength of the synapse onto neuron i
+      const taus = viewof cnTauS.value, RI = viewof cnDrive.value;
+      const stepsPerFrame = viewof cnSpeed.value;
+      for (let s = 0; s < stepsPerFrame; s++) {
+        idx = (idx + 1) % n;
+        const dV = [0, 0];
+        for (let i = 0; i < 2; i++) { const j = 1 - i; dV[i] = (EL - V[i] - g[i] * P[j] * (V[i] - E[j]) + RI) / taum; }
+        for (let i = 0; i < 2; i++) {
+          P[i] += dt * (Math.E * Pmax * z[i] * (1 - P[i]) - P[i]) / taus;
+          z[i] += dt * (-z[i] / taus);
+        }
+        for (let i = 0; i < 2; i++) {
+          const Vn = V[i] + dt * dV[i];
+          if (Vn >= Vth) {
+            const frac = (Vth - V[i]) / (Vn - V[i]), ts = t + frac * dt;
+            V[i] = Vr + (1 - frac) * dt * dV[i]; z[i] = 1; spikes[i].push(ts);
+            trace[i][idx] = 20;
+            if (i === 1) {
+              const s1 = spikes[0];
+              if (s1.length >= 2 && ts >= s1[s1.length - 1]) { const a = s1[s1.length - 1], b = s1[s1.length - 2]; phases.push([ts, (ts - a) / (a - b)]); }
+            }
+          } else { V[i] = Vn; trace[i][idx] = V[i]; }
+          while (spikes[i].length && spikes[i][0] < t - phaseWin) spikes[i].shift();
+        }
+        while (phases.length && phases[0][0] < t - phaseWin) phases.shift();
+        t += dt;
+      }
+      if (t >= nextRateAt) { for (let i = 0; i < 2; i++) lastRate[i] = spikes[i].filter(x => x > t - 1000).length; nextRateAt = t + 1000; }
+    }
+    yield {V, P, trace, idx, spikes, phases, t, win, phaseWin, lastRate, E: [viewof cnType1.value, viewof cnType2.value], g: [viewof cnG12.value, viewof cnG21.value]};
+  }
+}
+cnCanvas = mkCanvas(760, 320)
+```
+
+```{ojs}
+//| echo: false
+{
+  const st = cnState, c = cnCanvas, fg = exFg(), W = 760, H = 320;
+  const col = ["#9467bd", "#17becf"], red = "#d62728", blue = "#1f77b4";
+  const Vth = -54, Vr = -80;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  // circuit diagram, left
+  const D = {cx: 95, y1: 58, y2: 196, r: 24};
+  const drawNeuron = (i, y) => {
+    const exc = st.E[i] === 0;
+    c.lineWidth = 2.5; c.strokeStyle = col[i];
+    c.fillStyle = i === 0 ? "rgba(148,103,189,0.25)" : "rgba(23,190,207,0.25)";
+    c.beginPath();
+    if (exc) { c.moveTo(D.cx, y - D.r * 1.1); c.lineTo(D.cx + D.r * 1.1, y + D.r * 0.8); c.lineTo(D.cx - D.r * 1.1, y + D.r * 0.8); c.closePath(); }
+    else c.arc(D.cx, y, D.r, 0, 2 * Math.PI);
+    c.fill(); c.stroke();
+    c.fillStyle = fg; c.textAlign = "center"; c.fillText(`${i + 1}`, D.cx, y + 5);
+    c.fillText(exc ? "excitatory" : "inhibitory", D.cx, y + (i === 0 ? -D.r - 12 : D.r + 22));
+  };
+  // connections: 1 → 2 on the right, 2 → 1 on the left; thickness ∝ strength; red = excitatory, blue = inhibitory
+  const drawSyn = (from, to, side) => {
+    const gS = st.g[from === 0 ? 0 : 1], exc = st.E[from] === 0, colr = exc ? red : blue;
+    const yA = from === 0 ? D.y1 + D.r : D.y2 - D.r, yB = to === 0 ? D.y1 + D.r + 4 : D.y2 - D.r - 4;
+    const x = D.cx + side * 18, xc = D.cx + side * 62;
+    c.strokeStyle = colr; c.fillStyle = colr; c.lineWidth = Math.max(0.5, 12 * gS);
+    c.globalAlpha = gS === 0 ? 0.25 : 1;
+    c.beginPath(); c.moveTo(x, yA); c.bezierCurveTo(xc, yA, xc, yB, x, yB); c.stroke();
+    // ending: arrowhead for excitatory, filled dot for inhibitory
+    const dir = to === 0 ? -1 : 1, tipY = yB + dir * 2;
+    if (exc) { c.beginPath(); c.moveTo(x, tipY + dir * 8); c.lineTo(x - 7, tipY - dir * 4); c.lineTo(x + 7, tipY - dir * 4); c.closePath(); c.fill(); }
+    else { c.beginPath(); c.arc(x, tipY + dir * 3, 6, 0, 2 * Math.PI); c.fill(); }
+    c.globalAlpha = 1;
+  };
+  drawSyn(0, 1, 1); drawSyn(1, 0, -1);
+  drawNeuron(0, D.y1); drawNeuron(1, D.y2);
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText(`1→2: ${st.g[0].toFixed(2)}   2→1: ${st.g[1].toFixed(2)}`, D.cx, D.y2 + D.r + 48);
+  // voltage traces, middle
+  const T = {x0: 240, y0: 14, w: 240, h: 220}, n = st.trace[0].length;
+  const tx = i => T.x0 + T.w * i / (n - 1), ty = v => T.y0 + T.h * (1 - (v + 85) / (105));
+  axisBox(c, T.x0, T.y0, T.w, T.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "#999"; c.beginPath(); c.moveTo(T.x0, ty(Vth)); c.lineTo(T.x0 + T.w, ty(Vth)); c.stroke(); c.setLineDash([]);
+  // oscilloscope sweep: the trace stays in place and is overwritten at the cursor
+  for (const i of [1, 0]) {
+    c.strokeStyle = col[i]; c.lineWidth = 1.5;
+    for (const [a, b] of [[0, st.idx], [st.idx + 1, n - 1]]) {
+      if (b <= a) continue;
+      c.beginPath();
+      for (let k = a; k <= b; k++) k === a ? c.moveTo(tx(k), ty(st.trace[i][k])) : c.lineTo(tx(k), ty(st.trace[i][k]));
+      c.stroke();
+    }
+  }
+  c.strokeStyle = "#bbb"; c.lineWidth = 1; c.beginPath(); c.moveTo(tx(st.idx), T.y0); c.lineTo(tx(st.idx), T.y0 + T.h); c.stroke();
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("V (mV)", T.x0 - 8, T.y0 + T.h / 2 + 5);
+  c.fillText(Vth, T.x0 - 8, ty(Vth) + 5); c.fillText(Vr, T.x0 - 8, ty(Vr) + 5); c.fillText("20", T.x0 - 8, ty(20) + 5);
+  c.textAlign = "center"; c.fillText(`${st.win} ms sweep · t = ${(st.t / 1000).toFixed(1)} s`, T.x0 + T.w / 2, T.y0 + T.h + 24);
+  c.textAlign = "left"; c.fillStyle = col[0]; c.fillText(`neuron 1: ${st.lastRate[0]} spikes/s`, T.x0, T.y0 + T.h + 46);
+  c.fillStyle = col[1]; c.fillText(`neuron 2: ${st.lastRate[1]} spikes/s`, T.x0, T.y0 + T.h + 66);
+  // phase difference, right
+  const Ph = {x0: 535, y0: 14, w: 215, h: 215};
+  const px = tt => Ph.x0 + Ph.w * (1 - (st.t - tt) / st.phaseWin), py = f => Ph.y0 + Ph.h * (1 - f);
+  axisBox(c, Ph.x0, Ph.y0, Ph.w, Ph.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "#999"; c.beginPath(); c.moveTo(Ph.x0, py(0.5)); c.lineTo(Ph.x0 + Ph.w, py(0.5)); c.stroke(); c.setLineDash([]);
+  c.fillStyle = fg;
+  for (const [tt, f] of st.phases) { if (f >= 0 && f <= 1) { c.beginPath(); c.arc(px(tt), py(f), 2.2, 0, 2 * Math.PI); c.fill(); } }
+  c.textAlign = "right"; c.fillText("1", Ph.x0 - 6, py(1) + 5); c.fillText("½", Ph.x0 - 6, py(0.5) + 5); c.fillText("0", Ph.x0 - 6, py(0) + 5);
+  c.textAlign = "center"; c.fillText(`time, last ${st.phaseWin / 1000} s`, Ph.x0 + Ph.w / 2, Ph.y0 + Ph.h + 24);
+  c.fillText("0: with 1's spike · ½: halfway", Ph.x0 + Ph.w / 2, Ph.y0 + Ph.h + 44);
+  c.save(); c.translate(Ph.x0 - 36, Ph.y0 + Ph.h / 2); c.rotate(-Math.PI / 2); c.fillText("spike phase of neuron 2", 0, 0); c.restore();
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+The diagram on the left is the circuit. Neuron 1 is at the top and neuron 2
+at the bottom, each drawn as a triangle if it makes excitatory synapses and
+as a circle if it makes inhibitory ones. The connection from 1 to 2 runs
+down the right side and the one from 2 to 1 up the left side. Each is red
+for excitatory and blue for inhibitory, ends in an arrowhead or a dot
+accordingly, and its thickness follows the strength slider. The two numbers
+under the diagram repeat the strengths.
+
+The middle panel shows 200 milliseconds of both membrane potentials,
+neuron 1 in purple and neuron 2 in teal, with spikes drawn as vertical
+strokes to 20 mV. It works like an oscilloscope: the trace stays where it
+is and a grey cursor sweeps across, overwriting it, so your eye can rest on
+the part that has already been drawn. The dashed line is the threshold. The
+two numbers below are the firing rates, updated once per simulated second.
+
+The panel on the right is the one to watch. Every time neuron 2 fires, a dot
+records when in neuron 1's cycle it did so: 0 means at the same moment as
+neuron 1's last spike, ½ means exactly halfway between two spikes of neuron
+1, and values near 1 mean just before neuron 1's next spike. If the two
+neurons fire in synchrony the dots sit at 0 or 1, which are the same thing.
+If they alternate, the dots sit at ½. The panel scrolls over the last five
+seconds, so you can see the phase settle from wherever the random start
+put it. At the slow setting a 200 ms sweep takes a second or two of real
+time; normal is about twice as fast and fast about eight times, which is
+useful for the phase panel, where it can take several simulated seconds
+for the dots to settle. Pause freezes everything.
+
+## Things to try
+
+Start with the defaults: two inhibitory neurons, both strengths 0.2, and a
+synaptic time constant of 10 ms. After the random start, the dots in the
+phase panel drift to 0 or 1 within a second or two of simulated time, which
+is quicker to watch at the fast setting, and the traces fall on top of each
+other. Two neurons that do nothing but inhibit each other fire
+in perfect synchrony. The mechanism is in the traces: when one neuron
+fires, the other receives an inhibitory current that delays its next spike,
+and the delay is longer the closer to threshold the receiver was. The
+neuron that was ahead is held back more than the one that was behind, and
+the gap closes.
+
+Make both neurons excitatory. Now the dots settle near ½, typically
+between 0.4 and 0.6: the neurons alternate. The argument runs the other way round. Excitation shortly after a
+neuron's own spike, when it sits at the reset, does little, while excitation
+close to threshold triggers a spike immediately. The neuron that is behind
+is advanced more than the one ahead, and the gap opens until the two are as
+far apart as they can be. Van Vreeswijk, Abbott and Ermentrout (1994) made
+this precise, and their title says it all: when inhibition, not excitation,
+synchronises neural firing.
+
+The synaptic time constant decides which of these two stories holds. Go back
+to two inhibitory neurons and set $\tau_s$ to 3 ms. The dots move to ½:
+fast inhibition makes the neurons alternate, not synchronise. The reason is
+that the argument above assumed the inhibition is still present when the
+receiving neuron gets close to threshold, which requires the synapse to
+outlast a good part of the period. At 3 ms it has worn off before it can do
+its job. In the gamma models cited at the top, the inhibitory synapses have
+time constants around 10 ms, and the oscillation period is set by this
+number, which is why the rhythm sits where it does.
+
+Try a mixed pair, one excitatory and one inhibitory, with equal strengths.
+After a second of drifting the dots settle at a fixed phase between the two
+extremes, and the two neurons fire at the same rate even though one is
+being excited and the other inhibited. This pair is the smallest version of
+the pyramidal-interneuron loop that generates gamma in the cortex. Make the
+excitatory synapse stronger than the inhibitory one and the lock breaks in
+an instructive way: the inhibitory neuron, which is being excited, fires two
+or three times per cycle of its partner, and the dots fall into several
+bands instead of one.
+
+Then set one of the strengths to zero. With a one-way connection the
+receiver speeds up or slows down, depending on the sign, but at these
+strengths it does not lock to the sender: the dots form diagonal bands that
+drift through the panel, which is what two independent oscillators with
+slightly different periods look like. Locking needs the influence to go both
+ways, or a much stronger synapse. Finally, go back to the two inhibitory
+neurons and raise the drive to 40 mV. The rates roughly double, to about
+130 spikes per second, and the pair still locks, but no longer in exact
+synchrony: the dots settle a little below 1, with one neuron leading the
+other by a few percent of the cycle. The period is now short compared with
+$\tau_s$, and the lock is on its way to breaking. Shorten $\tau_s$ at this
+drive and it does.
+
+This page follows the exercise on synaptic coupling in Dayan and Abbott
+(2001, chapter 5), which in turn is based on van Vreeswijk et al. (1994).
+
+## References
+
+Buzsáki G, Wang XJ (2012). Mechanisms of gamma oscillations. *Annual Review
+of Neuroscience* 35: 203–225.
+[DOI](https://doi.org/10.1146/annurev-neuro-062111-150444)
+
+Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
+Mathematical Modeling of Neural Systems*. MIT Press.
+
+Van Vreeswijk C, Abbott LF, Ermentrout GB (1994). When inhibition not
+excitation synchronizes neural firing. *Journal of Computational
+Neuroscience* 1: 313–321. [DOI](https://doi.org/10.1007/BF00961879)
+
+Whittington MA, Traub RD, Jefferys JGR (1995). Synchronized oscillations in
+interneuron networks driven by metabotropic glutamate receptor activation.
+*Nature* 373: 612–615. [DOI](https://doi.org/10.1038/373612a0)

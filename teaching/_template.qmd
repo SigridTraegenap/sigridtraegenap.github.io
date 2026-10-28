@@ -1,0 +1,110 @@
+---
+title: "Title of the explorable"
+description: "One sentence for the card on the Teaching overview page."
+toc: true
+execute:
+  enabled: false
+---
+
+<!--
+HOW TO USE THIS TEMPLATE
+1. Copy this file to teaching/<short-name>.qmd  (files starting with _ are not rendered).
+2. Add the page in two places:
+   - _quarto.yml, under navbar > Teaching > menu:   - href: teaching/<short-name>.qmd
+   - teaching/index.qmd, under listing > contents:  - <short-name>.qmd
+3. Replace the model, controls, simulation and drawing cells below.
+4. Preview with `quarto preview`, then commit and push.
+Every page is self-contained: it has its own copy of the helper cell, so pages
+never depend on each other.
+-->
+
+Opening paragraph: what the phenomenon is and why it is worth playing with.
+Everything runs in your browser and updates while you move the sliders.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, page-sized fonts, responsive width
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## The model
+
+State the equations and say in words what each symbol means.
+
+$$\tau \frac{dx}{dt} = -x + a$$
+
+```{ojs}
+//| echo: false
+// Controls. Prefix names with a short tag unique to this page (here "tp") so that
+// nothing clashes if cells are ever copied between pages.
+viewof tpA = Inputs.range([0, 2], {value: 1, step: 0.05, label: "a"})
+viewof tpTau = Inputs.range([1, 50], {value: 10, step: 1, label: "τ"})
+viewof tpPause = Inputs.toggle({label: "Pause"})
+viewof tpReset = Inputs.button("Reset")
+```
+
+```{ojs}
+//| echo: false
+// Simulation. A generator cell yields the state on every animation frame.
+// Read slider values through viewof X.value inside the loop so that changing a
+// slider does not restart the simulation; reference a cell directly (like tpReset)
+// if you do want a change to restart it.
+tpState = {
+  tpReset;
+  const dt = 0.1, win = 300, n = Math.round(win / dt);
+  const trace = new Float32Array(n);
+  let x = 0, t = 0;
+  while (true) {
+    if (!viewof tpPause.value) {
+      const a = viewof tpA.value, tau = viewof tpTau.value;
+      for (let s = 0; s < 10; s++) {
+        x += dt / tau * (-x + a);
+        trace.copyWithin(0, 1); trace[n - 1] = x;
+        t += dt;
+      }
+    }
+    yield {trace, t, x};
+  }
+}
+tpCanvas = mkCanvas(760, 300)
+```
+
+```{ojs}
+//| echo: false
+// Drawing. Clear the persistent canvas and redraw from the current state.
+{
+  const {trace, t} = tpState, c = tpCanvas, fg = exFg(), W = 760, H = 300;
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  const P = {x0: 80, y0: 12, w: W - 100, h: 240}, ymax = 2.2;
+  const sx = i => P.x0 + P.w * i / (trace.length - 1), sy = v => P.y0 + P.h * (1 - v / ymax);
+  axisBox(c, P.x0, P.y0, P.w, P.h);
+  c.strokeStyle = "#1f77b4"; c.lineWidth = 2; c.beginPath();
+  trace.forEach((v, i) => i ? c.lineTo(sx(i), sy(v)) : c.moveTo(sx(i), sy(v)));
+  c.stroke();
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText(`last 300 time units · t = ${t.toFixed(0)}`, P.x0 + P.w / 2, P.y0 + P.h + 24);
+  c.textAlign = "right"; c.fillText("x", P.x0 - 10, P.y0 + P.h / 2 + 5); c.fillText("0", P.x0 - 8, sy(0) + 5); c.fillText(ymax, P.x0 - 8, sy(ymax) + 5);
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+Describe each panel, each colour, and each line in words.
+
+## Things to try
+
+Two or three concrete experiments, each with what to look for and why it
+happens.
+
+Close with where the material comes from.
+
+## References
+
+Author A, Author B (year). Title. *Journal* volume: pages.

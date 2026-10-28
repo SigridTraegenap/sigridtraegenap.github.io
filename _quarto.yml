@@ -41,6 +41,14 @@ website:
             text: Recurrent networks
           - href: teaching/hebbian.qmd
             text: Hebbian learning
+          - href: teaching/sde.qmd
+            text: Stochastic differential equations
+          - href: teaching/eigenmodes.qmd
+            text: Eigenmodes of a recurrent network
+          - href: teaching/coupled-neurons.qmd
+            text: Two coupled neurons
+          - href: teaching/hodgkin-huxley.qmd
+            text: The Hodgkin–Huxley neuron
     right:
       - icon: github
         href: https://github.com/SigridTraegenap

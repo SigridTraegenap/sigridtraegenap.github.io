@@ -13,12 +13,10 @@ can be captured by treating it as a leaky bucket. Current flows in, the
 membrane voltage rises, some of it leaks away, and once the voltage reaches a
 threshold the neuron fires a spike and starts over. That is the leaky
 integrate-and-fire model. It goes back to Lapicque (1907), long before anyone
-knew what an action potential was made of, and it is still the first model
-most people meet in computational neuroscience. I used it in a webinar for the German Neuroscience
-Olympiad in 2020, and this page is the interactive version of that notebook.
-
-Everything runs in your browser. The simulation keeps going while you move the
-sliders, so you can watch the neuron react to a change in its input.
+knew what an action potential was made of, and it is still the first neuron
+model most people meet in computational neuroscience. I used it in a webinar
+for the German Neuroscience Olympiad in 2020. The simulation keeps running
+while you move the sliders.
 
 ```{ojs}
 //| echo: false
@@ -48,12 +46,15 @@ time. The input resistance $R$ converts current to voltage and is fixed at
 2 MΩ here, so a steady current of 10 nA lifts the voltage by 20 mV in the long
 run.
 
-The equation alone would just let $V$ settle at a new level. The spike is
-added by hand: whenever $V$ reaches the threshold $V_{\text{th}}$, the neuron
-is said to fire, $V$ is reset to $V_{\text{reset}} = -70$ mV, and it is held
-there for a refractory period of 2 ms before the integration starts again.
-Nothing about the shape of a real action potential is in the model. The spike
-is just an event, drawn here as a vertical stroke so that you can see it.
+The equation alone would let $V$ settle at a new level and nothing more.
+**The spike is added by hand.** Whenever $V$ reaches the threshold
+$V_{\text{th}}$, the neuron is said to fire, $V$ is reset to
+$V_{\text{reset}} = -70$ mV, and it is held there for a refractory period of
+2 ms before the integration starts again. Nothing about the shape of a real
+action potential is in the model. The spike is an event, drawn here as a
+vertical stroke so that you can see it. The
+[Hodgkin–Huxley page](hodgkin-huxley.qmd) shows where the spike comes from
+when it is not added by hand.
 
 With noise switched on, a random Gaussian value is added to the current at
 every time step. The slider sets the size of these fluctuations. This is a
@@ -66,6 +67,7 @@ viewof lifI = Inputs.range([0, 25], {value: 8, step: 0.5, label: "Input current 
 viewof lifNoise = Inputs.range([0, 10], {value: 0, step: 0.5, label: "Input noise (0 = off)"})
 viewof lifTau = Inputs.range([2, 50], {value: 10, step: 1, label: "Membrane time constant τ (ms)"})
 viewof lifThr = Inputs.range([-60, -35], {value: -50, step: 1, label: "Threshold (mV)"})
+viewof lifSpeed = Inputs.radio(new Map([["slow", 8], ["normal", 20], ["fast", 60]]), {value: 20, label: "Speed"})
 viewof lifPause = Inputs.toggle({label: "Pause"})
 viewof lifReset = Inputs.button("Reset (also clears the f-I points)")
 ```
@@ -77,7 +79,7 @@ lifState = {
   const dt = 0.1, win = 300, R = 2, Vrest = -65, Vreset = -70, refr = 2;
   const n = Math.round(win / dt);
   const V = new Float32Array(n).fill(Vrest), Iarr = new Float32Array(n);
-  let v = Vrest, refrLeft = 0, t = 0;
+  let v = Vrest, refrLeft = 0, t = 0, idx = 0;
   const fi = new Map();
   let key = null, sinceChange = 0, spikesSince = 0, lastSig = 0;
   const gauss = () => { let u = 0; while (u === 0) u = Math.random();
@@ -90,21 +92,22 @@ lifState = {
       if (sig > 0 && sig !== lastSig) { for (const [kk, p] of fi) if (p.noisy) fi.delete(kk); }
       if (sig > 0) lastSig = sig;
       if (k !== key) { key = k; sinceChange = 0; spikesSince = 0; }
-      for (let s = 0; s < 20; s++) {
+      const stepsPerFrame = viewof lifSpeed.value;
+      for (let s = 0; s < stepsPerFrame; s++) {
+        idx = (idx + 1) % n;
         const I = I0 + sig * gauss() / Math.sqrt(dt);
         if (refrLeft > 0) { refrLeft -= dt; v = Vreset; }
         else {
           v += dt / tau * ((Vrest - v) + R * I);
           if (v >= thr) { v = 20; spikesSince++; refrLeft = refr; }
         }
-        V.copyWithin(0, 1); V[n - 1] = v;
-        Iarr.copyWithin(0, 1); Iarr[n - 1] = I;
+        V[idx] = v; Iarr[idx] = I;
         if (v === 20) v = Vreset;
         t += dt; sinceChange += dt;
       }
       if (sinceChange >= 500) fi.set(key, {I: I0, noisy: sig > 0, rate: 1000 * spikesSince / sinceChange});
     }
-    yield {V, Iarr, t, win, fi, thr, tau, sig, I0, R, Vrest, refr,
+    yield {V, Iarr, idx, t, win, fi, thr, tau, sig, I0, R, Vrest, refr,
            rate: sinceChange > 0 ? 1000 * spikesSince / sinceChange : 0};
   }
 }
@@ -114,7 +117,7 @@ lifCanvas = mkCanvas(760, 360)
 ```{ojs}
 //| echo: false
 {
-  const {V, Iarr, win, fi, thr, tau, sig, I0, R, Vrest, refr, rate} = lifState;
+  const {V, Iarr, idx, win, fi, thr, tau, sig, I0, R, Vrest, refr, rate} = lifState;
   const blue = "#1f77b4", orange = "#ff7f0e", c = lifCanvas, fg = exFg();
   const W = 760, H = 360, n = V.length;
   c.clearRect(0, 0, W, H); c.font = exFont;
@@ -129,15 +132,15 @@ lifCanvas = mkCanvas(760, 360)
   c.fillText("I (nA)", mL - 8, top.y0 + top.h / 2 + 5);
   c.fillText("V (mV)", mL - 8, bot.y0 + bot.h / 2 + 5);
   c.fillText(thr, mL - 8, sy(bot, thr) + 5); c.fillText("-65", mL - 8, sy(bot, -65) + 5);
-  c.textAlign = "center"; c.fillText(`last ${win} ms`, (mL + trR) / 2, H - 14);
+  c.textAlign = "center"; c.fillText(`${win} ms sweep`, (mL + trR) / 2, H - 14);
   c.textAlign = "right"; c.fillText(`${rate.toFixed(0)} spikes / s`, trR - 8, bot.y0 + 20);
   c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(mL, sy(bot, thr)); c.lineTo(trR, sy(bot, thr)); c.stroke(); c.setLineDash([]);
-  c.strokeStyle = "#888"; c.lineWidth = 1; c.beginPath();
-  for (let i = 0; i < n; i++) { const y = sy(top, Math.max(top.lo, Math.min(top.hi, Iarr[i]))); i ? c.lineTo(sx(i), y) : c.moveTo(sx(0), y); }
-  c.stroke();
-  c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 1.5; c.beginPath();
-  for (let i = 0; i < n; i++) i ? c.lineTo(sx(i), sy(bot, V[i])) : c.moveTo(sx(0), sy(bot, V[0]));
-  c.stroke();
+  c.textAlign = "left"; c.fillStyle = "red"; c.fillText("threshold", mL + 8, sy(bot, thr) - 6);
+  // oscilloscope sweep: the traces stay in place and are overwritten at the cursor
+  const sweep = (arr, yf) => { for (const [a, b] of [[0, idx], [idx + 1, n - 1]]) { if (b <= a) continue; c.beginPath(); for (let i = a; i <= b; i++) i === a ? c.moveTo(sx(i), yf(arr[i])) : c.lineTo(sx(i), yf(arr[i])); c.stroke(); } };
+  c.strokeStyle = "#888"; c.lineWidth = 1; sweep(Iarr, v => sy(top, Math.max(top.lo, Math.min(top.hi, v))));
+  c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 1.5; sweep(V, v => sy(bot, v));
+  c.strokeStyle = "#bbb"; c.lineWidth = 1; for (const p of [top, bot]) { c.beginPath(); c.moveTo(sx(idx), p.y0); c.lineTo(sx(idx), p.y0 + p.h); c.stroke(); }
   // f-I curve, right
   const fP = {x0: 560, y0: 12, w: 180, h: 300};
   const Imax = 25, fmax = Math.max(100, ...Array.from(fi.values()).map(p => p.rate)) * 1.1;
@@ -159,16 +162,21 @@ lifCanvas = mkCanvas(760, 360)
   c.strokeStyle = sig > 0 ? orange : blue; c.lineWidth = 2; c.beginPath(); c.arc(fx(I0), fy(Math.min(rate, fmax)), 8, 0, 2 * Math.PI); c.stroke();
   c.textAlign = "left"; c.fillStyle = blue; c.fillText("noise-free", fP.x0 + 8, fP.y0 + 22);
   c.fillStyle = orange; c.fillText(sig > 0 ? `noise ${sig}` : "noise (off)", fP.x0 + 8, fP.y0 + 44);
+  c.fillStyle = blue; c.fillText("dashed: formula", fP.x0 + 8, fP.y0 + 66);
   return c.canvas;
 }
 ```
 
 ## Reading the figure
 
-The two panels on the left show the last 300 ms of the simulation. The upper
-one is the input current, the lower one the membrane potential, blue while the
-input is noise-free and orange once you add noise. The red dashed line is the
-threshold. Each time the trace touches it you see a spike drawn up to +20 mV,
+The two panels on the left show 300 ms of the simulation. They work like an
+oscilloscope: the traces stay where they are and a grey cursor sweeps across,
+overwriting them, so your eye can rest on what has already been drawn; the
+Speed setting changes how fast the cursor moves. The upper panel is the
+input current, the lower one the membrane potential, blue while the input is
+noise-free and orange once you add noise. The red dashed line is the
+threshold, labelled in the panel. Each time the trace touches it you see a
+spike drawn up to +20 mV,
 then the voltage drops to the reset value and climbs again. The number in the
 corner is the firing rate, averaged since you last changed a setting.
 
@@ -176,12 +184,13 @@ The panel on the right is the f-I curve, the firing rate as a function of the
 input current. This is the standard way to characterise a neuron, and the
 page builds it up from your own experiments: every input strength you leave
 the neuron at for half a second adds a dot. Blue dots are noise-free
-measurements, orange dots were taken at the current noise level. Changing the
+measurements, orange dots were taken at the current noise level, and the
+dashed curve is the formula below. Changing the
 noise level clears the orange dots, because they no longer belong to the same
 curve. The open ring shows where the current setting sits.
 
-The blue dashed line is not a measurement. It is the exact firing rate of the
-noise-free model, which you can work out by hand: the time the voltage needs
+The blue dashed line is the firing rate of the noise-free model worked out
+by hand rather than measured: the time the voltage needs
 to climb from reset to threshold under a constant current, plus the
 refractory period, is one interspike interval, and the rate is its inverse,
 
@@ -204,9 +213,9 @@ Now set the current to 6 nA, just below the rheobase, and turn on the noise.
 The voltage hovers below threshold and crosses it now and then, so the neuron
 fires at a low and irregular rate where the noise-free model is silent. Take
 a few measurements at different currents and compare the orange dots with the
-dashed line. Noise does not just add scatter, it rounds off the corner of the
-f-I curve, and this smoothing is the main reason real neurons do not show a
-hard threshold in their rate.
+dashed line. Besides adding scatter, noise rounds off the corner of the f-I
+curve, and this smoothing is the main reason real neurons show no hard
+threshold in their rate.
 
 Change the time constant. With a long $\tau_m$ the voltage trace is smooth
 and the neuron is slow to respond, but the noise-free f-I curve shifts too,
@@ -225,6 +234,7 @@ story of Lapicque's original paper.
 
 Brunel N, van Rossum MCW (2007). Lapicque's 1907 paper: from frogs to
 integrate-and-fire. *Biological Cybernetics* 97: 337–339.
+[DOI](https://doi.org/10.1007/s00422-007-0190-0)
 
 Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
 Mathematical Modeling of Neural Systems*. MIT Press.

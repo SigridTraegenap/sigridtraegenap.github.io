@@ -1,0 +1,382 @@
+---
+title: "Eigenmodes of a recurrent network"
+description: "Why a linear network is easier to read in the basis of its eigenvectors: every mode decays or grows at its own rate, and the slowest one is the one that lasts."
+toc: true
+execute:
+  enabled: false
+---
+
+A network of neurons that feed back on each other can do something a single
+neuron cannot: it can hold on to its activity. A single neuron forgets its
+input within a membrane time constant, a few tens of milliseconds. Cortical
+areas, by contrast, show fluctuations that last hundreds of milliseconds or
+seconds, and the duration grows along the cortical hierarchy (Murray et al.
+2014). The simplest explanation is recurrence. Activity that excites the
+neurons that excite it back can outlive any single cell, and how long it
+lasts depends on how strong the loop is.
+
+The trick is to stop looking at the activity neuron by neuron and look at it mode by mode, where the modes
+are the eigenvectors of the connection matrix. I wrote this up as an
+exercise when I was a teaching assistant for the *Theoretical Neuroscience*
+lecture at Goethe University Frankfurt.
+
+```{ojs}
+//| echo: false
+// shared helpers: one persistent canvas per explorable, text-sized fonts, responsive width
+exFont = ({size: getComputedStyle(document.body).fontSize, family: getComputedStyle(document.body).fontFamily, toString() { return this.size + " " + this.family; }})
+exFg = () => getComputedStyle(document.body).color
+mkCanvas = (W, H) => {
+  const c = DOM.context2d(W, H);
+  c.canvas.style.width = "100%"; c.canvas.style.maxWidth = W + "px"; c.canvas.style.height = "auto";
+  return c;
+}
+axisBox = (c, x, y, w, h) => { c.strokeStyle = "#999"; c.lineWidth = 1; c.strokeRect(x, y, w, h); }
+```
+
+## The model
+
+The network has $N$ neurons with firing rates collected in a vector $r$. Each
+neuron relaxes towards its input with time constant $\tau$, and its input is
+the sum of an external drive $h$ and what it receives from the other neurons
+through the $N \times N$ connection matrix $\mathbf M$:
+
+$$\tau \frac{dr}{dt} = -r + \mathbf M r + h .$$
+
+There is no nonlinearity, which is a real restriction, but it is what makes
+the following exact. If $\mathbf M$ is real and symmetric, it has $N$
+orthogonal eigenvectors $v_i$ with real eigenvalues $\lambda_i$, so that
+$\mathbf M v_i = \lambda_i v_i$. Any
+activity pattern can be written as a weighted sum of these eigenvectors,
+$r = \sum_i a_i v_i$, and the weights $a_i$ are found by projecting,
+$a_i = v_i^{\mathsf T} r$. Substituting into the equation and projecting onto
+each $v_i$ in turn gives $N$ separate equations, one per mode:
+
+$$\tau \frac{da_i}{dt} = -(1 - \lambda_i)\, a_i + h_i ,$$
+
+where $h_i = v_i^{\mathsf T} h$ is the part of the input that lies along mode
+$i$. The modes do not talk to each other. Each one is a leaky integrator on
+its own, with an effective time constant
+
+$$\tau_i = \frac{\tau}{1 - \lambda_i}$$
+
+and a steady state $a_i^\ast = h_i / (1 - \lambda_i)$. A mode whose
+eigenvalue is close to 1 is slow and amplifies its input strongly. A mode
+with a negative eigenvalue is faster than a single neuron and suppresses its
+input. If any eigenvalue exceeds 1 the corresponding mode grows without
+bound, which is where the linear model stops being useful and the
+[recurrent networks page](recurrent-networks.qmd) takes over.
+
+The smallest example makes this concrete. Two neurons that excite each other
+with weight $w$ have $\mathbf M = \begin{pmatrix} 0 & w \\ w & 0 \end{pmatrix}$, with
+eigenvectors $(1, 1)/\sqrt2$ and $(1, -1)/\sqrt2$ and eigenvalues $w$ and
+$-w$. The common mode, both neurons active together, decays with time
+constant $\tau/(1 - w)$, slower than a single neuron. The difference mode,
+one up and one down, decays with $\tau/(1 + w)$, faster. Start the pair in
+any state and the difference dies away first, leaving both neurons at the
+same level. Everything on this page is that example with more neurons.
+
+The figure uses $N = 40$ neurons and a random symmetric matrix with
+independent Gaussian entries, scaled so that its largest eigenvalue is a
+number $R$ you control. $R$ is often called the spectral bound. The remaining
+eigenvalues spread out below $R$, roughly symmetrically about zero, so the
+network has one slow mode and many fast ones. For a large matrix of this
+kind the eigenvalues fill a semicircle, Wigner's semicircle law (Wigner
+1958), and with 40 neurons the bottom panel shows a rough version of it.
+Pachitariu et al. (2026) argue that the activity of the mouse brain looks much like
+such a random symmetric network sitting close to the stability limit, which
+is the regime at the top of the $R$ slider. David Dahmen and colleagues
+reach a related conclusion from the other direction: Dahmen et al. (2019)
+show that the weak average correlations in motor cortex are what a strongly
+recurrent network close to that limit produces, and Dahmen et al. (2026) find
+that the strength of local recurrence sets how many dimensions the activity
+of a cortical area occupies. In the language of this page, the closer $R$ is
+to 1, the fewer modes carry the activity.
+
+```{ojs}
+//| echo: false
+viewof emR = Inputs.range([0, 0.98], {value: 0.9, step: 0.01, label: "Spectral bound R (largest eigenvalue)"})
+viewof emStart = Inputs.radio(new Map([["random pattern", "random"], ["slowest mode", "slow"], ["fastest mode", "fast"], ["slowest + fastest", "both"]]), {value: "random", label: "Initial activity"})
+viewof emDrive = Inputs.radio(new Map([["none, activity decays", "none"], ["constant random input", "const"]]), {value: "none", label: "Input h"})
+viewof emNoise = Inputs.range([0, 0.2], {value: 0, step: 0.01, label: "Input noise"})
+viewof emNew = Inputs.button("New random network")
+viewof emPause = Inputs.toggle({label: "Pause"})
+viewof emReset = Inputs.button("Reset")
+```
+
+```{ojs}
+//| echo: false
+emN = 40
+emRandn = () => {
+  let u = 0; while (u === 0) u = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random());
+}
+// Jacobi eigenvalue algorithm for a symmetric matrix; returns eigenvalues sorted descending with eigenvectors as rows
+emEigh = A0 => {
+  const n = A0.length, A = A0.map(row => Float64Array.from(row));
+  const V = Array.from({length: n}, (_, i) => { const r = new Float64Array(n); r[i] = 1; return r; });
+  for (let sweep = 0; sweep < 60; sweep++) {
+    let off = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) off += A[i][j] * A[i][j];
+    if (off < 1e-20) break;
+    for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) {
+      if (Math.abs(A[p][q]) < 1e-14) continue;
+      const theta = (A[q][q] - A[p][p]) / (2 * A[p][q]);
+      const t = Math.sign(theta || 1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+      const c = 1 / Math.sqrt(t * t + 1), s = t * c;
+      for (let k = 0; k < n; k++) { const akp = A[k][p], akq = A[k][q]; A[k][p] = c * akp - s * akq; A[k][q] = s * akp + c * akq; }
+      for (let k = 0; k < n; k++) { const apk = A[p][k], aqk = A[q][k]; A[p][k] = c * apk - s * aqk; A[q][k] = s * apk + c * aqk; }
+      for (let k = 0; k < n; k++) { const vkp = V[k][p], vkq = V[k][q]; V[k][p] = c * vkp - s * vkq; V[k][q] = s * vkp + c * vkq; }
+    }
+  }
+  const idx = Array.from({length: n}, (_, i) => i).sort((a, b) => A[b][b] - A[a][a]);
+  return {vals: idx.map(i => A[i][i]), vecs: idx.map(i => Float64Array.from({length: n}, (_, k) => V[k][i]))};
+}
+emNet = {
+  emNew;
+  const N = emN, G = Array.from({length: N}, () => new Float64Array(N));
+  for (let i = 0; i < N; i++) for (let j = i; j < N; j++) { const g = i === j ? 0 : emRandn(); G[i][j] = g; G[j][i] = g; }
+  const {vals, vecs} = emEigh(G);
+  return {G, lmax: vals[0], vals, vecs, h: Float64Array.from({length: N}, () => emRandn())};
+}
+emM = {
+  const {G, lmax} = emNet, s = emR / lmax;
+  return {M: G.map(row => row.map(x => x * s)), vals: emNet.vals.map(x => x * s), vecs: emNet.vecs};
+}
+emState = {
+  emReset;
+  const N = emN, {M, vals, vecs} = emM, start = emStart, drive = emDrive;
+  const dt = 0.02, tau = 1, T = 20, n = Math.round(T / dt) + 1;
+  const h = drive === "const" ? emNet.h : new Float64Array(N);
+  let r = new Float64Array(N);
+  if (drive === "none") {
+    if (start === "random") for (let i = 0; i < N; i++) r[i] = emRandn();
+    if (start === "slow" || start === "both") for (let i = 0; i < N; i++) r[i] += vecs[0][i] * Math.sqrt(N);
+    if (start === "fast" || start === "both") for (let i = 0; i < N; i++) r[i] += vecs[N - 1][i] * Math.sqrt(N);
+    const nrm = Math.sqrt(r.reduce((s, x) => s + x * x, 0)); if (nrm > 0) for (let i = 0; i < N; i++) r[i] *= Math.sqrt(N) / nrm;
+  }
+  const hist = Array.from({length: N}, () => new Float32Array(n)), amps = Array.from({length: N}, () => new Float32Array(n));
+  const a0 = vecs.map(v => v.reduce((s, x, i) => s + x * r[i], 0));
+  const record = k => { for (let i = 0; i < N; i++) { hist[i][k] = r[i]; let a = 0; for (let j = 0; j < N; j++) a += vecs[i][j] * r[j]; amps[i][k] = a; } };
+  record(0);
+  let k = 0;
+  while (true) {
+    if (!viewof emPause.value && k < n - 1) {
+      const sig = viewof emNoise.value;
+      for (let s = 0; s < 5 && k < n - 1; s++) {
+        const rn = new Float64Array(N);
+        for (let i = 0; i < N; i++) {
+          let inp = h[i]; for (let j = 0; j < N; j++) inp += M[i][j] * r[j];
+          rn[i] = r[i] + dt / tau * (-r[i] + inp) + sig * Math.sqrt(dt) * emRandn();
+        }
+        r = rn; k++; record(k);
+      }
+    }
+    yield {hist, amps, k, t: k * dt, dt, T, a0, vals, h, drive, hvec: vecs.map(v => v.reduce((s, x, i) => s + x * h[i], 0))};
+  }
+}
+emCanvas = mkCanvas(760, 500)
+emRaster = DOM.context2d(Math.round(20 / 0.02) + 1, emN, 1)
+```
+
+```{ojs}
+//| echo: false
+{
+  const st = emState, c = emCanvas, fg = exFg(), W = 760, H = 500, N = emN;
+  const {hist, amps, k, dt, T, a0, vals, drive, hvec} = st;
+  const orange = "#ff7f0e", blue = "#1f77b4";
+  c.clearRect(0, 0, W, H); c.font = exFont;
+  // panel A: activity raster
+  const A = {x0: 60, y0: 14, w: 320, h: 220};
+  const n = hist[0].length, img = emRaster.createImageData(n, N);
+  let vmax = 1e-6; for (let i = 0; i < N; i++) for (let j = 0; j <= k; j++) vmax = Math.max(vmax, Math.abs(hist[i][j]));
+  for (let i = 0; i < N; i++) for (let j = 0; j < n; j++) {
+    const p = 4 * (i * n + j);
+    if (j > k) { img.data[p] = 255; img.data[p + 1] = 255; img.data[p + 2] = 255; img.data[p + 3] = 255; continue; }
+    const u = Math.max(-1, Math.min(1, hist[i][j] / vmax)), v = Math.sign(u) * Math.sqrt(Math.abs(u));
+    const rC = v > 0 ? 255 : Math.round(255 * (1 + v)), bC = v < 0 ? 255 : Math.round(255 * (1 - v)), gC = Math.round(255 * (1 - Math.abs(v)));
+    img.data[p] = rC; img.data[p + 1] = gC; img.data[p + 2] = bC; img.data[p + 3] = 255;
+  }
+  emRaster.putImageData(img, 0, 0);
+  c.imageSmoothingEnabled = false; c.drawImage(emRaster.canvas, A.x0, A.y0, A.w, A.h); c.imageSmoothingEnabled = true;
+  axisBox(c, A.x0, A.y0, A.w, A.h);
+  c.fillStyle = fg; c.textAlign = "center";
+  c.fillText(`time (units of τ) · t = ${st.t.toFixed(1)}`, A.x0 + A.w / 2, A.y0 + A.h + 24);
+  c.fillText("0", A.x0, A.y0 + A.h + 24); c.fillText(T, A.x0 + A.w, A.y0 + A.h + 24);
+  c.save(); c.translate(A.x0 - 40, A.y0 + A.h / 2); c.rotate(-Math.PI / 2); c.textAlign = "center"; c.fillText("neuron", 0, 0); c.restore();
+  c.textAlign = "right"; c.fillText("1", A.x0 - 8, A.y0 + 10); c.fillText(N, A.x0 - 8, A.y0 + A.h);
+  c.textAlign = "left"; c.fillText(`colour: activity ±${vmax.toFixed(1)}, square-root scale`, A.x0, A.y0 + A.h + 46);
+  // panel B: mode amplitudes on a log scale
+  const B = {x0: 470, y0: 14, w: 270, h: 220}, lo = 1e-3, hi = 20;
+  const bx = j => B.x0 + B.w * j / (n - 1), by = a => B.y0 + B.h * (1 - (Math.log10(Math.max(lo, a)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)));
+  axisBox(c, B.x0, B.y0, B.w, B.h);
+  c.save(); c.beginPath(); c.rect(B.x0, B.y0, B.w, B.h); c.clip();
+  const drawMode = (i, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); for (let j = 0; j <= k; j++) j ? c.lineTo(bx(j), by(Math.abs(amps[i][j]))) : c.moveTo(bx(0), by(Math.abs(amps[i][0]))); c.stroke(); };
+  c.globalAlpha = 0.35; for (let i = 1; i < N - 1; i++) drawMode(i, "#888", 1); c.globalAlpha = 1;
+  drawMode(N - 1, blue, 2); drawMode(0, orange, 2);
+  c.setLineDash([5, 4]); c.strokeStyle = fg; c.lineWidth = 1.2;
+  for (const i of [0, N - 1]) {
+    c.beginPath();
+    for (let j = 0; j <= k; j++) {
+      const t = j * dt, lam = vals[i], ainf = drive === "const" ? hvec[i] / (1 - lam) : 0;
+      const a = ainf + (a0[i] - ainf) * Math.exp(-(1 - lam) * t);
+      j ? c.lineTo(bx(j), by(Math.abs(a))) : c.moveTo(bx(0), by(Math.abs(a)));
+    }
+    c.stroke();
+  }
+  c.setLineDash([]); c.restore();
+  c.fillStyle = fg; c.textAlign = "center"; c.fillText("time (units of τ)", B.x0 + B.w / 2, B.y0 + B.h + 24);
+  c.fillText("0", B.x0, B.y0 + B.h + 24); c.fillText(T, B.x0 + B.w, B.y0 + B.h + 24);
+  c.textAlign = "right"; for (const v of [1e-3, 1e-2, 0.1, 1, 10]) c.fillText(v >= 1 ? v : v.toString(), B.x0 - 6, by(v) + 5);
+  c.save(); c.translate(B.x0 - 62, B.y0 + B.h / 2); c.rotate(-Math.PI / 2); c.textAlign = "center"; c.fillText("|mode amplitude|", 0, 0); c.restore();
+  c.textAlign = "left"; c.fillStyle = orange; c.fillText(`slowest mode: λ = ${vals[0].toFixed(2)}, τ₁ = ${(1 / (1 - vals[0])).toFixed(1)} τ`, B.x0 - 60, B.y0 + B.h + 46);
+  c.fillStyle = blue; c.fillText(`fastest mode: λ = ${vals[N - 1].toFixed(2)}, τ₄₀ = ${(1 / (1 - vals[N - 1])).toFixed(2)} τ`, B.x0 - 60, B.y0 + B.h + 66);
+  c.fillStyle = fg; c.fillText("grey: the other modes · dashed: formula", B.x0 - 60, B.y0 + B.h + 86);
+  // panel C: eigenvalue spectrum
+  const C = {x0: 60, y0: 350, w: 680, h: 110}, emin = -1.1, emax = 1.1;
+  const cx = i => C.x0 + C.w * (i + 0.5) / N, cy = v => C.y0 + C.h * (1 - (v - emin) / (emax - emin));
+  axisBox(c, C.x0, C.y0, C.w, C.h);
+  c.setLineDash([4, 4]); c.strokeStyle = "red"; c.beginPath(); c.moveTo(C.x0, cy(1)); c.lineTo(C.x0 + C.w, cy(1)); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = "#888"; c.beginPath(); c.moveTo(C.x0, cy(0)); c.lineTo(C.x0 + C.w, cy(0)); c.stroke();
+  for (let i = 0; i < N; i++) { c.fillStyle = i === 0 ? orange : i === N - 1 ? blue : "gray"; c.beginPath(); c.arc(cx(i), cy(vals[i]), 4, 0, 2 * Math.PI); c.fill(); }
+  c.fillStyle = fg; c.textAlign = "right"; c.fillText("1", C.x0 - 8, cy(1) + 5); c.fillText("0", C.x0 - 8, cy(0) + 5); c.fillText("−1", C.x0 - 8, cy(-1) + 5);
+  c.save(); c.translate(C.x0 - 40, C.y0 + C.h / 2); c.rotate(-Math.PI / 2); c.textAlign = "center"; c.fillText("eigenvalue", 0, 0); c.restore();
+  c.textAlign = "center"; c.fillText("modes, sorted by eigenvalue", C.x0 + C.w / 2, C.y0 + C.h + 24);
+  return c.canvas;
+}
+```
+
+## Reading the figure
+
+The top left panel is the activity of all 40 neurons over time, one row per
+neuron, red for positive and blue for negative rates, scaled to the largest
+value seen so far. The colour scale is a square root, so that small
+activity late in the run stays visible. With no input, the activity is set at $t = 0$ by the
+initial pattern you chose and then evolves on its own; with constant input
+it starts at zero and builds up. Rates below zero are not physical, but a
+linear model does not know that, and it is simplest to read the colours as
+deviations from a background rate.
+
+The top right panel is the same activity after projecting it onto the
+eigenvectors of $\mathbf M$. Each thin grey line is the amplitude of one mode on a
+logarithmic axis, so a pure exponential decay is a straight line whose slope
+is the decay rate. The slowest mode, the one with the largest eigenvalue, is
+orange, and the fastest, with the most negative eigenvalue, is blue. The
+dashed lines next to them are the solutions of the one-mode equation above,
+computed from the eigenvalue and the initial amplitude alone. They should sit
+on top of the simulated lines when the noise is off.
+
+The bottom panel is the spectrum: all 40 eigenvalues sorted from largest to
+smallest, with the slow and fast modes coloured to match. The red dashed line
+at 1 is the stability limit. The spectral bound $R$ moves the orange point up
+and down, and the rest of the spectrum scales with it.
+
+The time axis is in units of $\tau$, the time constant of a single neuron.
+The two time constants printed in the top right panel are in the same units.
+
+## Things to try
+
+Start with a random initial pattern and no input at $R = 0.9$. In the raster
+the activity fades within a few $\tau$, but not to nothing: a faint pattern
+remains and dies away much more slowly. In the mode panel this is obvious.
+Every grey line drops steeply, the blue one steepest of all, while the orange
+line falls at a tenth of that slope: its time constant is $1/(1 - 0.9) = 10$
+times that of a single neuron. After a few $\tau$ the orange mode is all that
+is left, and the surviving pattern in the raster is its eigenvector.
+
+Now set the initial activity to the slowest mode alone. The raster shows a
+fixed pattern that just fades, and the mode panel is a single straight
+orange line, since nothing else was excited. Then pick the fastest mode. Its
+pattern alternates sign from neuron to neuron, so the recurrent input to each
+neuron opposes its own activity, and it is gone within a $\tau$. The option
+with both modes shows the two decays together; after about two $\tau$ the
+blue line has dropped below the grey floor and the raster has quietly
+switched from one pattern to the other.
+
+Move $R$. At $R = 0.98$ the slowest time constant is $50\,\tau$ and the
+orange line is nearly flat; the network has become a memory, holding its
+pattern long after the input is gone. At $R = 0.5$ the slow mode lasts only
+twice as long as a neuron and the whole spectrum is compressed towards zero.
+At $R = 0$ the matrix is zero, there is no recurrence, and all modes decay at
+the same rate.
+
+Switch to constant input. Each mode now rises to its steady state $h_i /
+(1 - \lambda_i)$, and the dashed lines show the approach. The slow mode is
+amplified ten times at $R = 0.9$, so the steady-state pattern of the network
+is dominated by its slowest eigenvector almost regardless of what the input
+looks like. This is the second thing recurrence does besides lengthening
+timescales: it filters the input, keeping the parts that match its slow
+modes and suppressing the rest. Click "New random network" to get a
+different matrix and a different slow pattern, and notice that the
+statements above do not depend on which one you got.
+
+Finally add noise. The grey lines no longer decay but hover at a floor set by
+the noise, and the slow mode hovers highest on average, since it integrates
+the noise over the longest time. This is the network's spontaneous activity,
+and its autocorrelation time is the slow mode's time constant. A network can
+be made to look slow without any slow element in it, just by wiring fast
+elements into a loop that nearly closes. Measuring such timescales from
+recordings is harder than it looks, and much of what I know about it comes
+from the groups of [Anna Levina](https://uni-tuebingen.de/en/161236) in
+Tübingen and [Tatiana Engel](https://engel-lab.princeton.edu/) at Princeton.
+Fitting an exponential to an autocorrelation gives a biased answer for short
+recordings, and Zeraati, Engel and Levina (2022) show how to do it properly,
+by fitting the data with a mixture of exactly the kind of noisy modes shown
+here. In the same spirit, Shi et al. (2023) work out how spatially structured
+connections produce several timescales at once, one per spatial frequency,
+and Zeraati et al. (2023) find those multiple timescales in recordings from
+visual cortex, where the slow one lengthens with attention. The figure above
+is the toy version of all three: the spectrum of $\mathbf M$ is the set of
+timescales, and $R$ is the knob that attention would turn.
+
+The exercise this page is based on is from the recurrent network chapter of
+Dayan and Abbott (2001, chapter 7). Rajan and Abbott (2006) describe what
+the spectrum of a random connection matrix looks like when excitatory and
+inhibitory neurons are distinguished, which the symmetric matrix here does
+not do.
+
+## References
+
+Dahmen D, Grün S, Diesmann M, Helias M (2019). Second type of criticality
+in the brain uncovers rich multiple-neuron dynamics. *Proceedings of the
+National Academy of Sciences* 116: 13051–13060.
+[DOI](https://doi.org/10.1073/pnas.1818972116)
+
+Dahmen D, Recanatesi S, Jia X, Ocker GK, Lahiji N, Musall S, Campagnola L,
+Seeman S, Jarsky T, Helias M, Shea-Brown E (2026). Strong and localized
+recurrence controls the dimensionality of neural activity across brain
+areas. *Nature Neuroscience* 29: 2578–2587.
+[DOI](https://doi.org/10.1038/s41593-026-02395-w)
+
+Dayan P, Abbott LF (2001). *Theoretical Neuroscience: Computational and
+Mathematical Modeling of Neural Systems*. MIT Press.
+
+Murray JD, Bernacchia A, Freedman DJ, Romo R, Wallis JD, Cai X,
+Padoa-Schioppa C, Pasternak T, Seo H, Lee D, Wang XJ (2014). A hierarchy of
+intrinsic timescales across primate cortex. *Nature Neuroscience* 17:
+1661–1663. [DOI](https://doi.org/10.1038/nn.3862)
+
+Pachitariu M, Zhong L, Gracias A, Minisi A, Lopez C, Stringer C (2026). A
+critical initialization for biological neural networks. *Nature* 655:
+990–996.
+[DOI](https://doi.org/10.1038/s41586-026-10528-1)
+
+Rajan K, Abbott LF (2006). Eigenvalue spectra of random matrices for neural
+networks. *Physical Review Letters* 97: 188104.
+[DOI](https://doi.org/10.1103/PhysRevLett.97.188104)
+
+Shi YL, Zeraati R, Levina A, Engel TA (2023). Spatial and temporal
+correlations in neural networks with structured connectivity. *Physical
+Review Research* 5: 013005.
+[DOI](https://doi.org/10.1103/PhysRevResearch.5.013005)
+
+Wigner EP (1958). On the distribution of the roots of certain symmetric
+matrices. *Annals of Mathematics* 67: 325–327.
+[DOI](https://doi.org/10.2307/1970008)
+
+Zeraati R, Engel TA, Levina A (2022). A flexible Bayesian framework for
+unbiased estimation of timescales. *Nature Computational Science* 2:
+193–204. [DOI](https://doi.org/10.1038/s43588-022-00214-3)
+
+Zeraati R, Shi YL, Steinmetz NA, Gieselmann MA, Thiele A, Moore T, Levina A,
+Engel TA (2023). Intrinsic timescales in the visual cortex change with
+selective attention and reflect spatial connectivity. *Nature
+Communications* 14: 1858. [DOI](https://doi.org/10.1038/s41467-023-37613-7)
